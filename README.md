@@ -54,20 +54,18 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 \* *Reasoning availability depends on the underlying model.*  
 \*\* *Reasoning effort depends on endpoint support.*
 
-## Quick Start
+## Quickstart
 
 The fastest way to get started is using the **hosted instance** at
-[opendocbot.com](https://opendocbot.com). The application runs entirely inside
-your browser after the initial taskpane load.
+[opendocbot.com/app](https://opendocbot.com/app). We only serve the application once. The application
+runs entirely inside your browser after the initial taskpane load. No document data reaches our servers.
 
-📖 Full guide with install options for Office web and desktop (Windows, macOS):
+📖 Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
 
 ## Self-Hosting
 
-Run OpenDocBot on your own infrastructure to bypass browser CORS or use private
-endpoints (Docker, Node.js, static hosting, TLS, the proxy, production
-manifests):
+Serve OpenDocbot directly from your own infrastructure for a fully airgapped setup.
 
 📖 [opendocbot.com/docs/selfhosting](https://opendocbot.com/docs/selfhosting)
 
