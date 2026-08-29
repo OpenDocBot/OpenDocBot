@@ -56,34 +56,20 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 
 ## Quick Start
 
-The fastest way to get started is using the **hosted instance** at [opendocbot.com](https://opendocbot.com). The application runs entirely inside your browser after the initial taskpane load.
+The fastest way to get started is using the **hosted instance** at
+[opendocbot.com](https://opendocbot.com). The application runs entirely inside
+your browser after the initial taskpane load.
 
-**Prerequisites:** Microsoft 365 (Word, Excel, or PowerPoint) + an AI provider API key (or local Ollama instance).
-
-1. **Get the Manifest**: [Download manifest.xml](https://opendocbot.com/manifest.xml)
-2. **Sideload in Office**: Follow the Microsoft guide to [manually sideload an add-in](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/sideload-office-add-ins-for-testing#manually-sideload-an-add-in-to-office-on-the-web).
-3. **Connect Your Provider**: Open **Settings** inside the add-in taskpane, select your provider preset, paste your API Key, click **Test Connection**, and click **Apply**.
-4. **Prompt your document**: Try *"Highlight all key takeaways in green bold text"* or *"Build a monthly budget table with formulas"*.
-
-📖 Full Quickstart Guide: [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
+📖 Full guide with install options for Office web and desktop (Windows, macOS):
+[opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
 
 ## Self-Hosting
 
-Run OpenDocBot on your own infrastructure to bypass browser CORS or use private endpoints.
+Run OpenDocBot on your own infrastructure to bypass browser CORS or use private
+endpoints (Docker, Node.js, static hosting, TLS, the proxy, production
+manifests):
 
-```sh
-# Option 1: Docker (Recommended)
-make docker-run  # Runs on https://localhost:3000
-
-# Option 2: Node.js
-npm install && make serve
-
-# Option 3: Static Hosting
-VITE_PROXY_ENABLED=false npm run build  # Deploy /dist to Netlify, Vercel, or Cloudflare Pages
-
-```
-
-📖 Detailed Self-Hosting Docs: [opendocbot.com/docs/selfhosting](https://opendocbot.com/docs/selfhosting)
+📖 [opendocbot.com/docs/selfhosting](https://opendocbot.com/docs/selfhosting)
 
 ## Tech Stack
 
