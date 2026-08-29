@@ -24,10 +24,10 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 ## Features
 
 - **Universal Office Suite Integration**: One add-in for Word, Excel, and PowerPoint. Read, write, analyze content, generate formulas, auto-format tables, and build slide decks directly inside your workflow.
-- **Provider Freedom & Zero Lock-In**: Connect to OpenAI, Anthropic, Gemini, Ollama, OpenRouter, OpenCode Zen, or any OpenAI-compatible API. Switch instantly between models and providers.
+- **Provider Freedom & Zero Lock-In**: Connect to OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode Zen, or any OpenAI-compatible API. Switch instantly between models and providers.
 - **100% Client-Side & Local-First**: Zero telemetry. Your document data goes straight from your browser to your provider, or stays completely offline when paired with **Ollama**.
 - **Human-in-the-Loop Safety**: Review and approve model actions before any text, formula, or slide layout is modified in your document.
-- **Pay-As-You-Go & Self-Hostable**: 100% free for individuals and small teams (up to 30 users). Bring your own API keys, avoid seat markups, or deploy on your own infrastructure.
+- **BYOK & Self-Hostable**: 100% free for individuals and small teams (up to 30 users). Bring your own API keys, avoid seat markups, or deploy on your own infrastructure.
 
 ## Compatibility
 
