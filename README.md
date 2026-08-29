@@ -47,6 +47,7 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 | **OpenAI** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Anthropic** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Gemini** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Deepseek** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Ollama (Local)** | ✅\* | ❌\*\* | ✅ | ❌ | ❌ |
 | **OpenRouter** | ✅\* | ⚠️\*\* | ✅ | ✅ | ✅ |
 | **OpenCode Zen** | ✅ | ⚠️\*\* | ✅ | ✅ | ✅ |
