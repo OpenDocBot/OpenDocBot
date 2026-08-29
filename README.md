@@ -5,7 +5,7 @@
   <img src="src/assets/logo.svg" alt="OpenDocBot" width="320" />
 </p>
 
-<p align="center"><strong>The open-source, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Ollama, OpenRouter, OpenCode Zen) to Word, Excel & PowerPoint</strong></p>
+<p align="center"><strong>The open-source, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode Zen) to Word, Excel & PowerPoint</strong></p>
 
 <div align="center">
   <a href="https://github.com/opendocbot/opendocbot/stargazers" target="_blank">
