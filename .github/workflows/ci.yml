@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Validate manifests
+        env:
+          OPENDOCBOT_URL: https://opendocbot.com
+          OPENDOCBOT_APP_PATH: /app
+        run: |
+          npm run validate:manifest
+          mkdir -p dist
+          node scripts/build-manifest.mjs
+          npx office-addin-manifest validate dist/manifest.xml
+
+      - name: Unit tests
+        run: npm test -- --run
+
+      # Live provider tests. Each provider's suite self-skips when its key is
+      # empty (see src/__tests__/providers/integration.test.ts), so the step
+      # can always run regardless of which secrets are configured.
+      - name: Integration tests (live providers)
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm test -- --run src/__tests__/providers/integration.test.ts
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Build app + docs + manifest
+        env:
+          VITE_BASE: /app/
+          VITEPRESS_BASE: /
+          OPENDOCBOT_URL: https://opendocbot.com
+          OPENDOCBOT_APP_PATH: /app
+        run: |
+          npm run build
+          mkdir -p dist/app
+          mv dist/index.html dist/assets dist/app/
+          npm run docs:build
+          cp -r docs/.vitepress/dist/* dist/
+          node scripts/build-manifest.mjs
+
+      - name: Publish to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          # Assets-only Workers (no `main` script) require wrangler 4.x.
+          wranglerVersion: "4.86.0"
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"

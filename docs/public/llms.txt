@@ -1,0 +1,23 @@
+# OpenDocBot
+
+> OpenDocBot is a privacy-first, zero-proxy Microsoft Office Add-in for Word and Excel that connects directly to AI providers.
+
+## Key Features
+- Zero-Proxy Architecture: Direct client-to-LLM communication without intermediary servers.
+- Privacy-First: No telemetry, no client tracking, local storage for API keys.
+- Multi-Model: Supports Ollama (local LLMs), OpenAI, DeepSeek, Anthropic, Gemini, OpenRouter, OpenCode Zen, and other OpenAI-compatible endpoints.
+
+## Documentation & Links
+- Website: https://opendocbot.com
+- Documentation: https://opendocbot.com/docs
+
+## Legal
+- Privacy Policy: https://opendocbot.com/privacy
+- Terms of Use: https://opendocbot.com/terms
+
+## Support
+- Support: https://opendocbot.com/support
+
+## Contact & Enterprise
+- Inquiries: enterprise@opendocbot.com
+- Security: privacy@opendocbot.com

@@ -1,0 +1,74 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GeminiProvider — request wire format > sends the full request body unchanged (golden snapshot) 1`] = `
+{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "Fix the intro",
+        },
+      ],
+      "role": "user",
+    },
+    {
+      "parts": [
+        {
+          "text": "Let me fix it",
+        },
+        {
+          "functionCall": {
+            "args": {
+              "new_text": "Intro!",
+              "old_text": "Intro",
+            },
+            "name": "edit_doc_text",
+          },
+        },
+      ],
+      "role": "model",
+    },
+    {
+      "parts": [
+        {
+          "functionResponse": {
+            "name": "edit_doc_text",
+            "response": {
+              "ok": true,
+            },
+          },
+        },
+      ],
+      "role": "user",
+    },
+  ],
+  "generationConfig": {
+    "maxOutputTokens": 512,
+  },
+  "systemInstruction": {
+    "parts": [
+      {
+        "text": "You are a document assistant.",
+      },
+    ],
+  },
+  "tools": [
+    {
+      "functionDeclarations": [
+        {
+          "description": "Edit text in the document",
+          "name": "edit_doc_text",
+          "parameters": {
+            "properties": {
+              "old_text": {
+                "type": "string",
+              },
+            },
+            "type": "object",
+          },
+        },
+      ],
+    },
+  ],
+}
+`;
