@@ -5,7 +5,7 @@
   <img src="src/assets/logo.svg" alt="OpenDocBot" width="320" />
 </p>
 
-<p align="center"><strong>The open-source, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Ollama, OpenRouter, OpenCode Zen) to Word, Excel & PowerPoint</strong></p>
+<p align="center"><strong>The open-source, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode Zen) to Word, Excel & PowerPoint</strong></p>
 
 <div align="center">
   <a href="https://github.com/opendocbot/opendocbot/stargazers" target="_blank">
@@ -24,10 +24,10 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 ## Features
 
 - **Universal Office Suite Integration**: One add-in for Word, Excel, and PowerPoint. Read, write, analyze content, generate formulas, auto-format tables, and build slide decks directly inside your workflow.
-- **Provider Freedom & Zero Lock-In**: Connect to OpenAI, Anthropic, Gemini, Ollama, OpenRouter, OpenCode Zen, or any OpenAI-compatible API. Switch instantly between models and providers.
+- **Provider Freedom & Zero Lock-In**: Connect to OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode Zen, or any OpenAI-compatible API. Switch instantly between models and providers.
 - **100% Client-Side & Local-First**: Zero telemetry. Your document data goes straight from your browser to your provider, or stays completely offline when paired with **Ollama**.
 - **Human-in-the-Loop Safety**: Review and approve model actions before any text, formula, or slide layout is modified in your document.
-- **Pay-As-You-Go & Self-Hostable**: 100% free for individuals and small teams (up to 30 users). Bring your own API keys, avoid seat markups, or deploy on your own infrastructure.
+- **BYOK & Self-Hostable**: 100% free for individuals and small teams (up to 30 users). Bring your own API keys, avoid seat markups, or deploy on your own infrastructure.
 
 ## Compatibility
 
@@ -47,6 +47,7 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 | **OpenAI** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Anthropic** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Gemini** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Deepseek** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Ollama (Local)** | ✅\* | ❌\*\* | ✅ | ❌ | ❌ |
 | **OpenRouter** | ✅\* | ⚠️\*\* | ✅ | ✅ | ✅ |
 | **OpenCode Zen** | ✅ | ⚠️\*\* | ✅ | ✅ | ✅ |
@@ -54,20 +55,18 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 \* *Reasoning availability depends on the underlying model.*  
 \*\* *Reasoning effort depends on endpoint support.*
 
-## Quick Start
+## Quickstart
 
 The fastest way to get started is using the **hosted instance** at
-[opendocbot.com](https://opendocbot.com). The application runs entirely inside
-your browser after the initial taskpane load.
+[opendocbot.com/app](https://opendocbot.com/app). We only serve the application once. The application
+runs entirely inside your browser after the initial taskpane load. No document data reaches our servers.
 
-📖 Full guide with install options for Office web and desktop (Windows, macOS):
+📖 Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
 
 ## Self-Hosting
 
-Run OpenDocBot on your own infrastructure to bypass browser CORS or use private
-endpoints (Docker, Node.js, static hosting, TLS, the proxy, production
-manifests):
+Serve OpenDocbot directly from your own infrastructure for a fully airgapped setup.
 
 📖 [opendocbot.com/docs/selfhosting](https://opendocbot.com/docs/selfhosting)
 
