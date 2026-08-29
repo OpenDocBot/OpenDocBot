@@ -1,3 +1,4 @@
+#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Sideloads the OpenDocBot Office Add-in via SMB share.
