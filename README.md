@@ -59,9 +59,12 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 
 The fastest way to get started is using the **hosted instance** at
 [opendocbot.com/app](https://opendocbot.com/app). We only serve the application once. The application
-runs entirely inside your browser after the initial taskpane load. No document data reaches our servers.
+runs entirely locally after the initial taskpane load. No document data reaches our servers.
 
-📖 Quick Start guide:
+We are working on publishing OpenDocBot to the Microsoft Store. Until then, sideloading is the only option.
+Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions on your OS and Office version.
+
+📖 Full Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
 
 ## Self-Hosting
