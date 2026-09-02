@@ -26,17 +26,17 @@ if ($isAdmin) {
     } else {
         New-SmbShare -Name $ShareName -Path $CatalogPath -ReadAccess $EveryoneName -FullAccess $AdminName | Out-Null
     }
+    New-Item -Path $RegPath -Force | Out-Null
+    New-ItemProperty -Path $RegPath -Name 'Id'    -Value $Guid       -PropertyType String -Force | Out-Null
+    New-ItemProperty -Path $RegPath -Name 'Url'   -Value $CatalogUrl -PropertyType String -Force | Out-Null
+    New-ItemProperty -Path $RegPath -Name 'Flags' -Value 1           -PropertyType DWord  -Force | Out-Null
+    Write-Host "OpenDocBot installed for $env:USERDOMAIN\$env:USERNAME! Restart Office and check Home > Add-ins > More Add-ins > SHARED FOLDER." -ForegroundColor Green
 } else {
     if (-not $share -or $share.Path -ne $CatalogPath) {
         Write-Host "OpenDocBot isn't installed on this machine yet." -ForegroundColor Yellow
         Write-Host "Ask an administrator to run this script once, then run it again here." -ForegroundColor Yellow
-        exit 1
+        return
     }
 }
 
-New-Item -Path $RegPath -Force | Out-Null
-New-ItemProperty -Path $RegPath -Name 'Id'    -Value $Guid       -PropertyType String -Force | Out-Null
-New-ItemProperty -Path $RegPath -Name 'Url'   -Value $CatalogUrl -PropertyType String -Force | Out-Null
-New-ItemProperty -Path $RegPath -Name 'Flags' -Value 1           -PropertyType DWord  -Force | Out-Null
 
-Write-Host "OpenDocBot installed for $env:USERDOMAIN\$env:USERNAME! Restart Office and check Home > Add-ins > More Add-ins > SHARED FOLDER." -ForegroundColor Green
