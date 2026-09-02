@@ -54,6 +54,11 @@ irm https://opendocbot.com/sideload.ps1 | iex
 This command runs the https://opendocbot.com/sideload.ps1 script on your machine, which automatically configures persistent add-in sideloading
 via [the network share method](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins). 
 
+::: warning Admin Priviledges
+This scripts requires admin priviledges due to the required creation of a local network share (New-SmbShare cmdlet). The script can be fully
+audited at [https://opendocbot.com/sideload.ps1](https://opendocbot.com/sideload.ps1)
+:::
+
 <iframe width="600" height="337"
   src="https://www.youtube-nocookie.com/embed/jrE7wh2EFDg"
   title="OpenDocBot Sideloading Office Local"
