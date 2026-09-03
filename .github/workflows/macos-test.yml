@@ -23,16 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Microsoft Office (M365)
-        timeout-minutes: 30
-        run: brew install --cask microsoft-office
-
-      # Pre-seed the sideload manifest into Word/Excel/PowerPoint. Word's
-      # container is created on first launch, so if Word never ran the wef
-      # folder can be re-seeded by re-running sideload.sh after first launch.
-      - name: Sideload the add-in (pre-seed)
-        run: curl -fsSL https://opendocbot.com/sideload.sh | bash
-
       - name: Create VNC user + enable Screen Sharing
         env:
           VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
