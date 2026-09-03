@@ -17,8 +17,7 @@ import { ChevronDown } from "lucide-react";
 
 /**
  * The `/proxy/` route only exists on self-hosted / dev deployments. GitHub
- * Pages builds set VITE_PROXY_ENABLED=false, which hides the checkbox and the
- * OpenCode Zen preset.
+ * Pages builds set VITE_PROXY_ENABLED=false, which hides the checkbox.
  */
 const proxyEnabled = isProxyEnabled();
 
@@ -92,8 +91,6 @@ export function SettingsPanel() {
       update("maxTokens", preset.maxTokens);
     }
     update("useLegacyChatCompletions", preset.useLegacyChatCompletions ?? false);
-    // OpenCode Zen can only connect through the proxy — always enabled for it.
-    update("proxyRequests", preset.proxyRequests ?? false);
   }
 
   return (
@@ -234,7 +231,7 @@ export function SettingsPanel() {
               <p className="text-xs text-muted-foreground">
                 Routes provider calls through this deployment&apos;s <code>/proxy/</code>{" "}
                 endpoint instead of calling the provider directly. Required for
-                providers without browser CORS (e.g. OpenCode Zen). Only available
+                providers without browser CORS (e.g. OpenCode). Only available
                 on self-hosted / dev deployments.
               </p>
             </div>

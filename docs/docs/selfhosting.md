@@ -7,7 +7,7 @@ description: Run OpenDocBot on your own infrastructure. Docker, Node, or any sta
 
 Self-hosting runs the add-in's web app on your own infrastructure. It's the
 option that unlocks the **proxy** (needed for providers without browser CORS,
-like OpenCode Zen) and full control over the deployment.
+like OpenCode) and full control over the deployment.
 
 ::: info
 The app itself is **static**: `dist/` is just HTML + hashed JS/CSS. The
@@ -171,7 +171,7 @@ VITE_PROXY_ENABLED=false npm run build
 
 Then upload the `dist/` folder to your static host and serve it over HTTPS.
 
-The proxy checkbox is hidden in this build. OpenCode Zen won't work here; the
+The proxy checkbox is hidden in this build. OpenCode won't work here; the
 CORS-friendly providers (OpenAI, DeepSeek, Gemini, Anthropic, OpenRouter) will.
 
 ## Production manifest

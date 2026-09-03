@@ -25,7 +25,7 @@ the whole conversation, not just the next message.
   built-in rules. **Your custom instructions take precedence over any
   conflicting built-in rules.**
 - Editing them mid-conversation takes effect from the next message: providers
-  with content-keyed caches (Anthropic, OpenAI, OpenCode Zen) adapt
+  with content-keyed caches (Anthropic, OpenAI) adapt
   automatically, and Gemini invalidates its context cache when the system
   prompt changes.
 - Clear the field and press **Apply** to remove them.
@@ -55,16 +55,13 @@ Connection tab.
 | **Google Gemini** | Gemini | `https://generativelanguage.googleapis.com/v1beta` | `gemini-3.5-flash-lite` | Yes |
 | **Ollama** | OpenAI-compatible | `http://localhost:11434/v1` | `llama3.1` | No |
 | **OpenRouter** | OpenAI-compatible | `https://openrouter.ai/api/v1` | `openai/gpt-4o` | Yes |
-| **OpenCode Zen**¹ | OpenAI-compatible | `https://opencode.ai/zen/go/v1` | `deepseek-v4-flash` | Yes |
 | **Custom** | OpenAI-compatible / Anthropic / Gemini | _Custom_ | _Custom_ | Optional |
 
-¹ **OpenCode Zen only appears on self-hosted / dev deployments.** See [here](/docs/compatibility#cors-and-the-proxy).
-
-Selecting a preset fills in the endpoint and model, clears the API key, and sets
-the proxy flag from the preset (on for OpenCode Zen, off for the rest). When the
+Selecting a preset fills in the endpoint and model and clears the API key. When the
 preset is **Custom**, an extra **Provider** dropdown appears so you can pick the
 provider type (`OpenAI Compatible`, `Google Gemini`, `Anthropic Claude`) before
-configuring the endpoint.
+configuring the endpoint. Providers without a preset, such as
+[OpenCode](/docs/providers#opencode), are configured this way.
 
 ## Endpoint URL
 
@@ -146,7 +143,7 @@ cache on or off, and set **Cache rebuild size (tokens)** to rebuild the cache
 when the conversation grows past that many tokens (default 2000, min 1024).
 Caching only happens when the prompt is large enough to be worthwhile.
 
-For **OpenAI, DeepSeek, OpenRouter and OpenCode Zen**, caching happens
+For **OpenAI, DeepSeek and OpenRouter**, caching happens
 automatically, so no settings are needed.
 
 ### Proxy API requests through this server
@@ -159,7 +156,7 @@ When enabled, provider calls are rewritten to a same-origin
 directly. The serving process forwards the request server-to-server.
 
 **Use it for providers that don't allow browser-origin requests**, most notably
-**OpenCode Zen**. 
+**OpenCode**. 
 
 ## Connection test
 

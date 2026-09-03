@@ -1,6 +1,6 @@
 ---
 title: Providers
-description: Set up OpenAI, DeepSeek, Anthropic, Gemini, Ollama, OpenRouter, OpenCode Zen, or any OpenAI-compatible endpoint in OpenDocBot.
+description: Set up OpenAI, DeepSeek, Anthropic, Gemini, Ollama, OpenRouter, or any other provider (e.g. OpenCode) via the Custom preset in OpenDocBot.
 ---
 
 # Providers
@@ -10,7 +10,7 @@ OpenDocBot is **provider-agnostic**. Different providers are implementations of 
 
 | Provider | Handles | Underlying protocol |
 |---|---|---|
-| `OpenAICompatibleProvider` | OpenAI, DeepSeek, Ollama, OpenRouter, OpenCode, Custom | Responses API + `/chat/completions` |
+| `OpenAICompatibleProvider` | OpenAI, DeepSeek, Ollama, OpenRouter, Custom | Responses API + `/chat/completions` |
 | `AnthropicProvider` | Claude | Messages API (`/v1/messages`) |
 | `GeminiProvider` | Google Gemini | `generateContent` / `streamGenerateContent` |
 
@@ -151,47 +151,63 @@ Very handy for trying the add-in at zero cost.
 
 ---
 
-## OpenCode Zen
-
-OpenCode Zen is the curated model gateway from OpenCode (the AI coding agent).
-It's a solid default for the self-hosted deployment and works out of the box
-with a single key.
-
-**Setup:**
-
-1. Open the add-in **Settings**
-2. Preset: **OpenCode Zen**
-3. Get a key at **https://opencode.ai/auth** 
-4. Paste the key, **Test Connection**, **Apply**
-
-::: warning Browser CORS + self-hosted only
-OpenCode Zen does **not** allow browser-origin requests. The preset is only available on **self-hosted** deployments, where the proxy functionality can be used. When using the hosted instance the OpenCode Zen preset is **hidden**. See [Compatibility](/docs/compatibility#cors-and-the-proxy) and [Configuration](/docs/configuration#proxy-api-requests-through-this-server).
-:::
-
----
-
 ## Custom (any provider)
 
-Custom lets you configure any of the three providers manually with your own
-endpoint and API key, instead of using a preset. The **Provider** dropdown
-selects the protocol: **OpenAI Compatible** (for any endpoint that speaks
-OpenAI's protocol: LiteLLM, Together, Groq, fireworks.ai, local proxies, corporate
-gateways, etc.), **Anthropic Claude**, or **Google Gemini**.
+Custom lets you configure any of the three providers manually instead of using
+a preset. The **Provider** dropdown selects the protocol: **OpenAI Compatible**
+(LiteLLM, Together, Groq, etc.), **Anthropic Claude**, or **Google Gemini**.
 
-**Setup:**
-
-1. Preset: **Custom**
-2. **Provider**: OpenAI Compatible (or pick **Anthropic Claude** / **Google Gemini** to point Custom at those)
-3. **Endpoint URL**: your base URL, e.g. `https://api.together.xyz/v1`
-4. **API key**: as required by the endpoint
-5. **Model**: pick from the list or type it manually
-6. **Advanced** → toggle **Use old /chat/completions endpoint** if your
-   OpenAI-compatible endpoint only supports `/chat/completions`
-7. **Test Connection**, **Apply**
+Providers without a preset, such as [OpenCode](#opencode) below, are configured
+this way: pick the **Provider** whose protocol matches the model, point it at
+the right endpoint, and enable the proxy when the provider blocks browser
+requests.
 
 ::: tip Custom is the escape hatch
 If an OpenAI-compatible endpoint behaves oddly, first try toggling the legacy
 endpoint option. Most incompatibilities are protocol-level, not model-level.
+:::
+
+### OpenCode
+
+[OpenCode](https://opencode.ai) offers two access lanes with different pricing
+and endpoints:
+
+- **OpenCode Zen**: the pay-per-use gateway. Deposit a balance and pay per
+  token; there is no monthly fee. Endpoint: `https://opencode.ai/zen/v1`.
+- **OpenCode Go**: the subscription lane. A flat monthly fee with rolling
+  usage caps. Endpoint: `https://opencode.ai/zen/go/v1`.
+
+Both lanes expose models through **three different protocols**, so there is no
+single preset; configure it per model through the Custom preset instead. The
+official model list, including the endpoint protocol each model expects, lives
+at <https://opencode.ai/docs/zen/> for OpenCode Zen and at <https://opencode.ai/docs/go/> for OpenCode Go.
+
+**Setup (self-hosted only):**
+
+1. Preset: **Custom**
+2. **Provider**: pick the protocol the model speaks:
+   - **OpenAI Compatible** for models served over `/responses` or
+     `/chat/completions` (e.g. DeepSeek, GLM, Kimi)
+   - **Anthropic Claude** for models served over `/messages` (e.g. Qwen,
+     MiniMax)
+3. **Endpoint URL**: `https://opencode.ai/zen/v1` (Zen) or
+   `https://opencode.ai/zen/go/v1` (Go), base URL only; the provider appends
+   the path
+4. **API key**: create one at **https://opencode.ai/auth**
+5. **Model**: type the model id (e.g. `qwen3.8-max`). If the model list doesn't
+   load, a free-text field appears.
+6. **Advanced** → enable **Proxy API requests through this server** (OpenCode
+   does not allow browser-origin requests)
+7. For **OpenAI Compatible** models served over `/chat/completions`, enable
+   **Use old /chat/completions endpoint** in Advanced.
+8. **Test Connection**, **Apply**
+
+::: warning Browser CORS + self-hosted only
+OpenCode does **not** allow browser-origin requests, so it requires the
+proxy, which only exists on **self-hosted** deployments. On the hosted instance
+there is no proxy and OpenCode can't be reached. See
+[Compatibility](/docs/compatibility#cors-and-the-proxy) and
+[Configuration](/docs/configuration#proxy-api-requests-through-this-server).
 :::
 
 ---
@@ -202,7 +218,7 @@ Prompt caching lets your provider reuse part of the conversation across turns
 instead of reprocessing it, which cuts cost and latency on long chats. Support
 depends on the provider:
 
-- **OpenAI, DeepSeek, OpenRouter and OpenCode Zen** cache automatically, so no
+- **OpenAI, DeepSeek and OpenRouter** cache automatically, so no
   settings are needed. Other OpenAI-compatible endpoints (Ollama, Custom) may or
   may not cache depending on the gateway, and the add-in doesn't control it.
 - **Anthropic** caches the system prompt and conversation prefix server-side

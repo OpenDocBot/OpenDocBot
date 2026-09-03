@@ -161,20 +161,6 @@ describe("SettingsPanel", () => {
     expect(useSettingsStore.getState().config.proxyRequests).toBe(true);
   });
 
-  it("selecting the OpenCode Zen preset enables the proxy", async () => {
-    const user = userEvent.setup();
-    render(<SettingsPanel />);
-
-    const preset = screen.getByRole("combobox") as HTMLSelectElement;
-    await user.selectOptions(preset, "opencode");
-    await user.click(screen.getByText("Apply"));
-
-    const store = useSettingsStore.getState().config;
-    expect(store.providerId).toBe("openaicompat");
-    expect(store.baseUrl).toBe("https://opencode.ai/zen/go/v1");
-    expect(store.proxyRequests).toBe(true);
-  });
-
   it("resets reasoning effort when switching preset", async () => {
     useSettingsStore.setState({
       config: { ...useSettingsStore.getState().config, reasoningEffort: "high" },

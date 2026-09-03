@@ -23,8 +23,7 @@ The dev server exposes a same-origin `/proxy/<encoded-baseUrl>/<path>` route
 (`scripts/proxy.mjs`). To test a provider without browser CORS, open Settings →
 Advanced → **Proxy API requests through this server**. The checkbox is visible in
 dev builds and in `VITE_PROXY_ENABLED=true` production builds (Docker /
-`make serve`). The **OpenCode Go preset forces it on** and is only listed when the
-proxy is available. The `/models` fetch respects the proxy setting too.
+`make serve`). The `/models` fetch respects the proxy setting too.
 
 ### Running tests
 

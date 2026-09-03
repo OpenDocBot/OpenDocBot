@@ -48,7 +48,7 @@ If an advanced editing tool fails, check your channel version.
 
 OpenDocBot is modular and supports several AI providers. Under the hood there
 are **three providers**: **OpenAI-compatible** (used by OpenAI, DeepSeek,
-Ollama, OpenRouter, OpenCode Zen and any Custom OpenAI-compatible endpoint), **Anthropic** (Claude), and
+Ollama, OpenRouter and any Custom OpenAI-compatible endpoint), **Anthropic** (Claude), and
 **Gemini** (Google).
 
 A **preset** is just a shortcut: a provider bound to a specific endpoint and configurations. Several presets share the same provider (for example, Ollama and
@@ -59,22 +59,22 @@ Not all features are available with every provider.
 
 ### Feature matrix
 
-| Feature | OpenAI | DeepSeek | Anthropic | Gemini | Ollama | OpenRouter | OpenCode Zen | 
-|---|---|---|---|---|---|---|---|
-| Reasoning | ✅ | ✅ | ✅ | ✅ | ✅\* | ✅\* | ✅ | 
-| Reasoning effort | ✅ | ✅ | ✅ | ✅ | ❌\*\* | ⚠️\*\* | ⚠️\*\* | 
-| Token streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 
-| Prompt caching | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| Cache TTL options | - | - | 5m / 1h | rebuild size | - | - | - |
-| Legacy `/chat/completions` toggle | ✅ | ✅ | n/a | n/a | ✅ | ✅ | ✅ |
-| Model list fetching | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Feature | OpenAI | DeepSeek | Anthropic | Gemini | Ollama | OpenRouter | 
+|---|---|---|---|---|---|---|
+| Reasoning | ✅ | ✅ | ✅ | ✅ | ✅\* | ✅\* | 
+| Reasoning effort | ✅ | ✅ | ✅ | ✅ | ❌\*\* | ⚠️\*\* | 
+| Token streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 
+| Prompt caching | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Cache TTL options | - | - | 5m / 1h | rebuild size | - | - |
+| Legacy `/chat/completions` toggle | ✅ | ✅ | n/a | n/a | ✅ | ✅ |
+| Model list fetching | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 
 \* Reasoning availability depends on the underlying model; an endpoint only
 surfaces reasoning if the model emits it (e.g. `reasoning_content` for
 DeepSeek-style models).
 
 \*\* Reasoning effort depends on the model and endpoint. OpenAI/Anthropic/Gemini
-send it natively; Ollama ignores it, and OpenRouter/OpenCode Zen forward it to
+send it natively; Ollama ignores it, and OpenRouter forwards it to
 the routed model, which may or may not support it.
 
 ### Notes
@@ -92,8 +92,11 @@ the routed model, which may or may not support it.
 The add-in runs in your browser (the Office taskpane is a webview), so it can
 only reach providers that allow browser-origin requests (CORS). 
 
-To connect to providers not supporting CORS (i.e. OpenCode Zen), a request proxying functionality was added. This functionality is only available on self-hosted instances (see
-[Self-hosting](/docs/selfhosting)). For this reason, the **OpenCode Zen** preset is only available on self-hosted instances.
+To connect to providers not supporting CORS (e.g. OpenCode), a request
+proxying functionality was added. This functionality is only available on
+self-hosted instances (see [Self-hosting](/docs/selfhosting)). OpenCode has
+no preset; configure it through the **Custom** preset with the proxy enabled
+(see [Providers](/docs/providers#opencode)).
 
 | Provider | Hosted instance | Self-hosted |
 |---|---|---|
@@ -103,6 +106,7 @@ To connect to providers not supporting CORS (i.e. OpenCode Zen), a request proxy
 | Gemini | ✅ | ✅ |
 | Ollama | ✅ (any endpoint) | ✅ |
 | OpenRouter | ✅ | ✅ |
-| **OpenCode Zen** | ❌ | ✅ (via proxy) |
+| **OpenCode** | ❌ | ✅ (via proxy) |
 
-Request proxying can be turned ON/OFF via Settings => Connection => Advanced => Proxy API requests through this server . 
+Request proxying can be turned ON/OFF via Settings => Connection => Advanced =>
+Proxy API requests through this server. 

@@ -62,7 +62,7 @@ export interface ChatOptions {
   /**
    * Force the legacy `/chat/completions` endpoint instead of the Responses
    * API (`/responses`). Defaults to false; some OpenAI-compatible endpoints
-   * (e.g. Ollama, DeepSeek/OpenCode Zen) only support chat completions.
+   * (e.g. Ollama, DeepSeek/OpenCode) only support chat completions.
    */
   useLegacyChatCompletions?: boolean;
   /**

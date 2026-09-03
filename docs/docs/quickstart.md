@@ -143,7 +143,7 @@ label style."*
 ## Self-hosting
 
 If you want full control, or need the **proxy** for providers without browser
-CORS (like OpenCode Zen), you can run OpenDocBot on your own infrastructure. The
+CORS (like OpenCode), you can run OpenDocBot on your own infrastructure. The
 full guide (Docker, Node, static hosting, HTTPS/TLS certificates, the proxy and
 production manifests) is on the [Self-hosting](/docs/selfhosting) page.
 

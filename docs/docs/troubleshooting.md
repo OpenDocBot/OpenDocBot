@@ -43,11 +43,11 @@ Responses API (`/responses`). If tool calls or streaming misbehave, open
 Reasoning depends on the **model**, not the add-in:
 
 - The model must actually emit reasoning tokens (e.g. a DeepSeek-style model via
-  OpenCode Zen, Claude thinking, Gemini thought parts).
+  OpenCode, Claude thinking, Gemini thought parts).
 - Non-reasoning models produce no block, and that's expected.
 
 If reasoning used to work and stopped, check you're on the latest build; the
-OpenCode Zen stream uses `response.reasoning_text.delta`, which is handled
+OpenCode stream uses `response.reasoning_text.delta`, which is handled
 explicitly.
 
 ## The model returns an empty response

@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { isProxyEnabled } from "../../lib/proxyEnabled";
 
 export interface Preset {
   id: string;
@@ -12,7 +11,6 @@ export interface Preset {
   requiresKey: boolean;
   maxTokens: number;
   useLegacyChatCompletions: boolean;
-  proxyRequests?: boolean;
 }
 
 const ALL_PRESETS: Preset[] = [
@@ -21,28 +19,12 @@ const ALL_PRESETS: Preset[] = [
   { id: "gemini", label: "Google Gemini", providerId: "gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta", model: "gemini-3.5-flash-lite", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "deepseek", label: "DeepSeek", providerId: "openaicompat", baseUrl: "https://api.deepseek.com", model: "deepseek-v4-flash", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "openrouter", label: "OpenRouter", providerId: "openaicompat", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
-  {
-    id: "opencode",
-    label: "OpenCode Zen",
-    providerId: "openaicompat",
-    baseUrl: "https://opencode.ai/zen/go/v1",
-    model: "deepseek-v4-flash",
-    requiresKey: true,
-    maxTokens: 8192,
-    useLegacyChatCompletions: false,
-    // OpenCode Zen has no browser CORS — it can only connect through the proxy.
-    proxyRequests: true,
-  },
   { id: "ollama", label: "Ollama", providerId: "openaicompat", baseUrl: "http://localhost:11434/v1", model: "llama3.1", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "custom", label: "Custom", providerId: "openaicompat", baseUrl: "", model: "", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false },
 ];
 
-/** Presets that can actually connect in this deployment. OpenCode Zen requires
- * the proxy, so on static (non-self-hosted) builds it is hidden. */
-export function getPresets(proxyEnabled: boolean = isProxyEnabled()): Preset[] {
-  return proxyEnabled
-    ? ALL_PRESETS
-    : ALL_PRESETS.filter((p) => p.id !== "opencode");
+export function getPresets(): Preset[] {
+  return ALL_PRESETS;
 }
 
 export function matchPreset(baseUrl: string, _model: string): string {

@@ -24,44 +24,21 @@ describe("PresetSelector", () => {
     expect(select.value).toBe("openai");
   });
 
-  it("select shows opencode when values match", () => {
-    render(<PresetSelector baseUrl="https://opencode.ai/zen/go/v1" model="deepseek-v4-flash" onChange={() => {}} />);
-    const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.value).toBe("opencode");
-  });
-
   it("select shows deepseek when its endpoint is pasted", () => {
     render(<PresetSelector baseUrl="https://api.deepseek.com" model="deepseek-v4-flash" onChange={() => {}} />);
     const select = screen.getByRole("combobox") as HTMLSelectElement;
     expect(select.value).toBe("deepseek");
   });
 
-  it("has 8 options", () => {
+  it("has 7 options", () => {
     render(<PresetSelector baseUrl="" model="" onChange={() => {}} />);
     const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.options.length).toBe(8);
+    expect(select.options.length).toBe(7);
   });
 
-  it("orders presets by popularity (OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter, OpenCode, Ollama, Custom)", () => {
+  it("orders presets by popularity (OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter, Ollama, Custom)", () => {
     const ids = getPresets().map((p) => p.id);
-    expect(ids).toEqual(["openai", "anthropic", "gemini", "deepseek", "openrouter", "opencode", "ollama", "custom"]);
-  });
-
-  it("hides OpenCode Zen on static builds (proxy disabled)", () => {
-    const presets = getPresets(false);
-    expect(presets.find((p) => p.id === "opencode")).toBeUndefined();
-    expect(presets.length).toBe(7);
-  });
-
-  it("includes OpenCode Zen on self-hosted builds (proxy enabled)", () => {
-    const presets = getPresets(true);
-    expect(presets.find((p) => p.id === "opencode")).toBeDefined();
-    expect(presets.length).toBe(8);
-  });
-
-  it("OpenCode Zen preset always forces proxyRequests on", () => {
-    const preset = getPreset("opencode");
-    expect(preset?.proxyRequests).toBe(true);
+    expect(ids).toEqual(["openai", "anthropic", "gemini", "deepseek", "openrouter", "ollama", "custom"]);
   });
 
   it("DeepSeek preset mirrors OpenAI but points at api.deepseek.com", () => {

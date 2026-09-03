@@ -2,7 +2,7 @@
 /**
  * Integration tests for tool calling with real providers.
  *
- * Every provider (OpenAI-compatible / OpenCode Zen, Gemini, Anthropic) is run
+ * Every provider (OpenAI-compatible / OpenCode, Gemini, Anthropic) is run
  * against the tool set of every host (Word, Excel, PowerPoint). This catches
  * provider-side schema regressions — e.g. a JSON-Schema construct that one
  * provider accepts and another rejects (see write_range's union type).
@@ -93,18 +93,18 @@ async function mockExecuteTool(name: string): Promise<string> {
   }
 }
 
-// --- OpenAI-compatible (OpenCode Zen) ---
+// --- OpenAI-compatible (OpenCode) ---
 
 for (const host of HOSTS) {
   const prompts = HOST_PROMPTS[host];
   const hostTools = getTestTools(host);
 
   for (const MODEL of ALL_MODELS) {
-    describe(`OpenCode Zen — ${MODEL} — ${host}`, () => {
+    describe(`OpenCode — ${MODEL} — ${host}`, () => {
       (opencodeShouldRun ? it.concurrent : it.skip)(
         "emits tool calls via delta.tool_calls",
         async () => {
-          const provider = new OpenAICompatibleProvider("opencode", "OpenCode Zen", true, MODEL);
+          const provider = new OpenAICompatibleProvider("opencode", "OpenCode", true, MODEL);
           const properCalls: ToolCallRequest[] = [];
 
           await provider.chatStream(
@@ -130,7 +130,7 @@ for (const host of HOSTS) {
       (opencodeShouldRun ? it.concurrent : it.skip)(
         "emits tool calls (any format: proper or XML)",
         async () => {
-          const provider = new OpenAICompatibleProvider("opencode", "OpenCode Zen", true, MODEL);
+          const provider = new OpenAICompatibleProvider("opencode", "OpenCode", true, MODEL);
           const parser = new StreamToolParser();
           const properCalls: ToolCallRequest[] = [];
 
@@ -164,7 +164,7 @@ for (const host of HOSTS) {
       (opencodeShouldRun ? it.concurrent : it.skip)(
         "full loop: call tool → execute → model responds",
         async () => {
-          const provider = new OpenAICompatibleProvider("opencode", "OpenCode Zen", true, MODEL);
+          const provider = new OpenAICompatibleProvider("opencode", "OpenCode", true, MODEL);
           const parser = new StreamToolParser();
           let properCalls: ToolCallRequest[] = [];
           let textContent = "";

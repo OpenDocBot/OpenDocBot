@@ -45,7 +45,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
   }
 
   flushCache(): void {
-    // OpenAI/OpenRouter/OpenCode Zen cache automatically; nothing to flush.
+    // OpenAI/OpenRouter/OpenCode cache automatically; nothing to flush.
   }
 
   async chat(
