@@ -123,6 +123,16 @@ div[class*="language-"]::before {
   letter-spacing: 0.05em;
 }
 
+/* --- embedded videos: fluid 16:9 iframes ------------------------------- */
+.vp-doc iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+}
+
 /* --- tables -------------------------------------------------------------- */
 .vp-doc table {
   border-collapse: collapse;

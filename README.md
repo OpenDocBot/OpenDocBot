@@ -54,7 +54,7 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 
 \* *Reasoning availability depends on the underlying model.*  
 \*\* *Reasoning effort depends on endpoint support.*  
-\*\*\* *No one-click preset: configure OpenCode via the **Custom** preset. See [here](https://opendocbot.com/docs/providers#opencode)*
+\*\*\* *No one-click preset: configure OpenCode via the **Custom** preset. See [here](https://opendocbot.com/docs/providers#opencode).*
 
 ## Quickstart
 
