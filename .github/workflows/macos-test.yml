@@ -1,0 +1,78 @@
+# One-off manual testing of the OpenDocBot add-in on a real macOS desktop.
+#
+# Runs Microsoft 365 (Word) + our sideload script on a GitHub-hosted macOS
+# runner and exposes the screen over VNC (ngrok TCP tunnel) so you can sign in
+# and test the add-in by hand. Requires two repo secrets:
+#   - NGROK_AUTH_TOKEN (free account at https://ngrok.com)
+#   - VNC_PASSWORD     (password for the vncuser account / VNC login)
+#
+# Usage: Actions > "macOS Test (VNC)" > Run workflow, then connect your VNC
+# client to the address printed in the log (user: vncuser). Cancel the
+# workflow when done to free the runner.
+
+name: macOS Test (VNC)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  macos-vnc:
+    runs-on: macos-latest
+    timeout-minutes: 360
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Microsoft Office (M365)
+        timeout-minutes: 30
+        run: brew install --cask microsoft-office
+
+      # Pre-seed the sideload manifest into Word/Excel/PowerPoint. Word's
+      # container is created on first launch, so if Word never ran the wef
+      # folder can be re-seeded by re-running sideload.sh after first launch.
+      - name: Sideload the add-in (pre-seed)
+        run: curl -fsSL https://opendocbot.com/sideload.sh | bash
+
+      - name: Create VNC user + enable Screen Sharing
+        env:
+          VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
+        run: |
+          sudo dscl . -create /Users/vncuser
+          sudo dscl . -create /Users/vncuser UserShell /bin/bash
+          sudo dscl . -create /Users/vncuser RealName "VNC User"
+          sudo dscl . -create /Users/vncuser UniqueID 1001
+          sudo dscl . -create /Users/vncuser PrimaryGroupID 80
+          sudo dscl . -create /Users/vncuser NFSHomeDirectory /Users/vncuser
+          sudo dscl . -passwd /Users/vncuser "$VNC_PASSWORD"
+          sudo createhomedir -c -u vncuser > /dev/null
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
+
+      # macOS 10.14+ only honors the VNC password written into this prefs file
+      # (the -setvncpw flag alone is ignored), so encode it manually.
+      - name: Set VNC password (prefs-encoded)
+        env:
+          VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
+        run: |
+          echo "$VNC_PASSWORD" | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
+
+      - name: Start ngrok TCP tunnel -> :5900
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          brew install --cask ngrok
+          ngrok authtoken "$NGROK_AUTH_TOKEN"
+          nohup ngrok tcp 5900 --log stdout > /tmp/ngrok.log 2>&1 &
+          sleep 8
+          ADDR=$(grep -oE 'tcp://[0-9a-zA-Z.-]+\.tcp\.ngrok\.io:[0-9]+' /tmp/ngrok.log | head -1)
+          echo "VNC_ADDRESS=$ADDR"
+          echo "Connect any VNC client to the address above."
+          echo "Username: vncuser | Password: your VNC_PASSWORD secret."
+          echo "Then sign in to Word, open Home > Add-ins > OpenDocBot and test."
+
+      # Blocks until you disconnect; the workflow ends and the runner is
+      # recycled. Alternatively cancel the workflow when done.
+      - name: Keep alive (Cancel workflow when done)
+        uses: mxschmitt/action-tmate@v3
