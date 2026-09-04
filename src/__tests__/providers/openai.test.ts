@@ -396,6 +396,84 @@ describe("chat — message serialization", () => {
     );
     expect(body.messages).toHaveLength(4);
   });
+
+  it("echoes reasoning_content when an assistant message carries it", async () => {
+    const fetchMock = mockFetchOk({
+      id: "x",
+      choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
+    });
+    const msg: LLMMessage = {
+      role: "assistant",
+      content: "answer",
+      reasoningContent: "thinking step",
+    };
+    await provider.chat([msg], [], {
+      apiKey: "sk-test",
+      model: "gpt-4o",
+    });
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body.messages[0].reasoning_content).toBe("thinking step");
+  });
+
+  it("omits reasoning_content when absent and echo is off", async () => {
+    const fetchMock = mockFetchOk({
+      id: "x",
+      choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
+    });
+    await provider.chat([{ role: "assistant", content: "answer" }], [], {
+      apiKey: "sk-test",
+      model: "gpt-4o",
+    });
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body.messages[0].reasoning_content).toBeUndefined();
+  });
+
+  it("injects empty reasoning_content on every assistant message when echo is on", async () => {
+    const fetchMock = mockFetchOk({
+      id: "x",
+      choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
+    });
+    const messages: LLMMessage[] = [
+      { role: "assistant", content: "plain answer, no reasoning captured" },
+      { role: "user", content: "continue" },
+      { role: "assistant", content: "another", reasoningContent: "thought" },
+    ];
+    await provider.chat(messages, [], {
+      apiKey: "sk-test",
+      model: "deepseek-v4-flash",
+      echoReasoningContent: true,
+    });
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body.messages[0].reasoning_content).toBe("");
+    expect(body.messages[2].reasoning_content).toBe("thought");
+  });
+
+  it("does not add reasoning_content to non-assistant messages when echo is on", async () => {
+    const fetchMock = mockFetchOk({
+      id: "x",
+      choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
+    });
+    const messages: LLMMessage[] = [
+      { role: "user", content: "Hi" },
+      { role: "tool", content: "ok", tool_call_id: "call_1", name: "t" },
+    ];
+    await provider.chat(messages, [], {
+      apiKey: "sk-test",
+      model: "deepseek-v4-flash",
+      echoReasoningContent: true,
+    });
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0][1] as RequestInit).body as string
+    );
+    expect(body.messages[0].reasoning_content).toBeUndefined();
+    expect(body.messages[1].reasoning_content).toBeUndefined();
+  });
 });
 
 // =========================================================================
@@ -1293,6 +1371,25 @@ describe("chatStream", () => {
     expect(req.method).toBe("POST");
     const body = JSON.parse(req.body as string);
     expect(body.stream).toBe(true);
+  });
+
+  it("emits reasoning tokens for empty reasoning_content (DeepSeek thinking mode)", async () => {
+    const reasoning: string[] = [];
+    mockSSEFetch([
+      'data: {"choices":[{"delta":{"reasoning_content":""}}]}\n\n',
+      'data: {"choices":[{"delta":{"content":"answer"}}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+
+    await provider.chatStream(
+      [{ role: "user", content: "Hi" }],
+      () => {},
+      () => {},
+      [],      { apiKey: "sk-test", model: "deepseek-v4-flash" },
+      (r) => reasoning.push(r)
+    );
+
+    expect(reasoning).toEqual([""]);
   });
 });
 

@@ -699,6 +699,7 @@ export async function runAgentLoop(
     const parser = new StreamToolParser();
     const properToolCalls: ToolCallRequest[] = [];
     let lastDisplayed = 0;
+    const reasoning = { received: false, text: "" };
 
     await provider.chatStream(
       messages,
@@ -716,7 +717,11 @@ export async function runAgentLoop(
       },
       tools,
       chatOptions,
-      callbacks.onReasoningToken,
+      (token) => {
+        reasoning.received = true;
+        reasoning.text += token;
+        callbacks.onReasoningToken?.(token);
+      },
       callbacks.onProviderFinish
     );
 
@@ -756,6 +761,7 @@ export async function runAgentLoop(
         role: "assistant",
         content: content || null,
         tool_calls: deduped,
+        ...(reasoning.received ? { reasoningContent: reasoning.text } : {}),
       });
       callbacks.onHistoryChange?.(messages);
 

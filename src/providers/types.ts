@@ -4,6 +4,13 @@ export interface LLMMessage {
   tool_call_id?: string;
   name?: string;
   tool_calls?: ToolCallRequest[];
+  /**
+   * Chain-of-thought captured from an assistant turn (OpenAI-compatible
+   * `reasoning_content`). Providers with thinking mode (DeepSeek) require it
+   * to be echoed back verbatim on every assistant message in subsequent
+   * requests, so this field is stored on history messages and re-serialized.
+   */
+  reasoningContent?: string;
 }
 
 export interface ToolCallRequest {
@@ -89,6 +96,13 @@ export interface ChatOptions {
    * on top of the provider's own headers, which always take precedence.
    */
   customHeaders?: Record<string, string>;
+  /**
+   * Echo `reasoning_content` on every assistant message (empty string when no
+   * reasoning was captured). Required by DeepSeek thinking mode: once the
+   * conversation carries the `tools` parameter, ALL assistant messages must
+   * include the field or the API returns 400. Enabled for the DeepSeek preset.
+   */
+  echoReasoningContent?: boolean;
 }
 
 export interface LLMProvider {

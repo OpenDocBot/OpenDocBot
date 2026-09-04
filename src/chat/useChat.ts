@@ -132,6 +132,9 @@ export function useChat() {
           proxyRequests: settings.proxyRequests,
           cacheTtl: settings.anthropicCacheTtl,
           customHeaders,
+          // DeepSeek thinking mode requires reasoning_content echoed back on
+          // every assistant message; the DeepSeek preset enables the echo.
+          echoReasoningContent: settings.presetId === "deepseek",
         }, {
           onReasoningToken: (token) => {
             reasoningBuffer += token;

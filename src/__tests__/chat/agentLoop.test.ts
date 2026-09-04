@@ -6,29 +6,39 @@ import type { LLMProvider, ModelInfo, LLMMessage, ToolCallRequest, ToolDefinitio
 
 interface StreamStep {
   content?: string | null;
+  reasoning?: string;
   toolCalls?: ToolCallRequest[];
 }
 
-function createMockProvider(steps: StreamStep[]): LLMProvider {
+function createMockProvider(steps: StreamStep[]): LLMProvider & { received: LLMMessage[][] } {
   let callIndex = 0;
-  return {
+  const received: LLMMessage[][] = [];
+  const provider: LLMProvider & { received: LLMMessage[][] } = {
+    received,
     id: "mock", label: "Mock", requiresKey: false, defaultModel: "mock",
     async listModels(): Promise<ModelInfo[]> { return []; },
     async chat() { throw new Error("not used"); },
     async chatStream(
-      _messages: LLMMessage[],
+      messages: LLMMessage[],
       onToken: (token: string) => void,
       onToolCall: (toolCall: ToolCallRequest) => void,
       _tools: ToolDefinition[],
-      _options: ChatOptions
+      _options: ChatOptions,
+      onReasoningToken?: (token: string) => void
     ): Promise<void> {
+      received.push(messages);
       const step = steps[callIndex] ?? { content: "Fallback" };
       callIndex++;
+      const reasoning = step.reasoning ?? "";
+      if (reasoning) {
+        for (const char of [...reasoning]) onReasoningToken?.(char);
+      }
       const content = step.content ?? "";
       for (const char of [...content]) onToken(char);
       if (step.toolCalls) for (const tc of step.toolCalls) onToolCall(tc);
     },
   };
+  return provider;
 }
 
 const opts = { apiKey: "", model: "mock", maxTokens: 100 };
@@ -217,6 +227,44 @@ describe("runAgentLoop — tool execution", () => {
     await runAgentLoop(p, "test", opts, { onToolStart: (n) => starts.push(n), onToolEnd: () => ends++ });
     expect(starts).toEqual(["test_tool"]);
     expect(ends).toBe(1);
+  });
+});
+
+describe("runAgentLoop — reasoning round-trip (DeepSeek thinking mode)", () => {
+  it("attaches reasoningContent to the assistant message for the next iteration", async () => {
+    const p = createMockProvider([
+      { reasoning: "think step", toolCalls: [{ id: "c1", type: "function", function: { name: "test_tool", arguments: "{}" } }] },
+      { content: "Done" },
+    ]);
+    const r = await runAgentLoop(p, "run", opts);
+    expect(r.iterations).toBe(2);
+
+    const secondCallMessages = p.received[1];
+    const assistant = secondCallMessages.find((m) => m.role === "assistant");
+    expect(assistant?.reasoningContent).toBe("think step");
+  });
+
+  it("leaves reasoningContent undefined when the provider emits no reasoning", async () => {
+    const p = createMockProvider([
+      { toolCalls: [{ id: "c1", type: "function", function: { name: "test_tool", arguments: "{}" } }] },
+      { content: "Done" },
+    ]);
+    const r = await runAgentLoop(p, "run", opts);
+    expect(r.iterations).toBe(2);
+
+    const secondCallMessages = p.received[1];
+    const assistant = secondCallMessages.find((m) => m.role === "assistant");
+    expect(assistant?.reasoningContent).toBeUndefined();
+  });
+
+  it("forwards reasoning tokens to the UI callback", async () => {
+    const p = createMockProvider([{ reasoning: "abc", content: "done" }]);
+    const reasoningTokens: string[] = [];
+    const r = await runAgentLoop(p, "run", opts, {
+      onReasoningToken: (t) => reasoningTokens.push(t),
+    });
+    expect(r.content).toBe("done");
+    expect(reasoningTokens.join("")).toBe("abc");
   });
 });
 

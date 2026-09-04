@@ -47,7 +47,7 @@ describe("PresetSelector", () => {
     expect(preset?.model).toBe("deepseek-v4-flash");
     expect(preset?.providerId).toBe("openaicompat");
     expect(preset?.requiresKey).toBe(true);
-    expect(preset?.useLegacyChatCompletions).toBe(false);
+    expect(preset?.useLegacyChatCompletions).toBe(true);
     expect(preset?.maxTokens).toBe(8192);
   });
 

@@ -73,7 +73,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
     const body: Record<string, unknown> = {
       model: options.model,
-      messages: messages.map(serializeOutbound),
+      messages: messages.map((m) => serializeOutbound(m, options)),
       max_completion_tokens: options.maxTokens ?? 4096,
     };
 
@@ -201,7 +201,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
     const body: Record<string, unknown> = {
       model: options.model,
-      messages: messages.map(serializeOutbound),
+      messages: messages.map((m) => serializeOutbound(m, options)),
       stream: true,
       max_completion_tokens: options.maxTokens ?? 4096,
       stream_options: { include_usage: true },
@@ -247,7 +247,9 @@ export class OpenAICompatibleProvider implements LLMProvider {
             const delta = choice.delta;
             if (!delta) continue;
 
-            if (onReasoningToken && delta.reasoning_content) {
+            if (onReasoningToken && "reasoning_content" in delta) {
+              // DeepSeek thinking mode may emit an empty reasoning_content on
+              // tool-call turns; it is still meaningful and must be echoed.
               onReasoningToken(delta.reasoning_content as string);
             }
 
@@ -492,7 +494,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
   }
 }
 
-function serializeOutbound(msg: LLMMessage): Record<string, unknown> {
+function serializeOutbound(
+  msg: LLMMessage,
+  options: Pick<ChatOptions, "echoReasoningContent">
+): Record<string, unknown> {
   const out: Record<string, unknown> = {
     role: msg.role,
     content: msg.content,
@@ -513,6 +518,15 @@ function serializeOutbound(msg: LLMMessage): Record<string, unknown> {
         arguments: tc.function.arguments,
       },
     }));
+  }
+
+  // DeepSeek thinking mode requires `reasoning_content` on every assistant
+  // message once the request carries `tools`; echo verbatim (or `""` when a
+  // message predates reasoning capture, e.g. a provider switch mid-session).
+  if (options.echoReasoningContent && msg.role === "assistant") {
+    out.reasoning_content = msg.reasoningContent ?? "";
+  } else if (msg.reasoningContent !== undefined) {
+    out.reasoning_content = msg.reasoningContent;
   }
 
   return out;

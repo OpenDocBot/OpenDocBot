@@ -17,7 +17,7 @@ const ALL_PRESETS: Preset[] = [
   { id: "openai", label: "OpenAI", providerId: "openaicompat", baseUrl: "https://api.openai.com/v1", model: "gpt-5.6-luna", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "anthropic", label: "Anthropic Claude", providerId: "anthropic", baseUrl: "https://api.anthropic.com/v1", model: "claude-haiku-4-5", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "gemini", label: "Google Gemini", providerId: "gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta", model: "gemini-3.5-flash-lite", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
-  { id: "deepseek", label: "DeepSeek", providerId: "openaicompat", baseUrl: "https://api.deepseek.com", model: "deepseek-v4-flash", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
+  { id: "deepseek", label: "DeepSeek", providerId: "openaicompat", baseUrl: "https://api.deepseek.com", model: "deepseek-v4-flash", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: true },
   { id: "openrouter", label: "OpenRouter", providerId: "openaicompat", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "ollama", label: "Ollama", providerId: "openaicompat", baseUrl: "http://localhost:11434/v1", model: "llama3.1", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "custom", label: "Custom", providerId: "openaicompat", baseUrl: "", model: "", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false },

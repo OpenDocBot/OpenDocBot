@@ -8,7 +8,7 @@
  * provider accepts and another rejects (see write_range's union type).
  *
  * Run with:
- *   OPENCODE_API_KEY=sk-... OPENAI_API_KEY=... GEMINI_API_KEY=... ANTHROPIC_API_KEY=... \
+ *   OPENCODE_API_KEY=sk-... OPENAI_API_KEY=... GEMINI_API_KEY=... ANTHROPIC_API_KEY=... DEEPSEEK_API_KEY=... \
  *     npm test -- src/__tests__/providers/integration.test.ts
  *
  * Each provider's suite is skipped when its key is not set (CI-safe).
@@ -26,6 +26,7 @@ const OPENCODE_API_KEY = process.env.OPENCODE_API_KEY || "";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
 const BASE_URL = "https://opencode.ai/zen/go/v1";
 const TIMEOUT = 120000;
 
@@ -54,6 +55,7 @@ const opencodeShouldRun = !!OPENCODE_API_KEY;
 const openaiShouldRun = !!OPENAI_API_KEY;
 const geminiShouldRun = !!GEMINI_API_KEY;
 const anthropicShouldRun = !!ANTHROPIC_API_KEY;
+const deepseekShouldRun = !!DEEPSEEK_API_KEY;
 
 function getTestTools(host: string): ToolDefinition[] {
   // Match the agent loop: only expose tools for the current host.
@@ -306,6 +308,156 @@ for (const host of HOSTS) {
           toolNames.length,
           `${host}: Tool calls via streaming: ${toolNames.join(", ") || "none"}`
         ).toBeGreaterThan(0);
+      },
+      TIMEOUT
+    );
+  });
+}
+
+// --- DeepSeek ---
+
+const DEEPSEEK_MODEL = "deepseek-v4-flash";
+
+for (const host of HOSTS) {
+  const prompts = HOST_PROMPTS[host];
+  const hostTools = getTestTools(host);
+
+  // Mirrors the DeepSeek preset: legacy chat completions + reasoning echo
+  // (thinking mode requires reasoning_content on every assistant message).
+  const deepseekOpts = {
+    apiKey: DEEPSEEK_API_KEY,
+    model: DEEPSEEK_MODEL,
+    maxTokens: 4096,
+    baseUrl: "https://api.deepseek.com",
+    useLegacyChatCompletions: true,
+    echoReasoningContent: true,
+  };
+
+  describe(`DeepSeek — ${host}`, () => {
+    (deepseekShouldRun ? it.concurrent : it.skip)(
+      "emits tool calls (non-streaming chat)",
+      async () => {
+        const provider = new OpenAICompatibleProvider("deepseek", "DeepSeek", true, DEEPSEEK_MODEL);
+        const response = await provider.chat(
+          [
+            { role: "system", content: prompts.system },
+            { role: "user", content: prompts.user },
+          ],
+          hostTools,
+          deepseekOpts
+        );
+
+        expect(
+          response.toolCalls.length,
+          `${host}: Tool calls: ${response.toolCalls.map(c => c.function.name).join(", ") || "none"}`
+        ).toBeGreaterThan(0);
+      },
+      TIMEOUT
+    );
+
+    (deepseekShouldRun ? it.concurrent : it.skip)(
+      "emits tool calls (streaming)",
+      async () => {
+        const provider = new OpenAICompatibleProvider("deepseek", "DeepSeek", true, DEEPSEEK_MODEL);
+        const properCalls: ToolCallRequest[] = [];
+
+        await provider.chatStream(
+          [
+            { role: "system", content: prompts.system },
+            { role: "user", content: prompts.user },
+          ],
+          () => {},
+          (tc) => { properCalls.push(tc); },
+          hostTools,
+          deepseekOpts
+        );
+
+        const toolNames = properCalls.map(c => c.function.name);
+        expect(
+          toolNames.length,
+          `${host}: Tool calls via streaming: ${toolNames.join(", ") || "none"}`
+        ).toBeGreaterThan(0);
+      },
+      TIMEOUT
+    );
+
+    (deepseekShouldRun ? it.concurrent : it.skip)(
+      "full loop: echo reasoning_content across tool calls (thinking mode)",
+      async () => {
+        const provider = new OpenAICompatibleProvider("deepseek", "DeepSeek", true, DEEPSEEK_MODEL);
+        const parser = new StreamToolParser();
+        let properCalls: ToolCallRequest[] = [];
+        let textContent = "";
+        let reasoningText = "";
+
+        const messages: Array<Record<string, unknown>> = [
+          { role: "system", content: prompts.system },
+          { role: "user", content: prompts.user },
+        ];
+
+        // Step 1: model thinks and calls a tool
+        await provider.chatStream(
+          messages as any,
+          (token) => { parser.feed(token); textContent += token; },
+          (tc) => { properCalls.push(tc); },
+          hostTools,
+          deepseekOpts,
+          (token) => { reasoningText += token; }
+        );
+
+        const synthNames = parser.getCapturedTools();
+        const knownNames = new Set(toolRegistry.listNames());
+        const synthCalls = synthNames
+          .filter((n) => knownNames.has(n))
+          .map((n) => makeToolCall(n));
+
+        const allCalls = [...properCalls];
+        for (const sc of synthCalls) {
+          if (!allCalls.some((c) => c.function.name === sc.function.name)) {
+            allCalls.push(sc);
+          }
+        }
+
+        expect(
+          allCalls.length,
+          `${host}: Model did not call any tool in step 1`
+        ).toBeGreaterThan(0);
+
+        // Step 2: execute tools; echo reasoning_content verbatim. DeepSeek
+        // returns 400 if the assistant message lacks it.
+        messages.push({
+          role: "assistant",
+          content: textContent || null,
+          tool_calls: allCalls,
+          reasoningContent: reasoningText,
+        });
+
+        for (const tc of allCalls) {
+          const result = await mockExecuteTool(tc.function.name);
+          messages.push({
+            role: "tool", content: result,
+            tool_call_id: tc.id, name: tc.function.name,
+          });
+        }
+
+        // Step 3: model continues
+        parser.reset();
+        properCalls = [];
+        textContent = "";
+        await provider.chatStream(
+          messages as any,
+          (token) => { parser.feed(token); textContent += token; },
+          (tc) => { properCalls.push(tc); },
+          hostTools,
+          deepseekOpts,
+          (token) => { reasoningText += token; }
+        );
+
+        const responded = textContent.length > 0 || properCalls.length > 0;
+        expect(
+          responded,
+          `${host}: Model stalled after tool result (no text, no tool calls)`
+        ).toBe(true);
       },
       TIMEOUT
     );
