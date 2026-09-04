@@ -161,6 +161,22 @@ describe("SettingsPanel", () => {
     expect(useSettingsStore.getState().config.proxyRequests).toBe(true);
   });
 
+  it("hides Custom Headers for non-custom presets", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+    await user.click(screen.getByText("Advanced"));
+    expect(screen.queryByText("Custom Headers")).toBeNull();
+  });
+
+  it("shows Custom Headers only for the Custom preset", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "custom");
+    await user.click(screen.getByText("Advanced"));
+    expect(screen.getByText("Custom Headers")).toBeDefined();
+  });
+
   it("resets reasoning effort when switching preset", async () => {
     useSettingsStore.setState({
       config: { ...useSettingsStore.getState().config, reasoningEffort: "high" },

@@ -1,6 +1,6 @@
 ---
 title: Features
-description: Human-in-the-loop approval, prompt caching, reasoning effort, follow-up questions, and more OpenDocBot capabilities.
+description: Human-in-the-loop approval, prompt caching, reasoning effort, custom headers, follow-up questions, and more OpenDocBot capabilities.
 ---
 
 # Features
@@ -122,14 +122,40 @@ cards** via the `ask_user_question` tool instead of guessing:
 Long conversations repeat a large system prompt + history prefix. Where the
 provider supports it, OpenDocBot enables server-side caching automatically to
 cut cost and latency. Support and settings differ per provider; see
-[Providers](/docs/providers#prompt-caching) for the general explanation and
+[Providers](/docs/providers/#prompt-caching) for the general explanation and
 [Configuration](/docs/configuration#prompt-caching) for the settings.
+
+## Custom headers
+
+Gateways and model providers sometimes expect extra HTTP headers. With the
+**Custom** preset you can add any key/value pair in **Settings → Advanced →
+Custom Headers**. Headers are only sent when the Custom preset is active, so
+they never leak to other presets. The provider's own authentication headers
+always take precedence, so custom headers can't break signing in.
+
+Values support variables, resolved per request:
+
+| Variable | Value |
+|---|---|
+| `$SESSION_ID` | Stable id for the current conversation. Survives reloads and is regenerated when you clear the chat. |
+| `$RANDOM` | A fresh UUID per request. |
+| `$TIMESTAMP` | Unix milliseconds of the request. |
+| `$MODEL` | The configured model. |
+| `$HOST` | The Office host: `word`, `excel` or `powerpoint`. |
+| `$VERSION` | The add-in version. |
+| `$BASE_URL` | The configured endpoint. |
+
+The main use case is **OpenCode**: add `x-opencode-session` with value
+`$SESSION_ID`. OpenCode uses it to identify the conversation and enable prompt
+caching; requests without it may fail. See
+[OpenCode](/docs/providers/opencode).
 
 ## Debug export
 
 One click copies the whole session for troubleshooting:
 
-- A **markdown export** (`# OpenDocBot Debug Export`) with message counts
+- A **markdown export** (`# OpenDocBot Debug Export`) with message counts,
+  provider/preset and the configured custom header names
 - The full **debug log** (timestamps, provider cache info, tool traces)
 - Every user/assistant message, with reasoning in a `<details>` block and tool
   calls with (truncated) arguments

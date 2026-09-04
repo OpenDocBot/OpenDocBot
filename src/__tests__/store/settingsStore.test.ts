@@ -18,6 +18,7 @@ anthropicCacheTtl: "5m",
   humanInTheLoop: false,
   maxIterations: 100,
   customInstructions: "",
+  customHeaders: {},
 } as const;
 
 function resetStore() {
@@ -54,6 +55,7 @@ anthropicCacheTtl: "5m",
   humanInTheLoop: false,
   maxIterations: 100,
   customInstructions: "",
+  customHeaders: {},
     });
   });
 });
@@ -149,6 +151,16 @@ describe("settingsStore — setters", () => {
     );
     useSettingsStore.getState().setCustomInstructions("");
     expect(useSettingsStore.getState().config.customInstructions).toBe("");
+  });
+
+  it("setCustomHeaders updates correctly and defaults to empty", () => {
+    expect(useSettingsStore.getState().config.customHeaders).toEqual({});
+    useSettingsStore.getState().setCustomHeaders({ "x-opencode-session": "$SESSION_ID" });
+    expect(useSettingsStore.getState().config.customHeaders).toEqual({
+      "x-opencode-session": "$SESSION_ID",
+    });
+    useSettingsStore.getState().setCustomHeaders({});
+    expect(useSettingsStore.getState().config.customHeaders).toEqual({});
   });
 });
 

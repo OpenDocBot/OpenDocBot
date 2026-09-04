@@ -10,6 +10,7 @@ import type {
 import { fetchSSE } from "../lib/fetchSSE";
 import { debugLog } from "../lib/debugLog";
 import { buildRequestUrl } from "./proxyUrl";
+import { withCustomHeaders } from "../lib/customHeaders";
 
 /** Responses API minimum for max_output_tokens (enforced by OpenAI). */
 const MIN_RESPONSES_OUTPUT_TOKENS = 16;
@@ -86,10 +87,14 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
     const res = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${options.apiKey}`,
-      },
+      headers: withCustomHeaders(
+        {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${options.apiKey}`,
+        },
+        options.customHeaders,
+        { model: options.model, baseUrl: options.baseUrl }
+      ),
       body: JSON.stringify(body),
     });
 
@@ -137,10 +142,14 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
     const res = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${options.apiKey}`,
-      },
+      headers: withCustomHeaders(
+        {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${options.apiKey}`,
+        },
+        options.customHeaders,
+        { model: options.model, baseUrl: options.baseUrl }
+      ),
       body: JSON.stringify(body),
       signal: options.signal,
     });
@@ -214,7 +223,11 @@ export class OpenAICompatibleProvider implements LLMProvider {
       fetchSSE(
         url,
         body,
-        { Authorization: `Bearer ${options.apiKey}` },
+        withCustomHeaders(
+          { Authorization: `Bearer ${options.apiKey}` },
+          options.customHeaders,
+          { model: options.model, baseUrl: options.baseUrl }
+        ),
         (chunk) => {
           const usage = chunk.usage as Usage | undefined;
           if (usage && typeof usage.prompt_tokens === "number") {
@@ -337,7 +350,11 @@ export class OpenAICompatibleProvider implements LLMProvider {
       fetchSSE(
         url,
         body,
-        { Authorization: `Bearer ${options.apiKey}` },
+        withCustomHeaders(
+          { Authorization: `Bearer ${options.apiKey}` },
+          options.customHeaders,
+          { model: options.model, baseUrl: options.baseUrl }
+        ),
         (chunk) => {
           const type = chunk.type as string;
 

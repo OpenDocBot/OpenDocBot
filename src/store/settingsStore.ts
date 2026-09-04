@@ -26,6 +26,8 @@ export interface ProviderConfig {
   maxIterations: number;
   /** Persistent instructions injected into the agent's system prompt on every turn. */
   customInstructions: string;
+  /** Custom HTTP headers for the Custom preset (values may contain $VAR tokens). */
+  customHeaders?: Record<string, string>;
 }
 
 interface SettingsState {
@@ -45,6 +47,7 @@ interface SettingsState {
   setHumanInTheLoop: (value: boolean) => void;
   setMaxIterations: (value: number) => void;
   setCustomInstructions: (value: string) => void;
+  setCustomHeaders: (value: Record<string, string>) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -65,6 +68,7 @@ export const useSettingsStore = create<SettingsState>()(
         humanInTheLoop: false,
         maxIterations: 100,
         customInstructions: "",
+        customHeaders: {},
       },
 
       setPresetId: (id) =>
@@ -111,6 +115,9 @@ export const useSettingsStore = create<SettingsState>()(
 
       setCustomInstructions: (customInstructions) =>
         set((s) => ({ config: { ...s.config, customInstructions } })),
+
+      setCustomHeaders: (customHeaders) =>
+        set((s) => ({ config: { ...s.config, customHeaders } })),
     }),
     {
       name: "opendocbot-settings",

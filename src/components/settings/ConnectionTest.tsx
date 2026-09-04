@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { type ProviderConfig } from "../../store/settingsStore";
 import { getProvider } from "../../providers/registry";
+import { getPresetInfo } from "../../lib/effectiveConfig";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -23,6 +24,11 @@ export function ConnectionTest({ config }: ConnectionTestProps) {
     }
 
     const provider = getProvider(config.providerId);
+    // Custom headers only apply to the Custom preset (matches useChat).
+    const customHeaders =
+      getPresetInfo(config).presetId === "custom"
+        ? config.customHeaders
+        : undefined;
 
     setStatus("testing");
     setLatency(null);
@@ -42,6 +48,7 @@ export function ConnectionTest({ config }: ConnectionTestProps) {
           reasoningEffort: config.reasoningEffort,
           proxyRequests: config.proxyRequests,
           cacheTtl: config.anthropicCacheTtl,
+          customHeaders,
         }
       );
       setLatency(Math.round(performance.now() - start));

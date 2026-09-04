@@ -96,7 +96,7 @@ To connect to providers not supporting CORS (e.g. OpenCode), a request
 proxying functionality was added. This functionality is only available on
 self-hosted instances (see [Self-hosting](/docs/selfhosting)). OpenCode has
 no preset; configure it through the **Custom** preset with the proxy enabled
-(see [Providers](/docs/providers#opencode)).
+(see [OpenCode](/docs/providers/opencode)).
 
 | Provider | Hosted instance | Self-hosted |
 |---|---|---|
@@ -108,5 +108,5 @@ no preset; configure it through the **Custom** preset with the proxy enabled
 | OpenRouter | ✅ | ✅ |
 | **OpenCode** | ❌ | ✅ (via proxy) |
 
-Request proxying can be turned ON/OFF via Settings => Connection => Advanced =>
+Request proxying can be turned ON/OFF via Settings → Connection → Advanced →
 Proxy API requests through this server. 

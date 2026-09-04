@@ -10,6 +10,7 @@ import type {
 import { fetchSSE } from "../lib/fetchSSE";
 import { debugLog } from "../lib/debugLog";
 import { buildRequestUrl } from "./proxyUrl";
+import { withCustomHeaders } from "../lib/customHeaders";
 
 const DEFAULT_BASE = "https://api.anthropic.com/v1";
 
@@ -19,13 +20,21 @@ const DEFAULT_BASE = "https://api.anthropic.com/v1";
  */
 const BROWSER_ACCESS_HEADER = "anthropic-dangerous-direct-browser-access";
 
-function buildHeaders(apiKey: string): Record<string, string> {
-  return {
-    "Content-Type": "application/json",
-    "x-api-key": apiKey,
-    "anthropic-version": "2023-06-01",
-    [BROWSER_ACCESS_HEADER]: "true",
-  };
+function buildHeaders(
+  apiKey: string,
+  customHeaders?: Record<string, string>,
+  opts: { model?: string; baseUrl?: string } = {}
+): Record<string, string> {
+  return withCustomHeaders(
+    {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      [BROWSER_ACCESS_HEADER]: "true",
+    },
+    customHeaders,
+    opts
+  );
 }
 
 interface AnthropicUsage {
@@ -94,7 +103,10 @@ export class AnthropicProvider implements LLMProvider {
 
     const res = await fetch(url, {
       method: "POST",
-      headers: buildHeaders(options.apiKey),
+      headers: buildHeaders(options.apiKey, options.customHeaders, {
+        model: options.model,
+        baseUrl: options.baseUrl,
+      }),
       body: JSON.stringify(body),
       signal: options.signal,
     });
@@ -140,7 +152,10 @@ export class AnthropicProvider implements LLMProvider {
       fetchSSE(
         url,
         body,
-        buildHeaders(options.apiKey),
+        buildHeaders(options.apiKey, options.customHeaders, {
+          model: options.model,
+          baseUrl: options.baseUrl,
+        }),
         (chunk) => {
           const type = chunk.type as string;
 

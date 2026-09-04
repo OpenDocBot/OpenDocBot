@@ -54,6 +54,10 @@ function formatConversation(
   lines.push(`| Build | ${BUILD_ID} |`);
   lines.push(`| Provider | ${config.providerId} |`);
   lines.push(`| Preset | ${getPresetInfo(config).presetId} |`);
+  const headerNames = Object.keys(config.customHeaders ?? {})
+    .map((k) => k.trim())
+    .filter(Boolean);
+  lines.push(`| Custom Headers | ${headerNames.length > 0 ? headerNames.join(", ") : "none"} |`);
   lines.push(`| Messages | ${messages.length} |`);
   lines.push(`| User messages | ${userCount} |`);
   lines.push(`| Assistant messages | ${assistantCount} |`);

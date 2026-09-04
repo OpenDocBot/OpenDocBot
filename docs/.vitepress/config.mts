@@ -35,7 +35,7 @@ export default defineConfig({
     siteTitle: false,
     nav: [
       { text: "Docs", link: "/docs/quickstart" },
-      { text: "Providers", link: "/docs/providers" },
+      { text: "Providers", link: "/docs/providers/" },
       { text: "Features", link: "/docs/features" },
       { text: "GitHub", link: "https://github.com/opendocbot/opendocbot" },
     ],
@@ -47,7 +47,21 @@ export default defineConfig({
           { text: "Quickstart", link: "/docs/quickstart" },
           { text: "Compatibility", link: "/docs/compatibility" },
           { text: "Configuration", link: "/docs/configuration" },
-          { text: "Providers", link: "/docs/providers" },
+          {
+            text: "Providers",
+            link: "/docs/providers/",
+            collapsed: false,
+            items: [
+              { text: "OpenAI", link: "/docs/providers/openai" },
+              { text: "Anthropic Claude", link: "/docs/providers/anthropic" },
+              { text: "Google Gemini", link: "/docs/providers/gemini" },
+              { text: "DeepSeek", link: "/docs/providers/deepseek" },
+              { text: "Ollama", link: "/docs/providers/ollama" },
+              { text: "OpenRouter", link: "/docs/providers/openrouter" },
+              { text: "Custom (any provider)", link: "/docs/providers/custom" },
+              { text: "OpenCode", link: "/docs/providers/opencode" },
+            ],
+          },
           { text: "Self-hosting", link: "/docs/selfhosting" },
           { text: "Features", link: "/docs/features" },
           { text: "Troubleshooting", link: "/docs/troubleshooting" },
@@ -55,7 +69,7 @@ export default defineConfig({
       },
     ],
 
-    outline: { label: "On this page", level: [2, 3] },
+    outline: { label: "On this page", level: [2, 3, 4] },
     search: {
       provider: "local",
       options: {

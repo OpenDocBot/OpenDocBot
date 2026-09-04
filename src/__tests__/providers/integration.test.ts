@@ -115,7 +115,7 @@ for (const host of HOSTS) {
             () => {},
             (tc) => { properCalls.push(tc); },
             hostTools,
-            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true }
+            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true, customHeaders: { "x-opencode-session": "integration-test-session" } }
           );
 
           const toolNames = properCalls.map((c) => c.function.name);
@@ -142,7 +142,7 @@ for (const host of HOSTS) {
             (token) => { parser.feed(token); },
             (tc) => { properCalls.push(tc); },
             hostTools,
-            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true }
+            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true, customHeaders: { "x-opencode-session": "integration-test-session" } }
           );
 
           const synthNames = parser.getCapturedTools();
@@ -186,7 +186,7 @@ for (const host of HOSTS) {
             (token) => { parser.feed(token); textContent += token; },
             (tc) => { properCalls.push(tc); },
             hostTools,
-            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true }
+            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true, customHeaders: { "x-opencode-session": "integration-test-session" } }
           );
 
           const synthNames = parser.getCapturedTools();
@@ -227,7 +227,7 @@ for (const host of HOSTS) {
             (token) => { parser.feed(token); textContent += token; },
             (tc) => { properCalls.push(tc); },
             hostTools,
-            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true }
+            { apiKey: OPENCODE_API_KEY, model: MODEL, maxTokens: 4096, baseUrl: BASE_URL, useLegacyChatCompletions: true, customHeaders: { "x-opencode-session": "integration-test-session" } }
           );
 
           const responded = textContent.length > 0 || properCalls.length > 0;

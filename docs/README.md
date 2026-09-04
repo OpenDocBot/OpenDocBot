@@ -26,7 +26,7 @@ All content is plain markdown in `docs/`:
 | `docs/quickstart.md` | Setup: hosted instance, sideload, self-host/dev |
 | `docs/compatibility.md` | Office hosts, versions, provider feature matrix, CORS |
 | `docs/configuration.md` | Settings, presets, advanced options, proxy |
-| `docs/providers.md` | Per-provider setup guides |
+| `docs/providers/` | Providers overview plus one setup guide per provider (`openai`, `anthropic`, `gemini`, `deepseek`, `ollama`, `openrouter`, `custom`, `opencode`) |
 | `docs/selfhosting.md` | Docker / Node / static hosting, proxy, manifest |
 | `docs/features.md` | HITL, caching, reasoning, questions, etc. |
 | `docs/troubleshooting.md` | Common problems and fixes |

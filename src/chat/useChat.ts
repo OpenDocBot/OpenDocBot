@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useChatStore } from "../store/chatStore";
 import { useSettingsStore } from "../store/settingsStore";
 import { getProvider } from "../providers/registry";
-import { isConfigured } from "../lib/effectiveConfig";
+import { isConfigured, getPresetInfo } from "../lib/effectiveConfig";
 import { runAgentLoop } from "./agentLoop";
 import { debugLog } from "../lib/debugLog";
 import {
@@ -90,6 +90,13 @@ export function useChat() {
 
       const history = useChatStore.getState().modelHistory;
 
+      // Custom headers are a Custom-preset feature: only send them when the
+      // active preset is Custom (so a preset switch never leaks them).
+      const customHeaders =
+        getPresetInfo(settings).presetId === "custom"
+          ? settings.customHeaders
+          : undefined;
+
       const controller = new AbortController();
       setAbortController(controller);
 
@@ -124,6 +131,7 @@ export function useChat() {
           reasoningEffort: settings.reasoningEffort,
           proxyRequests: settings.proxyRequests,
           cacheTtl: settings.anthropicCacheTtl,
+          customHeaders,
         }, {
           onReasoningToken: (token) => {
             reasoningBuffer += token;

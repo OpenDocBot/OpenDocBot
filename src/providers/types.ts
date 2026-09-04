@@ -83,6 +83,12 @@ export interface ChatOptions {
    * bursts; "1h" costs 2x on cache writes but survives longer pauses.
    */
   cacheTtl?: "5m" | "1h";
+  /**
+   * Raw custom headers (the Custom preset). Values may contain `$VAR` tokens
+   * which are resolved at request time (see src/lib/customHeaders.ts). Sent
+   * on top of the provider's own headers, which always take precedence.
+   */
+  customHeaders?: Record<string, string>;
 }
 
 export interface LLMProvider {

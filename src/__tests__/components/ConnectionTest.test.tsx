@@ -5,6 +5,8 @@ import userEvent from "@testing-library/user-event";
 import { ConnectionTest } from "../../components/settings/ConnectionTest";
 import type { ProviderConfig } from "../../store/settingsStore";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 const testConfig: ProviderConfig = {
   providerId: "openaicompat",
   apiKey: "sk-test",
@@ -96,5 +98,55 @@ describe("ConnectionTest", () => {
     });
 
     resolveJson!({});
+  });
+
+  it("sends custom headers for the Custom preset", async () => {
+    const user = userEvent.setup();
+    let init: RequestInit | undefined;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, i) => {
+      init = i;
+      return { ok: true, json: () => Promise.resolve({}) } as Response;
+    });
+
+    render(
+      <ConnectionTest
+        config={{
+          ...testConfig,
+          presetId: "custom",
+          baseUrl: "https://opencode.ai/zen/go/v1",
+          model: "qwen3.8-max",
+          customHeaders: { "x-opencode-session": "$SESSION_ID" },
+        }}
+      />
+    );
+    await user.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/connected/i)).toBeDefined();
+    });
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    expect(headers["x-opencode-session"]).toMatch(UUID_RE);
+  });
+
+  it("omits custom headers for non-Custom presets", async () => {
+    const user = userEvent.setup();
+    let init: RequestInit | undefined;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (_input, i) => {
+      init = i;
+      return { ok: true, json: () => Promise.resolve({}) } as Response;
+    });
+
+    render(
+      <ConnectionTest
+        config={{ ...testConfig, presetId: "openai", customHeaders: { "x-opencode-session": "SECRET" } }}
+      />
+    );
+    await user.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/connected/i)).toBeDefined();
+    });
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    expect(headers["x-opencode-session"]).toBeUndefined();
   });
 });

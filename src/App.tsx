@@ -12,6 +12,7 @@ import { isConfigured } from "./lib/effectiveConfig";
 import { getProvider } from "./providers/registry";
 import { clearDebugLogs } from "./lib/debugLog";
 import { stopGeneration } from "./chat/session";
+import { resetSessionId } from "./lib/chatSession";
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -43,7 +44,7 @@ function App() {
         <Header
           showSettings={showSettings}
           onToggleSettings={() => setShowSettings((s) => !s)}
-          onClearChat={() => { stopGeneration(); clearMessages(); clearDebugLogs(); useTodoStore.getState().clearTodos(); }}
+          onClearChat={() => { stopGeneration(); clearMessages(); clearDebugLogs(); resetSessionId(); useTodoStore.getState().clearTodos(); }}
         />
       }
     >

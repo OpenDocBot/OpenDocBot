@@ -4,6 +4,7 @@ import { PresetSelector, matchPreset, getPreset } from "./PresetSelector";
 import { ProviderSelect } from "./ProviderSelect";
 import { ModelSelector } from "./ModelSelector";
 import { ConnectionTest } from "./ConnectionTest";
+import { CustomHeadersEditor } from "./CustomHeadersEditor";
 import { isProxyEnabled } from "../../lib/proxyEnabled";
 import { APP_VERSION, BUILD_ID } from "../../lib/buildInfo";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,7 @@ function useDraftConfig() {
     store.setHumanInTheLoop(draft.humanInTheLoop);
     store.setMaxIterations(draft.maxIterations);
     store.setCustomInstructions(draft.customInstructions ?? "");
+    store.setCustomHeaders(draft.customHeaders ?? {});
     return true;
   }
 
@@ -289,6 +291,18 @@ export function SettingsPanel() {
                     disabled={!draft.enableCache}
                   />
                 </div>
+              </div>
+            </>
+          )}
+        {currentPresetId === "custom" && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground">Custom Headers</Label>
+                <CustomHeadersEditor
+                  value={draft.customHeaders ?? {}}
+                  onChange={(headers) => update("customHeaders", headers)}
+                />
               </div>
             </>
           )}
