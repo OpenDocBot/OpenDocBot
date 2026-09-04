@@ -5,18 +5,7 @@ description: Set up OpenAI, DeepSeek, Anthropic, Gemini, Ollama, OpenRouter, or 
 
 # Providers
 
-OpenDocBot is **provider-agnostic**. Different providers are implementations of the same
-`LLMProvider` interface:
-
-| Provider | Handles | Underlying protocol |
-|---|---|---|
-| `OpenAICompatibleProvider` | OpenAI, DeepSeek, Ollama, OpenRouter, Custom | Responses API + `/chat/completions` |
-| `AnthropicProvider` | Claude | Messages API (`/v1/messages`) |
-| `GeminiProvider` | Google Gemini | `generateContent` / `streamGenerateContent` |
-
-A **preset** binds a provider to a concrete endpoint and default model. This ensures easy connection to different AI platforms. You can also configure a provider manually via the **Custom** preset.
-
-Each provider has its own setup guide:
+OpenDocBot is **provider-agnostic**. Each AI provider has its own setup guide:
 
 - [OpenAI](/docs/providers/openai)
 - [Anthropic Claude](/docs/providers/anthropic)
@@ -26,6 +15,20 @@ Each provider has its own setup guide:
 - [OpenRouter](/docs/providers/openrouter)
 - [Custom (any provider)](/docs/providers/custom)
 - [OpenCode](/docs/providers/opencode)
+
+
+## Implementation
+
+Different providers are implementations of the same
+`LLMProvider` interface:
+
+| Provider | Handles | Underlying protocol |
+|---|---|---|
+| `OpenAICompatibleProvider` | OpenAI, DeepSeek, Ollama, OpenRouter, Custom | Responses API + `/chat/completions` |
+| `AnthropicProvider` | Claude | Messages API (`/v1/messages`) |
+| `GeminiProvider` | Google Gemini | `generateContent` / `streamGenerateContent` |
+
+A **preset** binds a provider to a concrete endpoint and default model. This ensures easy connection to different AI platforms. You can also configure a provider manually via the **Custom** preset.
 
 ## Prompt caching
 
