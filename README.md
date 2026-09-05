@@ -1,5 +1,5 @@
 > [!NOTE]
-> **OpenDocBot is under active development** — Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates and support fair-code Office AI!
+> **OpenDocBot is under active development** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
 
 <p align="center">
   <img src="src/assets/logo.svg" alt="OpenDocBot" width="320" />
