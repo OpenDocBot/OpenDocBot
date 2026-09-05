@@ -22,6 +22,7 @@ beforeEach(() => {
   humanInTheLoop: false,
       maxIterations: 100,
       customInstructions: "",
+      openRouterRegion: "global",
     },
   });
 });
@@ -311,5 +312,47 @@ describe("SettingsPanel", () => {
     await user.click(screen.getByText("Apply"));
 
     expect(useSettingsStore.getState().config.maxIterations).toBe(250);
+  });
+
+  it("shows a fair-code license link in the footer", () => {
+    render(<SettingsPanel />);
+    const link = screen.getByRole("link", { name: "fair-code license" }) as HTMLAnchorElement;
+    expect(link).toBeDefined();
+    expect(link.href).toBe("https://opendocbot.com/docs/license");
+    expect(link.target).toBe("_blank");
+  });
+
+  it("shows the Inference region selector only for the OpenRouter preset", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+    await user.click(screen.getByText("Advanced"));
+    expect(screen.queryByText("Inference region")).toBeNull();
+
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "openrouter");
+    expect(screen.getByText("Inference region")).toBeDefined();
+  });
+
+  it("commits the inference region and updates the endpoint URL for OpenRouter", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "openrouter");
+
+    await user.click(screen.getByText("Advanced"));
+    const regionSelect = screen
+      .getAllByRole("combobox")
+      .find(
+        (el) =>
+          el instanceof HTMLSelectElement &&
+          Array.from(el.options).some((o) => o.value === "eu")
+      ) as HTMLSelectElement;
+    expect(regionSelect).toBeDefined();
+    await user.selectOptions(regionSelect, "eu");
+    await user.click(screen.getByText("Apply"));
+
+    expect(useSettingsStore.getState().config.openRouterRegion).toBe("eu");
+    expect(useSettingsStore.getState().config.baseUrl).toBe("https://eu.openrouter.ai/api/v1");
   });
 });

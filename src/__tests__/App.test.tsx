@@ -26,6 +26,7 @@ beforeEach(() => {
   humanInTheLoop: false,
       maxIterations: 100,
       customInstructions: "",
+      openRouterRegion: "global",
     },
   });
   useChatStore.setState({
@@ -155,6 +156,7 @@ describe("App — first use welcome", () => {
         humanInTheLoop: false,
         maxIterations: 100,
         customInstructions: "",
+        openRouterRegion: "global",
       },
     });
   }
@@ -206,6 +208,7 @@ describe("App — first use welcome", () => {
         humanInTheLoop: false,
         maxIterations: 100,
         customInstructions: "",
+        openRouterRegion: "global",
       },
     });
     rerender(<App />);

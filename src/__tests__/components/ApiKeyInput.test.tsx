@@ -22,6 +22,7 @@ beforeEach(() => {
   humanInTheLoop: false,
       maxIterations: 100,
       customInstructions: "",
+      openRouterRegion: "global",
     },
   });
 });

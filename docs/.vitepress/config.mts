@@ -6,7 +6,7 @@ const base = process.env.VITEPRESS_BASE || "/";
 
 export default defineConfig({
   title: "OpenDocBot",
-  description: "Open-source AI assistant for Microsoft Office. Bring your own LLM.",
+  description: "Self-hostable AI assistant for Microsoft Office. Bring your own LLM.",
   lang: "en-US",
   base,
   cleanUrls: true,
@@ -37,6 +37,7 @@ export default defineConfig({
       { text: "Docs", link: "/docs/quickstart" },
       { text: "Providers", link: "/docs/providers/" },
       { text: "Features", link: "/docs/features" },
+      { text: "License", link: "/docs/license" },
       { text: "GitHub", link: "https://github.com/opendocbot/opendocbot" },
     ],
 
@@ -65,6 +66,7 @@ export default defineConfig({
           { text: "Self-hosting", link: "/docs/selfhosting" },
           { text: "Features", link: "/docs/features" },
           { text: "Troubleshooting", link: "/docs/troubleshooting" },
+          { text: "License", link: "/docs/license" },
         ],
       },
     ],

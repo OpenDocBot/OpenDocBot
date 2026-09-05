@@ -7,11 +7,9 @@ description: Try the hosted OpenDocBot instance, sideload it in Word, Excel or P
 
 ## What is OpenDocBot?
 
-OpenDocBot is an **open-source AI agent for Microsoft Office** (Word, Excel,
-PowerPoint). Connect your own API keys from any provider (OpenAI, DeepSeek,
+OpenDocBot is a 100% client-side, provider-agnostic AI agent for Microsoft Office (Word, Excel, PowerPoint). Connect your own API keys from any provider (OpenAI, DeepSeek,
 Anthropic, Gemini, Ollama, OpenRouter, OpenCode, or any OpenAI-compatible
-endpoint), and the model reads, writes and formats your content directly in
-your documents.
+endpoint), and the model reads, writes and formats your content directly.
 
 Bring your own keys and models, gate every action behind **human-in-the-loop
 approval**, or **self-host** it: your data never has to leave your

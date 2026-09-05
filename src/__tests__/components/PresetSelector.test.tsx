@@ -51,6 +51,16 @@ describe("PresetSelector", () => {
     expect(preset?.maxTokens).toBe(8192);
   });
 
+  it("OpenRouter preset defines sovereign AI regions with global matching its baseUrl", () => {
+    const preset = getPreset("openrouter");
+    expect(preset?.regions).toEqual({
+      global: "https://openrouter.ai/api/v1",
+      eu: "https://eu.openrouter.ai/api/v1",
+      us: "https://us.openrouter.ai/api/v1",
+    });
+    expect(preset?.baseUrl).toBe(preset?.regions?.global);
+  });
+
   it("all presets default to 8192 max tokens", () => {
     for (const p of getPresets()) {
       expect(p.maxTokens).toBe(8192);

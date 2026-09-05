@@ -1,11 +1,11 @@
 > [!NOTE]
-> **OpenDocBot is under active development** — Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates and support open-source Office AI!
+> **OpenDocBot is under active development** — Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates and support fair-code Office AI!
 
 <p align="center">
   <img src="src/assets/logo.svg" alt="OpenDocBot" width="320" />
 </p>
 
-<p align="center"><strong>The open-source, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode) to Word, Excel & PowerPoint</strong></p>
+<p align="center"><strong>The free, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode) to Word, Excel & PowerPoint</strong></p>
 
 <div align="center">
   <a href="https://github.com/opendocbot/opendocbot/stargazers" target="_blank">
@@ -84,6 +84,11 @@ Serve OpenDocbot directly from your own infrastructure for a fully airgapped set
 | **Testing** | Vitest, React Testing Library |
 
 ## License
+
+OpenDocBot is licensed under a **fair-code** license: the source and development are public and
+auditable on GitHub, and it is free for individuals and teams up to **30 users**.
+Enterprises beyond that threshold require a commercial license. In plain words:
+[what you can and cannot do](https://opendocbot.com/docs/license).
 
 See [LICENSE](LICENSE). Contributions are subject to the
 [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT).

@@ -1,6 +1,6 @@
 # Contributing to OpenDocBot
 
-Thanks for your interest in contributing! OpenDocBot is an open-source add-in that lets you connect any AI provider to Microsoft Word, Excel and PowerPoint.
+Thanks for your interest in contributing! OpenDocBot is a fair-code add-in that lets you connect any AI provider to Microsoft Word, Excel and PowerPoint. Before contributing, please read carefully the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT).
 
 ## Development Setup
 

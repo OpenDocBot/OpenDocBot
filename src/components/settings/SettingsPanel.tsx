@@ -47,6 +47,7 @@ function useDraftConfig() {
     store.setMaxIterations(draft.maxIterations);
     store.setCustomInstructions(draft.customInstructions ?? "");
     store.setCustomHeaders(draft.customHeaders ?? {});
+    store.setOpenRouterRegion(draft.openRouterRegion);
     return true;
   }
 
@@ -93,6 +94,15 @@ export function SettingsPanel() {
       update("maxTokens", preset.maxTokens);
     }
     update("useLegacyChatCompletions", preset.useLegacyChatCompletions ?? false);
+  }
+
+  function handleRegionChange(region: "global" | "eu" | "us") {
+    update("openRouterRegion", region);
+    // Region maps to a regional base URL (openrouter.ai / eu.openrouter.ai /
+    // us.openrouter.ai). Swapping baseUrl is what actually routes the request
+    // in-region, and also makes the model list reload from that region.
+    const url = currentPreset?.regions?.[region];
+    if (url) update("baseUrl", url);
   }
 
   return (
@@ -306,6 +316,33 @@ export function SettingsPanel() {
               </div>
             </>
           )}
+
+        {currentPresetId === "openrouter" && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <Label className="text-xs font-medium text-muted-foreground">Sovereign AI (OpenRouter)</Label>
+                <div className="space-y-1.5">
+                  <Label>Inference region</Label>
+                  <Select
+                    value={draft.openRouterRegion ?? "global"}
+                    onValueChange={(value) => handleRegionChange(value as "global" | "eu" | "us")}
+                    options={[
+                      { value: "global", label: "Global" },
+                      { value: "eu", label: "EU" },
+                      { value: "us", label: "US" },
+                    ]}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Routes requests through the in-region endpoint (eu.openrouter.ai or
+                    us.openrouter.ai) so prompts and completions never leave that region.
+                    Requires a Business or Enterprise plan; the model list reloads from
+                    the selected region.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </CollapsibleContent>
       </Collapsible>
 
@@ -344,6 +381,14 @@ export function SettingsPanel() {
       <div className="border border-border bg-muted/30 px-2.5 py-2 text-center font-mono text-[10px] leading-relaxed text-muted-foreground">
         <p>version v{APP_VERSION}</p>
         <p>build {BUILD_ID}</p>
+        <a
+          href="https://opendocbot.com/docs/license"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline decoration-primary/50 hover:decoration-primary"
+        >
+          fair-code license
+        </a>
       </div>
         </>
       ) : (

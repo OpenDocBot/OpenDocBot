@@ -1,6 +1,6 @@
 ---
 title: Terms of Use
-description: Terms of use and disclaimer for OpenDocBot, an open-source Office AI add-in provided as-is.
+description: Terms of use and disclaimer for OpenDocBot, a fair-code Office AI add-in provided as-is.
 ---
 
 # Terms of Use & Disclaimer
@@ -44,8 +44,8 @@ These Terms are governed by the laws of **Spain**, without regard to its conflic
 
 ### 8. Microsoft Disclaimer
 
-OpenDocBot is an independent, open-source project and is **not affiliated with, endorsed by, or sponsored by Microsoft**. "Microsoft", "Word", "Excel", and "PowerPoint" are trademarks of Microsoft Corporation.
+OpenDocBot is an independent, fair-code project and is **not affiliated with, endorsed by, or sponsored by Microsoft**. "Microsoft", "Word", "Excel", and "PowerPoint" are trademarks of Microsoft Corporation.
 
 ### 9. Contact & Support
 
-For technical inquiries, open-source compliance, or legal questions, reach out via our official [GitHub repository](https://github.com/opendocbot/opendocbot) or at `support@opendocbot.com`.
+For technical inquiries, licensing, compliance, or legal questions, reach out via our official [GitHub repository](https://github.com/opendocbot/opendocbot) or at `support@opendocbot.com`.

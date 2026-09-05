@@ -28,6 +28,10 @@ export interface ProviderConfig {
   customInstructions: string;
   /** Custom HTTP headers for the Custom preset (values may contain $VAR tokens). */
   customHeaders?: Record<string, string>;
+  /** OpenRouter sovereign-AI inference region. Maps to a regional base URL
+   * (global -> openrouter.ai, eu -> eu.openrouter.ai, us -> us.openrouter.ai).
+   * Only used by the openrouter preset. */
+  openRouterRegion: "global" | "eu" | "us";
 }
 
 interface SettingsState {
@@ -48,6 +52,7 @@ interface SettingsState {
   setMaxIterations: (value: number) => void;
   setCustomInstructions: (value: string) => void;
   setCustomHeaders: (value: Record<string, string>) => void;
+  setOpenRouterRegion: (value: "global" | "eu" | "us") => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -69,6 +74,7 @@ export const useSettingsStore = create<SettingsState>()(
         maxIterations: 100,
         customInstructions: "",
         customHeaders: {},
+        openRouterRegion: "global",
       },
 
       setPresetId: (id) =>
@@ -118,13 +124,58 @@ export const useSettingsStore = create<SettingsState>()(
 
       setCustomHeaders: (customHeaders) =>
         set((s) => ({ config: { ...s.config, customHeaders } })),
+
+      setOpenRouterRegion: (openRouterRegion) =>
+        set((s) => ({ config: { ...s.config, openRouterRegion } })),
     }),
     {
       name: "opendocbot-settings",
+      // Current schema version of the persisted config. Bump it every time the
+      // config shape changes in a way `merge` cannot express (see `migrate`).
+      version: 1,
       partialize: (state) => ({ config: state.config }),
+      /**
+       * Schema migration, run by zustand persist.
+       *
+       * HOW IT WORKS: zustand calls `migrate(persistedState, storedVersion)`
+       * exactly ONCE on rehydrate when the stored version differs from
+       * `version` above. It does NOT auto-discover intermediate versions like
+       * a database migrator — this single function must apply every pending
+       * step itself. Use the cascade pattern below (`if (storedVersion < N)`)
+       * so a user jumping straight from an old version to the latest gets
+       * each step applied in order, oldest first.
+       *
+       * WHAT GOES HERE: structural changes only — renamed fields, removed
+       * fields, value transformations. Additive changes (new fields) are
+       * handled by `merge`, which fills them with defaults.
+       *
+       * HOW TO ADD A MIGRATION:
+       *  1. Bump `version` (e.g. 1 -> 2).
+       *  2. Add an `if (storedVersion < 2) { ... }` block transforming the
+       *     state v1 -> v2, keeping it idempotent and defensive (the
+       *     persisted config may be missing fields from older builds).
+       *  3. Test it by seeding a snapshot with the OLD version and asserting
+       *     the transformed shape (see src/__tests__/store/settingsStore.test.ts).
+       */
+      migrate: (persistedState, storedVersion) => {
+        if (storedVersion >= 1) return persistedState;
+        // v0 -> v1: snapshots written before versioning existed. Drop keys
+        // that no longer exist in ProviderConfig (e.g. the long-removed
+        // `temperature`) so the merged config matches the current schema.
+        const state = persistedState as unknown as
+          | { config?: Record<string, unknown> }
+          | undefined;
+        if (!state || typeof state.config !== "object" || state.config === null) {
+          return persistedState;
+        }
+        const config = { ...state.config };
+        delete config.temperature;
+        return { config: config as unknown as ProviderConfig };
+      },
       // Merge persisted config over the defaults so newly added fields that
       // older persisted snapshots don't have fall back to their default
-      // instead of becoming undefined.
+      // instead of becoming undefined. Handles additive changes only; see
+      // `migrate` above for structural ones.
       merge: (persisted, current) => ({
         ...current,
         ...(persisted as { config?: Partial<ProviderConfig> }),

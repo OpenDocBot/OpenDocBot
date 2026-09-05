@@ -19,6 +19,7 @@ anthropicCacheTtl: "5m",
   maxIterations: 100,
   customInstructions: "",
   customHeaders: {},
+  openRouterRegion: "global",
 } as const;
 
 function resetStore() {
@@ -56,6 +57,7 @@ anthropicCacheTtl: "5m",
   maxIterations: 100,
   customInstructions: "",
   customHeaders: {},
+  openRouterRegion: "global",
     });
   });
 });
@@ -105,6 +107,11 @@ describe("settingsStore — setters", () => {
   it("setMaxIterations updates correctly", () => {
     useSettingsStore.getState().setMaxIterations(250);
     expect(useSettingsStore.getState().config.maxIterations).toBe(250);
+  });
+
+  it("setOpenRouterRegion stores the inference region", () => {
+    useSettingsStore.getState().setOpenRouterRegion("eu");
+    expect(useSettingsStore.getState().config.openRouterRegion).toBe("eu");
   });
 
   it("setUseLegacyChatCompletions updates correctly", () => {
@@ -370,18 +377,56 @@ describe("settingsStore — migration", () => {
     }
   });
 
-  it("fills new fields missing from older persisted configs with defaults", () => {
-    // Simulate a persisted snapshot from before customInstructions existed.
+  it("fills every newer field with its default when rehydrating an old snapshot", () => {
+    // Simulate a persisted snapshot from before most fields existed, carrying
+    // a legacy `temperature` key that no longer exists in ProviderConfig.
     const oldFormat = JSON.stringify({
-      state: { config: { providerId: "openai", apiKey: "sk-old", model: "gpt-4", baseUrl: "https://api.openai.com/v1", maxTokens: 4096 } },
+      state: {
+        config: {
+          providerId: "openai",
+          apiKey: "sk-old",
+          model: "gpt-4",
+          baseUrl: "https://api.openai.com/v1",
+          maxTokens: 4096,
+          temperature: 0.7,
+        },
+      },
       version: 0,
     });
     localStorage.setItem(STORAGE_KEY, oldFormat);
 
-    // Re-hydrate from localStorage so the persist middleware re-runs its merge.
+    // Re-hydrate from localStorage so the persist middleware re-runs its
+    // migrate (v0 -> v1) and merge steps.
     useSettingsStore.persist.rehydrate();
-    expect(useSettingsStore.getState().config.customInstructions).toBe("");
-    expect(useSettingsStore.getState().config.apiKey).toBe("sk-old");
+
+    const cfg = useSettingsStore.getState().config;
+
+    // Old fields are preserved.
+    expect(cfg.apiKey).toBe("sk-old");
+    expect(cfg.providerId).toBe("openai");
+    expect(cfg.model).toBe("gpt-4");
+    expect(cfg.baseUrl).toBe("https://api.openai.com/v1");
+    expect(cfg.maxTokens).toBe(4096);
+
+    // Newer fields fall back to their defaults.
+    expect(cfg.customHeaders).toEqual({});
+    expect(cfg.maxIterations).toBe(100);
+    expect(cfg.useLegacyChatCompletions).toBe(false);
+    expect(cfg.reasoningEffort).toBe("");
+    expect(cfg.proxyRequests).toBe(false);
+    expect(cfg.anthropicCacheTtl).toBe("5m");
+    expect(cfg.humanInTheLoop).toBe(false);
+    expect(cfg.customInstructions).toBe("");
+    expect(cfg.enableCache).toBe(true);
+    expect(cfg.recacheThreshold).toBe(2000);
+
+    // The legacy `temperature` key is stripped by the v0 -> v1 migration.
+    expect(Object.keys(cfg)).not.toContain("temperature");
+
+    // No field is left undefined — guards future schema additions.
+    for (const value of Object.values(cfg)) {
+      expect(value).toBeDefined();
+    }
   });
 });
 

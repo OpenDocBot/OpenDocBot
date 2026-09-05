@@ -24,5 +24,18 @@ Very handy for trying the add-in at zero cost.
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
   allowfullscreen loading="lazy"></iframe>
 
+::: tip Inference region (Sovereign AI)
+With the **OpenRouter** preset active, the **Advanced** settings show an
+"Inference region" selector with **Global**, **EU** and **US** options.
+
+* **Global** uses the standard `https://openrouter.ai` endpoint.
+* **EU** and **US** use the in-region endpoints `https://eu.openrouter.ai`
+  and `https://us.openrouter.ai`, so prompts and completions are processed
+  entirely inside that region and never leave it.
+
+Switching region also reloads the model list from that region's endpoint.
+In-region routing requires a **Business** or **Enterprise** OpenRouter plan.
+:::
+
 Prompt caching is handled automatically by OpenRouter; no settings needed. See
 [Prompt caching](/docs/providers/#prompt-caching).

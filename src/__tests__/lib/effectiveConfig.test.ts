@@ -25,6 +25,7 @@ function makeConfig(overrides: Partial<ProviderConfig>): ProviderConfig {
     humanInTheLoop: false,
     maxIterations: 100,
     customInstructions: "",
+    openRouterRegion: "global",
     ...overrides,
   };
 }

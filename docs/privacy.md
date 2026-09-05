@@ -35,7 +35,9 @@ The hosted instance of OpenDocBot is served as static assets from **Cloudflare**
 
 ### 5. Self-Hosting
 
-OpenDocBot is open source and can be **self-hosted** on your own infrastructure. When you self-host, you operate the server and any optional proxy functionality yourself. In that case:
+OpenDocBot's source is public under a **fair-code license**, and it can be
+**self-hosted** on your own infrastructure. When you self-host, you operate the
+server and any optional proxy functionality yourself. In that case:
 
 * You act as the data controller/processor for any traffic that passes through your own instance, including any `localStorage` data you store and any requests routed through the optional proxy.
 * We are not responsible for the operation, security, or privacy practices of self-hosted deployments, which are governed by your own policies and configuration.

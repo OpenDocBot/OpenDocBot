@@ -10,7 +10,7 @@
   <ProviderName>OpenDocBot</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="OpenDocBot"/>
-  <Description DefaultValue="Open-source AI assistant for Microsoft Office"/>
+  <Description DefaultValue="Self-hostable AI assistant for Microsoft Office"/>
 
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>

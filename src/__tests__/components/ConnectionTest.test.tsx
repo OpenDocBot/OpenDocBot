@@ -22,6 +22,7 @@ const testConfig: ProviderConfig = {
   humanInTheLoop: false,
   maxIterations: 100,
   customInstructions: "",
+  openRouterRegion: "global",
 };
 
 beforeEach(() => {

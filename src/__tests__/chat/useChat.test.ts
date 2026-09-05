@@ -5,6 +5,7 @@ import { useChatStore } from "../../store/chatStore";
 import { useSettingsStore } from "../../store/settingsStore";
 import { stopGeneration } from "../../chat/session";
 import type { AgentLoopCallbacks } from "../../chat/agentLoop";
+import type { LLMMessage } from "../../providers/types";
 
 // Mock the agent loop so the test controls tool callbacks and the return value.
 vi.mock("../../chat/agentLoop", async (importOriginal) => {
@@ -39,6 +40,7 @@ beforeEach(() => {
       humanInTheLoop: false,
       maxIterations: 100,
       customInstructions: "",
+      openRouterRegion: "global",
     },
   });
   useChatStore.setState({
@@ -149,6 +151,50 @@ describe("useChat — custom instructions", () => {
     });
 
     expect(capturedCustom).toBe("");
+  });
+});
+
+describe("useChat — reasoning round-trip (modelHistory)", () => {
+  it("persists reasoningContent in modelHistory and passes it back as history", async () => {
+    let receivedHistory: unknown;
+    mockedRunAgentLoop.mockImplementation(async (_p, _t, _o, callbacks, history) => {
+      receivedHistory = history;
+      // Simulate the agent loop reporting an assistant message that carried
+      // reasoning_content (DeepSeek thinking mode echoes it back).
+      callbacks?.onHistoryChange?.([
+        {
+          role: "assistant",
+          content: "plan",
+          reasoningContent: "secret thought",
+          tool_calls: [
+            { id: "c1", type: "function", function: { name: "test_tool", arguments: "{}" } },
+          ],
+        },
+      ]);
+      return { content: "ok", iterations: 1, finishReason: "stop" };
+    });
+
+    const { result } = renderHook(() => useChat());
+
+    // First turn: the loop's history lands in the store.
+    await act(async () => {
+      await result.current.sendMessage("first");
+    });
+
+    const modelHistory = useChatStore.getState().modelHistory;
+    const assistant = modelHistory.find((m) => m.role === "assistant");
+    expect(assistant?.reasoningContent).toBe("secret thought");
+
+    // Second turn: the persisted modelHistory is passed back as `history`,
+    // so reasoning survives across user messages.
+    await act(async () => {
+      await result.current.sendMessage("second");
+    });
+
+    const history = receivedHistory as LLMMessage[];
+    expect(
+      history.some((m) => m.role === "assistant" && m.reasoningContent === "secret thought")
+    ).toBe(true);
   });
 });
 

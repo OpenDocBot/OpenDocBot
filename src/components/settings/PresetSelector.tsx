@@ -11,6 +11,9 @@ export interface Preset {
   requiresKey: boolean;
   maxTokens: number;
   useLegacyChatCompletions: boolean;
+  /** Optional region -> base URL map (OpenRouter sovereign AI). The preset's
+   * `baseUrl` must be the "global" entry so existing URL matching still works. */
+  regions?: Record<string, string>;
 }
 
 const ALL_PRESETS: Preset[] = [
@@ -18,7 +21,7 @@ const ALL_PRESETS: Preset[] = [
   { id: "anthropic", label: "Anthropic Claude", providerId: "anthropic", baseUrl: "https://api.anthropic.com/v1", model: "claude-haiku-4-5", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "gemini", label: "Google Gemini", providerId: "gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta", model: "gemini-3.5-flash-lite", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "deepseek", label: "DeepSeek", providerId: "openaicompat", baseUrl: "https://api.deepseek.com", model: "deepseek-v4-flash", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: true },
-  { id: "openrouter", label: "OpenRouter", providerId: "openaicompat", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false },
+  { id: "openrouter", label: "OpenRouter", providerId: "openaicompat", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false, regions: { global: "https://openrouter.ai/api/v1", eu: "https://eu.openrouter.ai/api/v1", us: "https://us.openrouter.ai/api/v1" } },
   { id: "ollama", label: "Ollama", providerId: "openaicompat", baseUrl: "http://localhost:11434/v1", model: "llama3.1", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false },
   { id: "custom", label: "Custom", providerId: "openaicompat", baseUrl: "", model: "", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false },
 ];

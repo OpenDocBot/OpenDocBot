@@ -12,5 +12,5 @@ OpenDocBot, please contact us at:
 
 We typically respond within **24–48 hours**.
 
-For open-source issues, feature requests, and code-level help, you can also open
+For code-level issues, feature requests, and engineering help, you can also open
 an issue or discussion in our [GitHub repository](https://github.com/opendocbot/opendocbot).
