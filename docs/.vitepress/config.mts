@@ -36,8 +36,6 @@ export default defineConfig({
     nav: [
       { text: "Docs", link: "/docs/quickstart" },
       { text: "Providers", link: "/docs/providers/" },
-      { text: "Features", link: "/docs/features" },
-      { text: "License", link: "/docs/license" },
       { text: "GitHub", link: "https://github.com/opendocbot/opendocbot" },
     ],
 

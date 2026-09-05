@@ -24,14 +24,17 @@ organizations that scale past that threshold need a commercial license.
   with no connection to us.
 * **Deploy it inside an organization of up to 30 users.** No license required.
 
-## What requires a commercial license
+## What the commercial license unlocks
 
-* **Enterprise deployments beyond 30 users.** Once more than 30 people in an
-  organization use the add-in, a commercial license is required. This is the
-  line that funds the project's development.
-* **Removing or replacing the OpenDocBot branding.** You cannot strip the
-  OpenDocBot name and logo and present the software as your own, unless you have
-  a written enterprise agreement.
+The commercial license grants two things:
+
+* **Deployments beyond 30 users.** Once more than 30 people in an organization
+  use the add-in, the free tier no longer applies and a commercial license is
+  required. This is the line that funds the project's development.
+* **Whitelabeling.** The right to replace the OpenDocBot branding with your own
+  and distribute the add-in under your own name and logo.
+
+Everything else, including self-hosting and running up to 30 users, stays free.
 
 ## Why this model
 
