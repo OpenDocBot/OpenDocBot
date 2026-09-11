@@ -271,6 +271,91 @@ div[class*="language-"]::before {
   height: auto;
 }
 
+/* --- home hero promo video (click-to-play) ------------------------------- */
+.hero-video {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  border: 1px solid var(--vp-c-brand-1);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  box-shadow:
+    0 0 0 1px rgba(61, 220, 132, 0.25),
+    0 0 28px rgba(61, 220, 132, 0.25),
+    0 0 60px rgba(61, 220, 132, 0.12);
+}
+.hero-video img,
+.hero-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+.hero-video-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+.hero-video-facade {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.hero-video-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-video-play svg {
+  width: 74px;
+  height: 74px;
+  padding: 14px;
+  border-radius: 50%;
+  color: #04120a;
+  background: var(--vp-c-brand-1);
+  box-shadow: 0 0 24px rgba(61, 220, 132, 0.55);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hero-video-facade:hover .hero-video-play svg {
+  transform: scale(1.06);
+  box-shadow: 0 0 34px rgba(61, 220, 132, 0.8);
+}
+.hero-video-facade:focus-visible .hero-video-play svg {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+}
+
+/* Wrapper for the promo video (home-hero-after slot: between hero and features) */
+.home-hero-video-wrap {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 8px 24px 56px;
+}
+@media (min-width: 640px) {
+  .home-hero-video-wrap {
+    padding: 16px 48px 80px;
+  }
+}
+@media (min-width: 960px) {
+  .home-hero-video-wrap {
+    padding: 24px 64px 88px;
+  }
+}
+
 /* --- legal links bar (layout-bottom slot) ------------------------------- */
 .vp-legal-bar {
   display: flex;

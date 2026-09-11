@@ -32,3 +32,9 @@ coverage/
 # Editor
 .vscode/
 .idea/
+
+# HyperFrames render temp dirs
+docs/public/work-*/
+
+# HyperFrames promo project (video source)
+promo/

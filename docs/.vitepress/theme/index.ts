@@ -4,6 +4,7 @@ import { withBase } from "vitepress";
 import type { Theme } from "vitepress";
 import Tabs from "./components/Tabs.vue";
 import Tab from "./components/Tab.vue";
+import HeroVideo from "./components/HeroVideo.vue";
 import "./custom.css";
 
 export default {
@@ -20,6 +21,10 @@ export default {
         h("div", { class: "home-hero-logo" }, [
           h("img", { src: withBase("/logo.svg"), alt: "OpenDocBot", class: "home-hero-logo-img" }),
         ]),
+      // Click-to-play product demo, placed below the hero buttons and above
+      // the features. The iframe only loads on click (no YouTube request before).
+      "home-hero-after": () =>
+        h("div", { class: "home-hero-video-wrap" }, [h(HeroVideo)]),
       // Legal links bar rendered at the very bottom of every page (the default
       // VPFooter is hidden on sidebar pages).
       "layout-bottom": () =>
