@@ -20,6 +20,7 @@ anthropicCacheTtl: "5m",
   customInstructions: "",
   customHeaders: {},
   openRouterRegion: "global",
+  ocrLanguage: "eng",
 } as const;
 
 function resetStore() {
@@ -58,6 +59,7 @@ anthropicCacheTtl: "5m",
   customInstructions: "",
   customHeaders: {},
   openRouterRegion: "global",
+  ocrLanguage: "eng",
     });
   });
 });
@@ -112,6 +114,14 @@ describe("settingsStore — setters", () => {
   it("setOpenRouterRegion stores the inference region", () => {
     useSettingsStore.getState().setOpenRouterRegion("eu");
     expect(useSettingsStore.getState().config.openRouterRegion).toBe("eu");
+  });
+
+  it("setOcrLanguage updates correctly and defaults to eng", () => {
+    expect(useSettingsStore.getState().config.ocrLanguage).toBe("eng");
+    useSettingsStore.getState().setOcrLanguage("spa");
+    expect(useSettingsStore.getState().config.ocrLanguage).toBe("spa");
+    useSettingsStore.getState().setOcrLanguage("eng");
+    expect(useSettingsStore.getState().config.ocrLanguage).toBe("eng");
   });
 
   it("setUseLegacyChatCompletions updates correctly", () => {
@@ -419,6 +429,7 @@ describe("settingsStore — migration", () => {
     expect(cfg.customInstructions).toBe("");
     expect(cfg.enableCache).toBe(true);
     expect(cfg.recacheThreshold).toBe(2000);
+    expect(cfg.ocrLanguage).toBe("eng");
 
     // The legacy `temperature` key is stripped by the v0 -> v1 migration.
     expect(Object.keys(cfg)).not.toContain("temperature");

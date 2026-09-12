@@ -32,6 +32,8 @@ export interface ProviderConfig {
    * (global -> openrouter.ai, eu -> eu.openrouter.ai, us -> us.openrouter.ai).
    * Only used by the openrouter preset. */
   openRouterRegion: "global" | "eu" | "us";
+  /** Tesseract language code used for local OCR of scanned PDFs (default eng). */
+  ocrLanguage: string;
 }
 
 interface SettingsState {
@@ -53,6 +55,7 @@ interface SettingsState {
   setCustomInstructions: (value: string) => void;
   setCustomHeaders: (value: Record<string, string>) => void;
   setOpenRouterRegion: (value: "global" | "eu" | "us") => void;
+  setOcrLanguage: (value: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -75,6 +78,7 @@ export const useSettingsStore = create<SettingsState>()(
         customInstructions: "",
         customHeaders: {},
         openRouterRegion: "global",
+        ocrLanguage: "eng",
       },
 
       setPresetId: (id) =>
@@ -127,6 +131,9 @@ export const useSettingsStore = create<SettingsState>()(
 
       setOpenRouterRegion: (openRouterRegion) =>
         set((s) => ({ config: { ...s.config, openRouterRegion } })),
+
+      setOcrLanguage: (ocrLanguage) =>
+        set((s) => ({ config: { ...s.config, ocrLanguage } })),
     }),
     {
       name: "opendocbot-settings",

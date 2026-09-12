@@ -6,6 +6,8 @@ import { StreamToolParser } from "./toolCallParser";
 import { debugLog } from "../lib/debugLog";
 import { getHost } from "../office";
 import { useTodoStore } from "../store/todoStore";
+import type { Attachment } from "./types";
+import { formatAttachments, UNTRUSTED_ATTACHMENT_GUARD } from "./attachments/prompt";
 
 export const MAX_AGENT_ITERATIONS = 100;
 
@@ -641,10 +643,21 @@ export function buildSystemPrompt(tools: ToolDefinition[], maxIterations: number
  * block that takes precedence over conflicting built-in rules. Returns the
  * prompt unchanged when there are no instructions.
  */
-export function appendCustomInstructions(systemPrompt: string, customInstructions?: string): string {
+export function appendCustomInstructions(
+  systemPrompt: string,
+  customInstructions?: string,
+  extraRules?: string
+): string {
   const ci = customInstructions?.trim();
-  if (!ci) return systemPrompt;
-  return `${systemPrompt}\n\n<custom_instructions>\n${ci}\n</custom_instructions>\n\nThe user's custom instructions above take precedence over any conflicting general rules.`;
+  const extra = extraRules?.trim();
+  let out = systemPrompt;
+  if (ci) {
+    out += `\n\n<custom_instructions>\n${ci}\n</custom_instructions>\n\nThe user's custom instructions above take precedence over any conflicting general rules.`;
+  }
+  if (extra) {
+    out += `\n\n<file_safety>\n${extra}\n</file_safety>`;
+  }
+  return out;
 }
 
 /**
@@ -671,17 +684,22 @@ export async function runAgentLoop(
   docState?: string,
   customInstructions?: string,
   maxIterations: number = MAX_AGENT_ITERATIONS,
+  attachments?: Attachment[],
 ): Promise<AgentLoopResult> {
   const host = getHost();
   const tools = toolRegistry.listDefinitionsForHost(host);
   const knownToolNames = new Set(toolRegistry.listNamesForHost(host));
+  const attachmentBlock = formatAttachments(attachments);
   const systemPrompt = appendCustomInstructions(
     buildSystemPrompt(tools, maxIterations),
-    customInstructions
+    customInstructions,
+    attachmentBlock ? UNTRUSTED_ATTACHMENT_GUARD : undefined
   );
 
   const stateBlocks = [buildTodoListBlock(), docState].filter(Boolean).join("\n\n");
-  const userContent = stateBlocks ? `${stateBlocks}\n\n---\n\n${userMessage}` : userMessage;
+  const userContent = [stateBlocks, attachmentBlock, userMessage]
+    .filter(Boolean)
+    .join("\n\n---\n\n");
 
   const messages: LLMMessage[] = [
     { role: "system", content: systemPrompt },

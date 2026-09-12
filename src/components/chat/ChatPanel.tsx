@@ -14,7 +14,11 @@ import { Markdown } from "./Markdown";
 import QuestionCard from "./QuestionCard";
 import ApprovalCard from "./ApprovalCard";
 import TodoPanel from "./TodoPanel";
-import { Copy, Loader2, Square } from "lucide-react";
+import { AttachmentQueue } from "./AttachmentQueue";
+import { useAttachments } from "./useAttachments";
+import { useFileDrop } from "./useFileDrop";
+import { ATTACHMENT_ACCEPT } from "../../chat/attachments/config";
+import { Copy, Loader2, Paperclip, Square } from "lucide-react";
 import logoUrl from "../../assets/logo.svg";
 
 const EMPTY_STATE_COPY: Record<ReturnType<typeof getHost>, { title: string; hint: string }> = {
@@ -125,11 +129,20 @@ export function ChatPanel() {
   const { setLoading } = useChatStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const officeReady = useOfficeReady();
+  const { attachments, addFiles } = useAttachments();
+  const { isDragging, handlers } = useFileDrop(addFiles);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [expandedReasoning, setExpandedReasoning] = useState<Set<string>>(new Set());
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [stopHover, setStopHover] = useState(false);
+  const hasReadyAttachments = attachments.some((a) => a.status === "ready");
+  const isExtractingAttachments = attachments.some(
+    (a) => a.status === "extracting" || a.status === "ocr"
+  );
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -138,6 +151,24 @@ export function ChatPanel() {
   useEffect(() => {
     debugLog("info", `isLoading → ${isLoading}`);
   }, [isLoading]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onPointerDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   async function handleCopy() {
     const text = formatConversation(messages, useSettingsStore.getState().config);
@@ -161,7 +192,8 @@ export function ChatPanel() {
 
   async function handleSend(options?: { textOverride?: string }) {
     const text = (options?.textOverride ?? input).trim();
-    if (!text || isLoading) return;
+    const ready = attachments.filter((a) => a.status === "ready");
+    if ((!text && ready.length === 0) || isLoading) return;
 
     setInput("");
     setLoading(true);
@@ -183,7 +215,7 @@ export function ChatPanel() {
     }
 
     try {
-      await sendMessage(text, docState || undefined);
+      await sendMessage(text, docState || undefined, ready.length > 0 ? ready : undefined);
     } catch { /* errors surfaced via store */ } finally {
       debugLog("info", "handleSend: finally → setLoading(false)");
       setLoading(false);
@@ -223,10 +255,20 @@ export function ChatPanel() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1">
+    <div className="relative flex flex-col h-full" {...handlers}>
+      {isDragging && (
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-background/70">
+          <div className="animate-in fade-in zoom-in-95 border-2 border-dashed border-primary/60 bg-card px-6 py-4 font-mono text-xs text-primary duration-150">
+            Drop files to attach
+          </div>
+        </div>
+      )}
+
+      <AttachmentQueue />
+
+      <ScrollArea className="flex-1 min-h-0">
         {messages.length > 0 && (
-          <div className="sticky top-0 right-0 flex justify-end p-2 z-10">
+          <div className="flex justify-end p-2">
             <Button
               variant="ghost"
               size="sm"
@@ -265,6 +307,7 @@ export function ChatPanel() {
             const isReasoningExpanded = expandedReasoning.has(msg.id);
             const hasContent = !!msg.content;
             const hasToolCalls = "toolCalls" in msg && msg.toolCalls && msg.toolCalls.length > 0;
+            const hasAttachments = !!msg.attachments && msg.attachments.length > 0;
 
             return (
               <div
@@ -295,7 +338,7 @@ export function ChatPanel() {
                       )}
                     </div>
                   )}
-                  {(hasContent || (!reasoning && msg.isThinking) || hasToolCalls) && (
+                  {(hasContent || (!reasoning && msg.isThinking) || hasToolCalls || hasAttachments) && (
                     <div
                       className={`font-mono text-sm break-words ${
                         msg.role === "user"
@@ -305,8 +348,27 @@ export function ChatPanel() {
                     >
                       {msg.role === "user" ? (
                         <>
-                          <span className="text-primary select-none mr-1.5">❯</span>
+                          {hasContent && (
+                            <span className="text-primary select-none mr-1.5">❯</span>
+                          )}
                           {msg.content}
+                          {hasAttachments && (
+                            <div className="mt-1 flex flex-wrap gap-x-2.5 gap-y-0.5">
+                              {msg.attachments!.map((a) => (
+                                <span
+                                  key={a.id}
+                                  className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"
+                                  title={a.name}
+                                >
+                                  <Paperclip className="w-3 h-3 shrink-0 text-primary/80" />
+                                  <span className="max-w-[18rem] truncate">{a.name}</span>
+                                  {a.meta?.pages ? (
+                                    <span className="text-muted-foreground/60">· {a.meta.pages}p</span>
+                                  ) : null}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </>
                       ) : hasContent ? (
                         <Markdown content={msg.content!} />
@@ -407,7 +469,68 @@ export function ChatPanel() {
 
       <div className="border-t p-3 bg-muted/20">
         <div className="flex items-center gap-2 font-mono">
-          <span className="text-primary select-none shrink-0">❯</span>
+          <div className="relative shrink-0" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              disabled={isLoading}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-label="Add"
+              title="Add"
+              className="group relative grid h-8 w-7 place-items-center text-primary disabled:opacity-40"
+            >
+              <span
+                className={`pointer-events-none absolute inset-0 grid place-items-center text-base leading-none transition-all duration-200 ${
+                  menuOpen
+                    ? "-rotate-90 scale-0 opacity-0"
+                    : "rotate-0 scale-100 opacity-100 group-hover:-rotate-90 group-hover:scale-0 group-hover:opacity-0"
+                }`}
+              >
+                ❯
+              </span>
+              <span
+                className={`pointer-events-none absolute inset-0 grid place-items-center text-xl font-bold leading-none transition-all duration-200 ${
+                  menuOpen
+                    ? "rotate-0 scale-100 opacity-100"
+                    : "-rotate-90 scale-0 opacity-0 group-hover:rotate-0 group-hover:scale-100 group-hover:opacity-100"
+                }`}
+              >
+                +
+              </span>
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute bottom-full left-0 z-40 mb-2 w-44 border border-border bg-card font-mono text-xs shadow-lg"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    fileInputRef.current?.click();
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Paperclip className="w-3.5 h-3.5" />
+                  Attach file
+                </button>
+              </div>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ATTACHMENT_ACCEPT}
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              if (files.length > 0) addFiles(files);
+              e.target.value = "";
+            }}
+          />
           <Textarea
             ref={inputRef}
             value={input}
@@ -437,7 +560,7 @@ export function ChatPanel() {
           ) : (
             <Button
               onClick={() => handleSend()}
-              disabled={!input.trim()}
+              disabled={(!input.trim() && !hasReadyAttachments) || isExtractingAttachments}
               variant="outline"
               size="icon"
               className="shrink-0 h-8 w-8 border-primary text-primary hover:bg-primary/10"

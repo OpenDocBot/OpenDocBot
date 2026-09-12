@@ -27,6 +27,7 @@ beforeEach(() => {
       maxIterations: 100,
       customInstructions: "",
       openRouterRegion: "global",
+      ocrLanguage: "eng",
     },
   });
   useChatStore.setState({
@@ -157,6 +158,7 @@ describe("App — first use welcome", () => {
         maxIterations: 100,
         customInstructions: "",
         openRouterRegion: "global",
+        ocrLanguage: "eng",
       },
     });
   }
@@ -209,6 +211,7 @@ describe("App — first use welcome", () => {
         maxIterations: 100,
         customInstructions: "",
         openRouterRegion: "global",
+        ocrLanguage: "eng",
       },
     });
     rerender(<App />);

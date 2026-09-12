@@ -23,6 +23,7 @@ const testConfig: ProviderConfig = {
   maxIterations: 100,
   customInstructions: "",
   openRouterRegion: "global",
+  ocrLanguage: "eng",
 };
 
 beforeEach(() => {

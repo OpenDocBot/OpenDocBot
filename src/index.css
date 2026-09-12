@@ -93,3 +93,12 @@ body {
   background: hsl(var(--primary));
   animation: terminal-blink 1.1s steps(1) infinite;
 }
+
+/* Move the toast dismiss button to the top-right corner. `!important` is
+   required: sonner injects its own style tag after this stylesheet with a
+   higher-specificity rule ([data-sonner-toast][data-styled=true] ...). */
+[data-sonner-toast] [data-close-button] {
+  left: auto !important;
+  right: 0 !important;
+  transform: translate(35%, -35%) !important;
+}

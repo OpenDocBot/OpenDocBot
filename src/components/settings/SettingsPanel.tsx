@@ -22,6 +22,35 @@ import { ChevronDown } from "lucide-react";
  */
 const proxyEnabled = isProxyEnabled();
 
+/** Common Tesseract language codes for scanned-PDF OCR (single-select). */
+const OCR_LANGUAGE_OPTIONS = [
+  { value: "eng", label: "English" },
+  { value: "spa", label: "Spanish" },
+  { value: "fra", label: "French" },
+  { value: "deu", label: "German" },
+  { value: "ita", label: "Italian" },
+  { value: "por", label: "Portuguese" },
+  { value: "nld", label: "Dutch" },
+  { value: "rus", label: "Russian" },
+  { value: "ukr", label: "Ukrainian" },
+  { value: "pol", label: "Polish" },
+  { value: "ces", label: "Czech" },
+  { value: "swe", label: "Swedish" },
+  { value: "ron", label: "Romanian" },
+  { value: "tur", label: "Turkish" },
+  { value: "ara", label: "Arabic" },
+  { value: "heb", label: "Hebrew" },
+  { value: "ell", label: "Greek" },
+  { value: "hin", label: "Hindi" },
+  { value: "vie", label: "Vietnamese" },
+  { value: "ind", label: "Indonesian" },
+  { value: "tha", label: "Thai" },
+  { value: "chi_sim", label: "Chinese (Simplified)" },
+  { value: "chi_tra", label: "Chinese (Traditional)" },
+  { value: "jpn", label: "Japanese" },
+  { value: "kor", label: "Korean" },
+];
+
 function useDraftConfig() {
   const store = useSettingsStore();
   const [draft, setDraft] = useState<ProviderConfig>(() => ({ ...store.config }));
@@ -48,6 +77,7 @@ function useDraftConfig() {
     store.setCustomInstructions(draft.customInstructions ?? "");
     store.setCustomHeaders(draft.customHeaders ?? {});
     store.setOpenRouterRegion(draft.openRouterRegion);
+    store.setOcrLanguage(draft.ocrLanguage ?? "eng");
     return true;
   }
 
@@ -439,6 +469,20 @@ export function SettingsPanel() {
             </label>
             <p className="text-xs text-muted-foreground">
               Require user approval for every document-modifying tool call.
+            </p>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ocrLanguage">OCR Language</Label>
+            <Select
+              value={draft.ocrLanguage ?? "eng"}
+              onValueChange={(value) => update("ocrLanguage", value)}
+              options={OCR_LANGUAGE_OPTIONS}
+            />
+            <p className="text-xs text-muted-foreground">
+              Language used for scanned-PDF OCR.
             </p>
           </div>
 

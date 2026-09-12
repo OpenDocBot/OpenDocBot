@@ -13,6 +13,7 @@ import { getProvider } from "./providers/registry";
 import { clearDebugLogs } from "./lib/debugLog";
 import { stopGeneration } from "./chat/session";
 import { resetSessionId } from "./lib/chatSession";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -39,29 +40,32 @@ function App() {
   }, []);
 
   return (
-    <Taskpane
-      header={
-        <Header
-          showSettings={showSettings}
-          onToggleSettings={() => setShowSettings((s) => !s)}
-          onClearChat={() => { stopGeneration(); clearMessages(); clearDebugLogs(); resetSessionId(); useTodoStore.getState().clearTodos(); }}
-        />
-      }
-    >
-      {!inOffice && !showSettings && (
-        <div className="mx-3 mt-2 px-2.5 py-1.5 font-mono text-xs bg-amber-950/60 border border-amber-800/60 text-amber-400">
-          <span className="text-amber-600 select-none mr-1.5">⚠</span>
-          Browser dev mode — Office.js not detected. Tools return sample data.
-        </div>
-      )}
-      {showSettings ? (
-        <SettingsPanel />
-      ) : configured ? (
-        <ChatPanel />
-      ) : (
-        <WelcomePanel onConnect={() => setShowSettings(true)} />
-      )}
-    </Taskpane>
+    <>
+      <Taskpane
+        header={
+          <Header
+            showSettings={showSettings}
+            onToggleSettings={() => setShowSettings((s) => !s)}
+            onClearChat={() => { stopGeneration(); clearMessages(); clearDebugLogs(); resetSessionId(); useTodoStore.getState().clearTodos(); }}
+          />
+        }
+      >
+        {!inOffice && !showSettings && (
+          <div className="mx-3 mt-2 px-2.5 py-1.5 font-mono text-xs bg-amber-950/60 border border-amber-800/60 text-amber-400">
+            <span className="text-amber-600 select-none mr-1.5">⚠</span>
+            Browser dev mode — Office.js not detected. Tools return sample data.
+          </div>
+        )}
+        {showSettings ? (
+          <SettingsPanel />
+        ) : configured ? (
+          <ChatPanel />
+        ) : (
+          <WelcomePanel onConnect={() => setShowSettings(true)} />
+        )}
+      </Taskpane>
+      <Toaster />
+    </>
   );
 }
 

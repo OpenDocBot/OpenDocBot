@@ -27,6 +27,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Production dependencies must stay free of known advisories. Build/test
+      # tooling advisories are tracked separately via Dependabot.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Validate manifests
         env:
           OPENDOCBOT_URL: https://opendocbot.com

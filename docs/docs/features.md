@@ -35,6 +35,44 @@ conversation and take precedence over conflicting built-in rules. Useful for
 persistent preferences like tone, language, or formatting conventions. See
 [Configuration](/docs/configuration#custom-instructions).
 
+## File attachments
+
+Attach reference files to a message and the model can read them alongside your
+document. Drop files anywhere on the chat, or hover the prompt symbol next to
+the input (it turns into a **+**), click it, and choose **Attach file**. The
+pending files appear above the conversation; click **×** to remove one before
+sending.
+
+| Category | Formats |
+|---|---|
+| Text / data | `.txt`, `.md`, `.json`, `.jsonl`, `.csv`, `.tsv`, `.xml`, `.html`, `.yaml`, `.log` |
+| PDF | `.pdf` |
+| Word | `.docx`, `.odt`, `.rtf` |
+| Excel | `.xlsx`, `.ods` |
+| PowerPoint | `.pptx`, `.odp` |
+
+- **Parsed locally.** Files are converted to Markdown **in your browser**; only
+  the extracted text is sent to the provider with your message. Legacy Office
+  binaries (`.doc`, `.ppt`, `.xls`) and images aren't supported.
+- **Limits:** up to **5 files**, **25 MB** each, with a per-file/per-message
+  text budget (excess is truncated and marked).
+- **Untrusted input:** the model is told that attached file contents are data,
+  not instructions, to guard against prompt injection.
+
+### Scanned PDFs
+
+Image-only PDFs have no text layer. When one is attached, OpenDocBot warns you
+and offers a **Run OCR** button. OCR runs **locally** (Tesseract), is
+**CPU-intensive**, and can take a while for large PDF files, so it only starts
+when you click it. The OCR language is configurable in Settings → Behavior
+(default English).
+
+Pages are rendered at ~300 DPI for OCR, the resolution Tesseract is tuned for.
+The scan's own resolution is still the ceiling: rendering cannot add detail a
+low-quality scan never had. After OCR, the file chip shows a confidence score
+(e.g. `OCR 82%`); treat a low score as a warning to verify critical values such
+as IDs and numbers against the original.
+
 ## Task list
 
 For complex, multi-step jobs, the model keeps a lightweight **task list**, a

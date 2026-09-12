@@ -26,6 +26,7 @@ function makeConfig(overrides: Partial<ProviderConfig>): ProviderConfig {
     maxIterations: 100,
     customInstructions: "",
     openRouterRegion: "global",
+    ocrLanguage: "eng",
     ...overrides,
   };
 }

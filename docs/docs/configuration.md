@@ -191,6 +191,18 @@ this value. See [Features](/docs/features#agent-loop).
 When enabled, every **document-modifying** tool call pauses for your approval
 before it runs. See [Features](/docs/features#human-in-the-loop) for details.
 
+### OCR Language
+
+The language Tesseract uses to read scanned (image-only) PDFs. Defaults to
+**English**.
+
+- Applies only to the local OCR of image-only PDFs (see
+  [Features](/docs/features#scanned-pdfs)); regular PDFs are parsed directly.
+- Tesseract ships **per-language** models, and it can only detect the *script*
+  (Latin, Cyrillic, ...), not the specific language. Pick the document's language
+  for the best accuracy.
+- Non-English languages download their model on first use.
+
 ## Apply / Clean
 
 Settings are drafts until you press **Apply**. **Clean** discards your edits and

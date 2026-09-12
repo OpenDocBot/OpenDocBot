@@ -5,6 +5,7 @@ import { getProvider } from "../providers/registry";
 import { isConfigured, getPresetInfo } from "../lib/effectiveConfig";
 import { runAgentLoop } from "./agentLoop";
 import { debugLog } from "../lib/debugLog";
+import type { Attachment } from "./types";
 import {
   setAbortController,
   setApprovalResolver,
@@ -59,6 +60,7 @@ export function useChat() {
     setPendingApproval,
     setError,
     setModelHistory,
+    clearAttachments,
   } = useChatStore();
 
   const resolveApproval = useCallback(
@@ -80,7 +82,8 @@ export function useChat() {
   const sendMessage = useCallback(
     async (
       text: string,
-      docState?: string
+      docState?: string,
+      attachments?: Attachment[]
     ): Promise<void> => {
       const provider = getProvider(settings.providerId);
       if (!isConfigured(settings)) {
@@ -102,7 +105,8 @@ export function useChat() {
 
       setError(null);
       setActiveQuestions(null);
-      addUserMessage(text);
+      addUserMessage(text, attachments);
+      clearAttachments();
 
       const userMessage = text;
       setRejectedThisTurn(false);
@@ -228,7 +232,7 @@ export function useChat() {
               }
             }
           },
-        }, history, docState, settings.customInstructions || "", settings.maxIterations);
+        }, history, docState, settings.customInstructions || "", settings.maxIterations, attachments);
 
         debugLog("info", `Agent loop finished (${Math.round(performance.now() - t0)}ms, ${result.iterations} iter, finish=${result.finishReason})`);
 
@@ -285,6 +289,7 @@ export function useChat() {
       setPendingApproval,
       setError,
       setModelHistory,
+      clearAttachments,
     ]
   );
 

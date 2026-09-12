@@ -41,6 +41,7 @@ beforeEach(() => {
       maxIterations: 100,
       customInstructions: "",
       openRouterRegion: "global",
+      ocrLanguage: "eng",
     },
   });
   useChatStore.setState({

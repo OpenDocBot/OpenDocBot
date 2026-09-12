@@ -1,7 +1,8 @@
 import { create } from "zustand";
-import type { ChatMessage } from "../chat/types";
+import type { Attachment, ChatMessage } from "../chat/types";
 import { createUserMessage, createAssistantPlaceholder } from "../chat/types";
 import type { LLMMessage } from "../providers/types";
+import { attachmentFileCache } from "../chat/attachments/fileCache";
 
 type StoreMessage = ChatMessage;
 
@@ -14,13 +15,19 @@ export interface PendingApproval {
 interface ChatStore {
   messages: StoreMessage[];
   modelHistory: LLMMessage[];
+  /** Files queued for the next message (parsed in the browser). */
+  attachments: Attachment[];
   isLoading: boolean;
   error: string | null;
   currentToolName: string | null;
   activeToolLabel: string | null;
   activeQuestions: Record<string, unknown>[] | null;
   pendingApproval: PendingApproval | null;
-  addUserMessage: (text: string) => ChatMessage;
+  addUserMessage: (text: string, attachments?: Attachment[]) => ChatMessage;
+  addAttachment: (attachment: Attachment) => void;
+  updateAttachment: (id: string, patch: Partial<Attachment>) => void;
+  removeAttachment: (id: string) => void;
+  clearAttachments: () => void;
   addAssistantPlaceholder: () => ChatMessage;
   appendToken: (messageId: string, token: string) => void;
   appendReasoning: (messageId: string, token: string) => void;
@@ -40,6 +47,7 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
   modelHistory: [],
+  attachments: [],
   isLoading: false,
   error: null,
   currentToolName: null,
@@ -47,11 +55,27 @@ export const useChatStore = create<ChatStore>((set) => ({
   activeQuestions: null,
   pendingApproval: null,
 
-  addUserMessage: (text) => {
-    const msg = createUserMessage(text);
+  addUserMessage: (text, attachments) => {
+    const msg = createUserMessage(text, attachments);
     set((s) => ({ messages: [...s.messages, msg] }));
     return msg;
   },
+
+  addAttachment: (attachment) => {
+    set((s) => ({ attachments: [...s.attachments, attachment] }));
+  },
+
+  updateAttachment: (id, patch) => {
+    set((s) => ({
+      attachments: s.attachments.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+    }));
+  },
+
+  removeAttachment: (id) => {
+    set((s) => ({ attachments: s.attachments.filter((a) => a.id !== id) }));
+  },
+
+  clearAttachments: () => set({ attachments: [] }),
 
   addAssistantPlaceholder: () => {
     const msg = createAssistantPlaceholder();
@@ -121,15 +145,18 @@ export const useChatStore = create<ChatStore>((set) => ({
 
   setModelHistory: (messages) => set({ modelHistory: messages }),
 
-  clearMessages: () =>
+  clearMessages: () => {
+    attachmentFileCache.clear();
     set({
       messages: [],
       modelHistory: [],
+      attachments: [],
       isLoading: false,
       error: null,
       currentToolName: null,
       activeToolLabel: null,
       activeQuestions: null,
       pendingApproval: null,
-    }),
+    });
+  },
 }));
