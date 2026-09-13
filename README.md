@@ -1,11 +1,11 @@
 > [!NOTE]
-> **OpenDocBot is under active development** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
+> **OpenDocBot is in Early Access** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
 
 <p align="center">
   <img src="src/assets/logo.svg" alt="OpenDocBot" width="320" />
 </p>
 
-<p align="center"><strong>The free, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode) to Word, Excel & PowerPoint</strong></p>
+<p align="center"><strong>The Office AI agent you can actually trust<br/>Client-side, provider-agnostic, and fully auditable. No lock-in. No hidden telemetry.</strong></p>
 
 <div align="center">
   <a href="https://github.com/opendocbot/opendocbot/stargazers" target="_blank">
@@ -67,7 +67,7 @@ The fastest way to get started is using the **hosted instance** at
 [opendocbot.com/app](https://opendocbot.com/app). We only serve the application once. The application
 runs entirely locally after the initial taskpane load. No document data reaches our servers.
 
-Until Microsoft Store distribution is available, sideloading is required. Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions on your OS and Office version.
+Until Microsoft Store distribution is available, sideloading is required. Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions for your OS and Office version.
 
 📖 Full Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
