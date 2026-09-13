@@ -30,8 +30,8 @@ document data ever reaches our servers.**
 
 ### 1. Sideload the add-in in Office
 
-> ⚠️ We are working on publishing OpenDocBot to the **Microsoft Store**. Until
-> then, sideload the add-in as described below; same add-in, same experience.
+> ⚠️  OpenDocBot is currently in **Early Access**. Microsoft Marketplace distribution is coming, but sideloading is currently required.
+> This is the same OpenDocBot experience you'll get through Marketplace. We're onboarding power users now to help test the product, find edge cases, and shape what's next.
 
 <Tabs>
   <Tab label="Office Local">
