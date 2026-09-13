@@ -58,12 +58,16 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 
 ## Quickstart
 
+> [!IMPORTANT]
+> **OpenDocBot is currently in Early Access.** It is already usable, but Microsoft Store distribution is not available yet, so Office sideloading is currently required.
+>
+> We're looking for **Microsoft 365 power users** who want to try OpenDocBot early and help shape the product. Expect some rough edges. Feedback, bug reports, and feature requests are especially welcome.
+
 The fastest way to get started is using the **hosted instance** at
 [opendocbot.com/app](https://opendocbot.com/app). We only serve the application once. The application
 runs entirely locally after the initial taskpane load. No document data reaches our servers.
 
-We are working on publishing OpenDocBot to the Microsoft Store. Until then, sideloading is the only option.
-Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions on your OS and Office version.
+Until Microsoft Store distribution is available, sideloading is required. Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions on your OS and Office version.
 
 📖 Full Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
