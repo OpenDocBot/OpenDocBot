@@ -1,0 +1,40 @@
+# Local development
+node_modules/
+
+# Internal agent planning docs
+agents/
+
+# Build output
+dist/
+
+# Docs build output
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Office add-in dev certs (local)
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Editor
+.vscode/
+.idea/
+
+# HyperFrames render temp dirs
+docs/public/work-*/
+
+# HyperFrames promo project (video source)
+promo/

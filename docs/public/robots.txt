@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /app
+
+Sitemap: https://opendocbot.com/sitemap.xml
+
+# LLM Context
+# llms-txt: https://opendocbot.com/llms.txt

@@ -1,0 +1,16 @@
+services:
+  opendocbot:
+    build: .
+    image: opendocbot
+    container_name: opendocbot
+    ports:
+      - "${OPENDOCBOT_HOST_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      - PORT=${PORT:-3000}
+      - HOST=${HOST:-0.0.0.0}
+      - DIST_DIR=${DIST_DIR:-/app/dist}
+      - TLS_CERT=${TLS_CERT:-}
+      - TLS_KEY=${TLS_KEY:-}
+    restart: always

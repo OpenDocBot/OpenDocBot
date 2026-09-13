@@ -1,0 +1,104 @@
+@import "@fontsource-variable/jetbrains-mono";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-size: 13px;
+  font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 120 6% 82%;
+    --card: 0 0% 4%;
+    --card-foreground: 120 6% 82%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 120 6% 82%;
+    --primary: 145 80% 44%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 9%;
+    --secondary-foreground: 120 6% 82%;
+    --muted: 0 0% 9%;
+    --muted-foreground: 120 3% 55%;
+    --accent: 145 60% 12%;
+    --accent-foreground: 145 80% 62%;
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 96%;
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
+    --ring: 145 80% 44%;
+    --radius: 0rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border: 2px solid hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+/* CRT-ish flicker hint on the app shell */
+@keyframes terminal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: hsl(var(--primary));
+  animation: terminal-blink 1.1s steps(1) infinite;
+}
+
+/* Move the toast dismiss button to the top-right corner. `!important` is
+   required: sonner injects its own style tag after this stylesheet with a
+   higher-specificity rule ([data-sonner-toast][data-styled=true] ...). */
+[data-sonner-toast] [data-close-button] {
+  left: auto !important;
+  right: 0 !important;
+  transform: translate(35%, -35%) !important;
+}
