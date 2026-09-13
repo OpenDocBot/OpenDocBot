@@ -1,11 +1,11 @@
 > [!NOTE]
-> **OpenDocBot is under active development** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
+> **OpenDocBot is in Early Access** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
 
 <p align="center">
   <img src="src/assets/logo.svg" alt="OpenDocBot" width="320" />
 </p>
 
-<p align="center"><strong>The free, local-first alternative to Microsoft Copilot for Office<br/>Bring your own AI provider (OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode) to Word, Excel & PowerPoint</strong></p>
+<p align="center"><strong>The Office AI agent you can actually trust<br/>Client-side, provider-agnostic, and fully auditable. No lock-in. No hidden telemetry.</strong></p>
 
 <div align="center">
   <a href="https://github.com/opendocbot/opendocbot/stargazers" target="_blank">
@@ -24,7 +24,7 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 ## Features
 
 - **Universal Office Suite Integration**: One add-in for Word, Excel, and PowerPoint. Read, write, analyze content, generate formulas, auto-format tables, and build slide decks directly inside your workflow.
-- **Provider Freedom & Zero Lock-In**: Connect to OpenAI, Anthropic, Gemini, Deepseek, Ollama, OpenRouter, OpenCode, or any OpenAI-compatible API. Switch instantly between models and providers.
+- **Provider Freedom & Zero Lock-In**: Connect to OpenAI, Anthropic, Gemini, DeepSeek, Ollama, OpenRouter, OpenCode, or any OpenAI-compatible API. Switch instantly between models and providers.
 - **100% Client-Side & Local-First**: Zero telemetry. Your document data goes straight from your browser to your provider, or stays completely offline when paired with **Ollama**.
 - **Human-in-the-Loop Safety**: Review and approve model actions before any text, formula, or slide layout is modified in your document.
 - **BYOK & Self-Hostable**: 100% free for individuals and small teams (up to 30 users). Bring your own API keys, avoid seat markups, or deploy on your own infrastructure.
@@ -47,7 +47,7 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 | **OpenAI** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Anthropic** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Gemini** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Deepseek** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **DeepSeek** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Ollama (Local)** | ✅\* | ❌\*\* | ✅ | ❌ | ❌ |
 | **OpenRouter** | ✅\* | ⚠️\*\* | ✅ | ✅ | ✅ |
 | **OpenCode** | ✅ | ⚠️\*\* | ✅ | ✅ | ⚠️\*\*\* |
@@ -58,15 +58,22 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 
 ## Quickstart
 
+> [!IMPORTANT]
+> **OpenDocBot is currently in Early Access.** It is already usable, but Microsoft Store distribution is not available yet, so Office sideloading is currently required.
+>
+> We're looking for **Microsoft 365 power users** who want to try OpenDocBot early and help shape the product. Expect some rough edges. Feedback, bug reports, and feature requests are especially welcome.
+
 The fastest way to get started is using the **hosted instance** at
 [opendocbot.com/app](https://opendocbot.com/app). We only serve the application once. The application
 runs entirely locally after the initial taskpane load. No document data reaches our servers.
 
-We are working on publishing OpenDocBot to the Microsoft Store. Until then, sideloading is the only option.
-Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions on your OS and Office version.
+Until Microsoft Store distribution is available, sideloading is required. Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions for your OS and Office version.
 
 📖 Full Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
+
+## Docs
+See the full technical documentation at [opendocbot.com/docs](https://opendocbot.com/docs).
 
 ## Self-Hosting
 
