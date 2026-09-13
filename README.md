@@ -68,6 +68,9 @@ Scripts for automated sideloading configuration are available, see the [Sideload
 📖 Full Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)
 
+## Docs
+See the full technical documentation at [opendocbot.com/docs](https://opendocbot.com/docs).
+
 ## Self-Hosting
 
 Serve OpenDocbot directly from your own infrastructure.
