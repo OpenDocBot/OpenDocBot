@@ -2,7 +2,11 @@
 > **OpenDocBot is in Early Access** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
 
 <p align="center">
-  <img src="src/assets/logo.svg" alt="OpenDocBot" width="320" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="src/assets/logo.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/1c44d17e-cf3b-47df-be29-1658fce0fb6c">
+    <img src="https://github.com/user-attachments/assets/1c44d17e-cf3b-47df-be29-1658fce0fb6c" alt="OpenDocBot" width="320" />
+  </picture>
 </p>
 
 <p align="center"><strong>The Office AI agent you can actually trust<br/>Client-side, provider-agnostic, and fully auditable. No lock-in. No hidden telemetry.</strong></p>
