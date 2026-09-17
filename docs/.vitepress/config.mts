@@ -28,7 +28,7 @@ export default defineConfig({
 
     const host = "https://opendocbot.com";
     const url = `${host}${path}`;
-    const image = `${host}/promo-thumbnail.jpg`;
+    const image = `${host}/og-image.png`;
     const isHome = rel === "index.md" || rel === "";
     const title = isHome
       ? "The Office AI agent you can actually trust"
@@ -44,8 +44,9 @@ export default defineConfig({
       ["meta", { property: "og:title", content: title }],
       ["meta", { property: "og:description", content: description }],
       ["meta", { property: "og:image", content: image }],
-      ["meta", { property: "og:image:width", content: "1280" }],
-      ["meta", { property: "og:image:height", content: "720" }],
+      ["meta", { property: "og:image:type", content: "image/png" }],
+      ["meta", { property: "og:image:width", content: "1200" }],
+      ["meta", { property: "og:image:height", content: "630" }],
       [
         "meta",
         {
