@@ -1,7 +1,7 @@
 import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice } from "../../office";
-import { parseRangeAddress, resolveWorksheet, columnLetter } from "./shared";
+import { parseRangeAddress, resolveWorksheet, columnLetter, columnPointsToChars } from "./shared";
 
 const readRange: ToolDefinition = {
   name: "read_range",
@@ -9,7 +9,8 @@ const readRange: ToolDefinition = {
   description:
     "Read cell values (and optionally formulas) from a range on a worksheet. " +
     "Returns a 2D array matching the range shape (rows x columns), plus the address. " +
-    "Also reports current column_widths and row_heights so you can pick an appropriate absolute value when resizing. " +
+    "Also reports current column_widths (in character units) and row_heights (in points) " +
+    "so you can pick an appropriate absolute value when resizing. " +
     "Empty cells come back as null. Use A1 notation like 'A1:C5'.",
   parameters: {
     type: "object",
@@ -103,8 +104,15 @@ toolRegistry.register(readRange, async (args) => {
           }
           await context.sync();
 
-          column_widths = colRanges.map(({ range }) => range.format.columnWidth);
-          row_heights = rowRanges.map(({ range }) => range.format.rowHeight);
+        // `columnWidth` comes back in points; expose it in the character units
+        // the model and set_column_width speak. `rowHeight` is already points.
+        column_widths = colRanges.map(({ range }) => {
+          const points = range.format.columnWidth;
+          return typeof points === "number"
+            ? Math.round(columnPointsToChars(points) * 100) / 100
+            : null;
+        });
+        row_heights = rowRanges.map(({ range }) => range.format.rowHeight);
         } catch {
           // Geometry is informational — never fail the read over it.
         }

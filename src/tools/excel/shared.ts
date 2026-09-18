@@ -114,3 +114,22 @@ export function normalizeRowRef(ref: string): string {
   }
   return ref;
 }
+
+/**
+ * Convert an Excel column width from character units (the value users see in
+ * the Excel UI) to points (`RangeFormat.columnWidth`).
+ *
+ * Excel stores width as: pixels = round(chars * MDW) + 5, then points =
+ * pixels * 0.75, where MDW is the Maximum Digit Width of the Normal font
+ * (7 px for the usual 11 pt fonts). That gives the linear form below, which is
+ * exact at the default width (8.43 chars = 64 px = 48 pt) and its exact inverse
+ * is `columnPointsToChars`, so read-then-resize stays consistent across fonts.
+ */
+export function columnCharsToPoints(chars: number): number {
+  return chars * 5.25 + 3.75;
+}
+
+/** Inverse of {@link columnCharsToPoints}. Never returns a negative width. */
+export function columnPointsToChars(points: number): number {
+  return Math.max(0, (points - 3.75) / 5.25);
+}

@@ -136,7 +136,8 @@ describe("read_range — mocked Excel office path", () => {
     const result = JSON.parse(await executeTool("read_range", { range_address: "A1:B2" }));
     expect(result.address).toBe("A1:B2");
     expect(result.data).toEqual([[1, 2], [3, 4]]);
-    expect(result.column_widths).toEqual([30, 30]);
+    // Mock columnWidth is 30 points -> ~5.0 character units.
+    expect(result.column_widths).toEqual([5, 5]);
     expect(result.row_heights).toEqual([20, 20]);
   });
 
@@ -208,12 +209,22 @@ describe("read_range — mocked Excel office path", () => {
 describe("Excel mutation tools — mocked office path", () => {
   it("set_column_width normalizes a bare letter to A:A", async () => {
     const { active } = installExcelMock();
-    const getRangeSpy = vi.fn((addr: string) => makeRange({ address: addr }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ranges: any[] = [];
+    const getRangeSpy = vi.fn((addr: string) => {
+      const range = makeRange({ address: addr });
+      ranges.push(range);
+      return range;
+    });
     active.getRange = getRangeSpy;
     const result = JSON.parse(await executeTool("set_column_width", { columns: "a", width: 40 }));
     expect(getRangeSpy).toHaveBeenCalledWith("A:A");
     expect(result.success).toBe(true);
     expect(result.columns).toBe("a");
+    // 40 character units -> 213.75 points (Office.js uses points).
+    expect(result.width).toBe(40);
+    expect(result.width_points).toBeCloseTo(213.75, 2);
+    expect(ranges[0].format.columnWidth).toBeCloseTo(213.75, 2);
   });
 
   it("set_row_height normalizes a bare number to 3:3", async () => {

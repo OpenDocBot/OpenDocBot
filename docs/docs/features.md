@@ -127,6 +127,32 @@ It's your document. The model proposes, you decide; useful for anything you
 can't easily undo.
 :::
 
+## Suggestion mode
+
+A **read-only review mode**. When it's on, the agent **cannot modify the
+document**: every content-editing tool is removed from what the model can call,
+and hard-blocked even if the model still asks for it. Instead the agent gets an 
+`add_suggestion` tool that inserts native **review comments**, so you
+review and apply the changes yourself.
+
+- **Where**: Word and Excel. Not available in PowerPoint, where the toggle is
+  hidden.
+- **Anchoring**: in Word, `add_suggestion` requires `target_text`, which must
+  match an existing passage **exactly and in exactly one place**. Zero or
+  multiple matches returns an error, so a comment is never placed on the wrong
+  spot. In Excel it requires `cell`, a single-cell A1 address.
+- **Not Human-in-the-Loop gated**: comments don't change content, so they are
+  never approval-gated.
+- **Remove your own suggestions**: the agent can delete a suggestion it added in
+  the current conversation, by its `id`, using `remove_suggestion`. It can never
+  remove comments created by you or other reviewers. Provenance is kept in
+  memory for the session, so after reloading the taskpane it can no longer
+  remove earlier suggestions; those stay in the document for you to manage.
+- **Enable it**: from the toolbar button next to **Clear conversation** (hover it
+  for details) or in Settings → Behavior.
+- **Requirements**: native comments need `WordApi 1.4` (Word) or `ExcelApi 1.10`
+  (Excel); older builds get an actionable error instead of failing silently.
+
 ## Reasoning visibility
 
 While the model thinks, its chain-of-thought streams into a **clickable

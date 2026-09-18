@@ -31,6 +31,7 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 - **Provider Freedom & Zero Lock-In**: Connect to OpenAI, Anthropic, Gemini, DeepSeek, Ollama, OpenRouter, OpenCode, or any OpenAI-compatible API. Switch instantly between models and providers.
 - **100% Client-Side & Local-First**: Zero telemetry. Your document data goes straight from your browser to your provider, or stays completely offline when paired with **Ollama**.
 - **Human-in-the-Loop Safety**: Review and approve model actions before any text, formula, or slide layout is modified in your document.
+- **Suggestion Mode**: Read-only review. The agent adds native Word/Excel comments proposing changes instead of editing your content.
 - **BYOK & Self-Hostable**: 100% free for individuals and small teams (up to 30 users). Bring your own API keys, avoid seat markups, or deploy on your own infrastructure.
 
 ## Compatibility

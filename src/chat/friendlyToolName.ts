@@ -34,6 +34,9 @@ const FRIENDLY_TOOL_NAMES: Record<string, string> = {
   edit_slide_text: "Edit slide text",
   edit_slide_xml: "Edit slide XML",
   format_shape: "Format shape",
+  // Suggestion mode
+  add_suggestion: "Add suggestion",
+  remove_suggestion: "Remove suggestion",
   // Task list
   update_todos: "Update tasks",
 };

@@ -6,6 +6,7 @@ import { ModelSelector } from "./ModelSelector";
 import { ConnectionTest } from "./ConnectionTest";
 import { CustomHeadersEditor } from "./CustomHeadersEditor";
 import { isProxyEnabled } from "../../lib/proxyEnabled";
+import { getHost } from "../../office";
 import { APP_VERSION, BUILD_ID } from "../../lib/buildInfo";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,7 @@ function useDraftConfig() {
     store.setProxyRequests(draft.proxyRequests);
     store.setAnthropicCacheTtl(draft.anthropicCacheTtl);
     store.setHumanInTheLoop(draft.humanInTheLoop);
+    store.setSuggestionMode(draft.suggestionMode);
     store.setMaxIterations(draft.maxIterations);
     store.setCustomInstructions(draft.customInstructions ?? "");
     store.setCustomHeaders(draft.customHeaders ?? {});
@@ -93,6 +95,8 @@ export function SettingsPanel() {
   const [activeTab, setActiveTab] = useState<"connection" | "behavior">("connection");
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [applied, setApplied] = useState(false);
+  // Suggestion mode only exists in Word and Excel; hide the toggle in PowerPoint.
+  const host = getHost();
 
   const TAB_LABELS: Record<"connection" | "behavior", string> = {
     connection: "Connection",
@@ -458,6 +462,28 @@ export function SettingsPanel() {
               Require user approval for every document-modifying tool call.
             </p>
           </div>
+
+          {host !== "powerpoint" && (
+            <>
+              <Separator />
+
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 font-mono text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={draft.suggestionMode}
+                    onChange={(e) => update("suggestionMode", e.target.checked)}
+                    className="accent-primary"
+                  />
+                  Suggestion Mode
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Read-only review. The agent cannot edit content; it can only add comments
+                  proposing changes.
+                </p>
+              </div>
+            </>
+          )}
 
           <Separator />
 

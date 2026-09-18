@@ -16,6 +16,7 @@ useLegacyChatCompletions: false,
       proxyRequests: false,
 anthropicCacheTtl: "5m",
   humanInTheLoop: false,
+  suggestionMode: false,
   maxIterations: 100,
   customInstructions: "",
   customHeaders: {},
@@ -55,6 +56,7 @@ useLegacyChatCompletions: false,
       proxyRequests: false,
 anthropicCacheTtl: "5m",
   humanInTheLoop: false,
+  suggestionMode: false,
   maxIterations: 100,
   customInstructions: "",
   customHeaders: {},
@@ -158,6 +160,14 @@ describe("settingsStore — setters", () => {
     expect(useSettingsStore.getState().config.humanInTheLoop).toBe(true);
     useSettingsStore.getState().setHumanInTheLoop(false);
     expect(useSettingsStore.getState().config.humanInTheLoop).toBe(false);
+  });
+
+  it("setSuggestionMode updates correctly", () => {
+    expect(useSettingsStore.getState().config.suggestionMode).toBe(false);
+    useSettingsStore.getState().setSuggestionMode(true);
+    expect(useSettingsStore.getState().config.suggestionMode).toBe(true);
+    useSettingsStore.getState().setSuggestionMode(false);
+    expect(useSettingsStore.getState().config.suggestionMode).toBe(false);
   });
 
   it("setCustomInstructions updates correctly", () => {
@@ -426,6 +436,7 @@ describe("settingsStore — migration", () => {
     expect(cfg.proxyRequests).toBe(false);
     expect(cfg.anthropicCacheTtl).toBe("5m");
     expect(cfg.humanInTheLoop).toBe(false);
+    expect(cfg.suggestionMode).toBe(false);
     expect(cfg.customInstructions).toBe("");
     expect(cfg.enableCache).toBe(true);
     expect(cfg.recacheThreshold).toBe(2000);

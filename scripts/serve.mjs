@@ -105,10 +105,23 @@ function serveStatic(req, res) {
   }
 
   const ext = path.extname(filePath).toLowerCase();
-  res.writeHead(200, {
+  const headers = {
     "Content-Type": MIME[ext] || "application/octet-stream",
     "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=31536000, immutable",
-  });
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  };
+  // Only meaningful over HTTPS; browsers ignore HSTS on plain HTTP.
+  if (useTLS) {
+    headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+  }
+  if (urlPath === "/manifest.xml") {
+    headers["Content-Disposition"] = 'attachment; filename="manifest.xml"';
+  }
+  // No X-Frame-Options / CSP frame-ancestors here: the self-hosted server serves
+  // the add-in itself, which Office must be able to embed in the taskpane.
+  res.writeHead(200, headers);
   fs.createReadStream(filePath).pipe(res);
 }
 

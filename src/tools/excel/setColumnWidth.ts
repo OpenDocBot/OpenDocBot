@@ -1,7 +1,7 @@
 import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice } from "../../office";
-import { resolveWorksheet, normalizeColumnRef } from "./shared";
+import { resolveWorksheet, normalizeColumnRef, columnCharsToPoints } from "./shared";
 
 const setColumnWidth: ToolDefinition = {
   name: "set_column_width",
@@ -44,14 +44,18 @@ toolRegistry.register(setColumnWidth, async (args) => {
           args.sheet_name as string | undefined
         );
         const columns = args.columns as string;
-        const width = args.width as number;
+        const chars = args.width as number;
+        // Office.js `columnWidth` is in points; users (and read_range) use
+        // character units, so convert. Row height is already in points.
+        const points = columnCharsToPoints(chars);
 
-        worksheet.getRange(normalizeColumnRef(columns)).format.columnWidth = width;
+        worksheet.getRange(normalizeColumnRef(columns)).format.columnWidth = points;
         await context.sync();
         return {
           success: true,
           columns,
-          width,
+          width: chars,
+          width_points: Math.round(points * 100) / 100,
           ...(warning ? { warning } : {}),
         };
       });

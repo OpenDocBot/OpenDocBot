@@ -38,6 +38,7 @@ beforeEach(() => {
       proxyRequests: false,
       anthropicCacheTtl: "5m",
       humanInTheLoop: false,
+      suggestionMode: false,
       maxIterations: 100,
       customInstructions: "",
       openRouterRegion: "global",
@@ -205,6 +206,7 @@ describe("useChat — lifecycle (session)", () => {
       config: {
         ...useSettingsStore.getState().config,
         humanInTheLoop: true,
+        suggestionMode: false,
       },
     });
   });

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { runAgentLoop, MAX_AGENT_ITERATIONS, extractToolError } from "../../chat/agentLoop";
 import { toolRegistry } from "../../tools/registry";
 import { clearDebugLogs, getDebugLogs } from "../../lib/debugLog";
+import { clearSuggestions, getSuggestion } from "../../chat/suggestionRegistry";
 import type { LLMProvider, ModelInfo, LLMMessage, ToolCallRequest, ToolDefinition, ChatOptions } from "../../providers/types";
 
 interface StreamStep {
@@ -63,7 +64,7 @@ beforeEach(() => {
   );
 });
 
-afterEach(() => { vi.restoreAllMocks(); clearDebugLogs(); });
+afterEach(() => { vi.restoreAllMocks(); clearDebugLogs(); clearSuggestions(); });
 
 describe("extractToolError", () => {
   it("extracts a string error message", () => {
@@ -654,5 +655,412 @@ describe("runAgentLoop — task list tools", () => {
 
     const userMsg = captured[0][captured[0].length - 1];
     expect(userMsg?.content).not.toContain("<todo_list>");
+  });
+});
+
+describe("runAgentLoop — suggestion mode", () => {
+  function officeHost(host: "Word" | "Excel" | "PowerPoint") {
+    return {
+      onReady: () => {},
+      context: { host },
+      HostType: { Word: "Word", Excel: "Excel", PowerPoint: "PowerPoint" },
+    };
+  }
+
+  function offeringProvider(offered: string[], captured: LLMMessage[][]): LLMProvider {
+    return {
+      id: "offer", label: "Offer", requiresKey: false, defaultModel: "",
+      async listModels(): Promise<ModelInfo[]> { return []; },
+      async chat() { throw new Error("not used"); },
+      async chatStream(
+        messages: LLMMessage[],
+        _onToken: (t: string) => void,
+        _onToolCall: (tc: ToolCallRequest) => void,
+        tools: ToolDefinition[]
+      ): Promise<void> {
+        captured.push(messages);
+        offered.push(...tools.map((t) => t.name));
+      },
+    };
+  }
+
+  it("removes write tools, adds add_suggestion and injects the block in Word", async () => {
+    const g = globalThis as { Office?: unknown };
+    const realOffice = g.Office;
+    g.Office = officeHost("Word");
+
+    const offered: string[] = [];
+    const captured: LLMMessage[][] = [];
+    await runAgentLoop(
+      offeringProvider(offered, captured),
+      "review",
+      opts,
+      {},
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      true
+    );
+    g.Office = realOffice;
+
+    expect(offered).toContain("add_suggestion");
+    expect(offered).toContain("read_doc_section");
+    expect(offered).not.toContain("edit_doc_text");
+    expect(offered).not.toContain("execute_office_js");
+    const system = captured[0][0].content as string;
+    expect(system).toContain("<suggestion_mode>");
+    expect(system).not.toContain("**edit_doc_text**");
+  });
+
+  it("offers write tools and no add_suggestion when the mode is off", async () => {
+    const g = globalThis as { Office?: unknown };
+    const realOffice = g.Office;
+    g.Office = officeHost("Word");
+
+    const offered: string[] = [];
+    const captured: LLMMessage[][] = [];
+    await runAgentLoop(offeringProvider(offered, captured), "hi", opts);
+    g.Office = realOffice;
+
+    expect(offered).toContain("edit_doc_text");
+    expect(offered).not.toContain("add_suggestion");
+    expect(captured[0][0].content as string).not.toContain("<suggestion_mode>");
+  });
+
+  it("forces the mode off in PowerPoint", async () => {
+    const g = globalThis as { Office?: unknown };
+    const realOffice = g.Office;
+    g.Office = officeHost("PowerPoint");
+
+    const offered: string[] = [];
+    const captured: LLMMessage[][] = [];
+    await runAgentLoop(
+      offeringProvider(offered, captured),
+      "hi",
+      opts,
+      {},
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      true
+    );
+    g.Office = realOffice;
+
+    expect(offered).toContain("edit_slide_text");
+    expect(offered).not.toContain("add_suggestion");
+    expect(captured[0][0].content as string).not.toContain("<suggestion_mode>");
+  });
+
+  it("hard-blocks write tool calls even if the model emits them", async () => {
+    const g = globalThis as { Office?: unknown };
+    const realOffice = g.Office;
+    g.Office = officeHost("Word");
+
+    const toolMessages: string[] = [];
+    const p = createMockProvider([
+      {
+        toolCalls: [
+          {
+            id: "c1",
+            type: "function",
+            function: {
+              name: "edit_doc_text",
+              arguments: JSON.stringify({ old_text: "a", new_text: "b" }),
+            },
+          },
+        ],
+      },
+      { content: "done" },
+    ]);
+
+    await runAgentLoop(
+      p,
+      "edit",
+      opts,
+      {
+        onHistoryChange: (msgs) => {
+          for (const m of msgs) {
+            if (m.role === "tool") toolMessages.push(m.content ?? "");
+          }
+        },
+      },
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      true
+    );
+    g.Office = realOffice;
+
+    expect(toolMessages.some((c) => c.includes("not available in suggestion mode"))).toBe(true);
+  });
+
+  it("runs the real add_suggestion executor end-to-end (Word)", async () => {
+    const g = globalThis as { Office?: unknown; Word?: unknown };
+    const realOffice = g.Office;
+    const realWord = g.Word;
+    g.Office = {
+      onReady: () => {},
+      context: { host: "Word", requirements: { isSetSupported: () => true } },
+      HostType: { Word: "Word", Excel: "Excel", PowerPoint: "PowerPoint" },
+    };
+
+    const insertComment = vi.fn(() => ({ load: vi.fn(), id: "c1" }));
+    const search = { load: vi.fn(), items: [{ insertComment }] };
+    g.Word = {
+      run: async (cb: (ctx: unknown) => unknown) =>
+        cb({ document: { body: { search: () => search } }, sync: async () => {} }),
+    };
+
+    const toolResults: string[] = [];
+    const p = createMockProvider([
+      {
+        toolCalls: [
+          {
+            id: "c1",
+            type: "function",
+            function: {
+              name: "add_suggestion",
+              arguments: JSON.stringify({ text: "Fix this", target_text: "Madrid" }),
+            },
+          },
+        ],
+      },
+      { content: "done" },
+    ]);
+
+    await runAgentLoop(
+      p,
+      "review",
+      opts,
+      {
+        onHistoryChange: (msgs) => {
+          for (const m of msgs) if (m.role === "tool") toolResults.push(m.content ?? "");
+        },
+      },
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      true
+    );
+    g.Office = realOffice;
+    g.Word = realWord;
+
+    expect(insertComment).toHaveBeenCalledWith("Fix this");
+    expect(toolResults.some((c) => c.includes('"ok":true'))).toBe(true);
+  });
+
+  it("runs the real add_suggestion executor end-to-end (Excel)", async () => {
+    const g = globalThis as { Office?: unknown; Excel?: unknown };
+    const realOffice = g.Office;
+    const realExcel = g.Excel;
+    g.Office = {
+      onReady: () => {},
+      context: { host: "Excel", requirements: { isSetSupported: () => true } },
+      HostType: { Word: "Word", Excel: "Excel", PowerPoint: "PowerPoint" },
+    };
+
+    const add = vi.fn(() => ({ load: vi.fn(), id: "x1" }));
+    const sheet = { name: "Sheet1", load: vi.fn(), getRange: () => ({}), comments: { add } };
+    g.Excel = {
+      run: async (cb: (ctx: unknown) => unknown) =>
+        cb({ workbook: { worksheets: { getActiveWorksheet: () => sheet } }, sync: async () => {} }),
+    };
+
+    const toolResults: string[] = [];
+    const p = createMockProvider([
+      {
+        toolCalls: [
+          {
+            id: "c1",
+            type: "function",
+            function: {
+              name: "add_suggestion",
+              arguments: JSON.stringify({ text: "Check", cell: "B4" }),
+            },
+          },
+        ],
+      },
+      { content: "done" },
+    ]);
+
+    await runAgentLoop(
+      p,
+      "review",
+      opts,
+      {
+        onHistoryChange: (msgs) => {
+          for (const m of msgs) if (m.role === "tool") toolResults.push(m.content ?? "");
+        },
+      },
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      true
+    );
+    g.Office = realOffice;
+    g.Excel = realExcel;
+
+    expect(add).toHaveBeenCalledWith({}, "Check");
+    expect(toolResults.some((c) => c.includes('"ok":true'))).toBe(true);
+  });
+
+  it("adds then removes a suggestion through the real executors (Word)", async () => {
+    const g = globalThis as { Office?: unknown; Word?: unknown };
+    const realOffice = g.Office;
+    const realWord = g.Word;
+    g.Office = {
+      onReady: () => {},
+      context: { host: "Word", requirements: { isSetSupported: () => true } },
+      HostType: { Word: "Word", Excel: "Excel", PowerPoint: "PowerPoint" },
+    };
+
+    const insertComment = vi.fn(() => ({ load: vi.fn(), id: "c1" }));
+    const del = vi.fn();
+    const search = { load: vi.fn(), items: [{ insertComment }] };
+    const comments = { load: vi.fn(), items: [{ id: "c1", delete: del }] };
+    g.Word = {
+      run: async (cb: (ctx: unknown) => unknown) =>
+        cb({
+          document: { body: { search: () => search, getComments: () => comments } },
+          sync: async () => {},
+        }),
+    };
+
+    const p = createMockProvider([
+      {
+        toolCalls: [
+          {
+            id: "t1",
+            type: "function",
+            function: {
+              name: "add_suggestion",
+              arguments: JSON.stringify({ text: "Fix this", target_text: "Madrid" }),
+            },
+          },
+        ],
+      },
+      {
+        toolCalls: [
+          {
+            id: "t2",
+            type: "function",
+            function: { name: "remove_suggestion", arguments: JSON.stringify({ id: "c1" }) },
+          },
+        ],
+      },
+      { content: "done" },
+    ]);
+
+    await runAgentLoop(p, "review", opts, {}, [], undefined, undefined, undefined, undefined, true);
+    g.Office = realOffice;
+    g.Word = realWord;
+
+    expect(insertComment).toHaveBeenCalledWith("Fix this");
+    expect(del).toHaveBeenCalled();
+    expect(getSuggestion("c1")).toBeUndefined();
+  });
+
+  it("adds then removes a suggestion through the real executors (Excel)", async () => {
+    const g = globalThis as { Office?: unknown; Excel?: unknown };
+    const realOffice = g.Office;
+    const realExcel = g.Excel;
+    g.Office = {
+      onReady: () => {},
+      context: { host: "Excel", requirements: { isSetSupported: () => true } },
+      HostType: { Word: "Word", Excel: "Excel", PowerPoint: "PowerPoint" },
+    };
+
+    const add = vi.fn(() => ({ load: vi.fn(), id: "x1" }));
+    const del = vi.fn();
+    const sheet = {
+      name: "Sheet1",
+      load: vi.fn(),
+      isNullObject: false,
+      getRange: () => ({}),
+      comments: { add, getItem: vi.fn(() => ({ delete: del })) },
+    };
+    const worksheets = {
+      getActiveWorksheet: () => sheet,
+      getItemOrNullObject: () => sheet,
+    };
+    g.Excel = {
+      run: async (cb: (ctx: unknown) => unknown) =>
+        cb({ workbook: { worksheets }, sync: async () => {} }),
+    };
+
+    const p = createMockProvider([
+      {
+        toolCalls: [
+          {
+            id: "t1",
+            type: "function",
+            function: {
+              name: "add_suggestion",
+              arguments: JSON.stringify({ text: "Check", cell: "B4" }),
+            },
+          },
+        ],
+      },
+      {
+        toolCalls: [
+          {
+            id: "t2",
+            type: "function",
+            function: { name: "remove_suggestion", arguments: JSON.stringify({ id: "x1" }) },
+          },
+        ],
+      },
+      { content: "done" },
+    ]);
+
+    await runAgentLoop(p, "review", opts, {}, [], undefined, undefined, undefined, undefined, true);
+    g.Office = realOffice;
+    g.Excel = realExcel;
+
+    expect(add).toHaveBeenCalledWith({}, "Check");
+    expect(del).toHaveBeenCalled();
+    expect(getSuggestion("x1")).toBeUndefined();
+  });
+
+  it("keeps the system prompt and tool list byte-stable across turns (cache-safe)", async () => {
+    const g = globalThis as { Office?: unknown };
+    const realOffice = g.Office;
+    g.Office = officeHost("Word");
+
+    const systems: string[] = [];
+    const toolSets: string[] = [];
+    const capturing: LLMProvider = {
+      id: "cap", label: "Cap", requiresKey: false, defaultModel: "",
+      async listModels(): Promise<ModelInfo[]> { return []; },
+      async chat() { throw new Error("not used"); },
+      async chatStream(
+        messages: LLMMessage[],
+        _onToken: (t: string) => void,
+        _onToolCall: (tc: ToolCallRequest) => void,
+        tools: ToolDefinition[]
+      ): Promise<void> {
+        systems.push(messages[0]?.content ?? "");
+        toolSets.push(tools.map((t) => t.name).join(","));
+      },
+    };
+
+    await runAgentLoop(capturing, "first", opts, {}, [], undefined, undefined, undefined, undefined, true);
+    await runAgentLoop(capturing, "second", opts, {}, [], undefined, undefined, undefined, undefined, true);
+    g.Office = realOffice;
+
+    // The prefix (system prompt + tools) is what providers cache. If it stayed
+    // identical across turns, prompt caching keeps working in suggestion mode.
+    expect(systems[1]).toBe(systems[0]);
+    expect(toolSets[1]).toBe(toolSets[0]);
   });
 });

@@ -1,2 +1,33 @@
+# Baseline security headers, applied to every response.
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+
 /manifest.xml
   Content-Disposition: attachment; filename="manifest.xml"
+
+# Marketing site and docs: not embeddable by third parties, and locked down to
+# the resources VitePress plus the YouTube embeds need. The add-in taskpane at
+# /app/* is intentionally NOT listed here: Office must be able to frame it, and
+# the app carries its own (more permissive) CSP via a <meta> tag.
+/
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; connect-src 'self' https:; frame-ancestors 'self'; upgrade-insecure-requests
+
+/docs/*
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; connect-src 'self' https:; frame-ancestors 'self'; upgrade-insecure-requests
+
+/privacy
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; connect-src 'self' https:; frame-ancestors 'self'; upgrade-insecure-requests
+
+/terms
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; connect-src 'self' https:; frame-ancestors 'self'; upgrade-insecure-requests
+
+/support
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; connect-src 'self' https:; frame-ancestors 'self'; upgrade-insecure-requests

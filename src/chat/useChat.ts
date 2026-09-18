@@ -15,34 +15,7 @@ import {
   setRejectedThisTurn,
   resetSession,
 } from "./session";
-
-/** Tools that modify the document — these require HITL approval when enabled. */
-const WRITE_TOOLS = new Set([
-  // Word
-  "edit_doc_text",
-  "edit_doc_list",
-  "collapse_blank_paragraphs",
-  "set_page_break",
-  // Excel
-  "write_range",
-  "format_range",
-  "insert_rows_columns",
-  "delete_rows_columns",
-  "merge_cells",
-  "clear_range",
-  "sort_range",
-  "set_column_width",
-  "set_row_height",
-  // PowerPoint
-  "modify_presentation_structure",
-  "insert_slide_element",
-  "remove_slide_element",
-  "edit_slide_text",
-  "edit_slide_xml",
-  "format_shape",
-  // Both
-  "execute_office_js",
-]);
+import { WRITE_TOOLS } from "./writeTools";
 
 export function useChat() {
   const settings = useSettingsStore((s) => s.config);
@@ -232,7 +205,7 @@ export function useChat() {
               }
             }
           },
-        }, history, docState, settings.customInstructions || "", settings.maxIterations, attachments);
+        }, history, docState, settings.customInstructions || "", settings.maxIterations, attachments, settings.suggestionMode);
 
         debugLog("info", `Agent loop finished (${Math.round(performance.now() - t0)}ms, ${result.iterations} iter, finish=${result.finishReason})`);
 

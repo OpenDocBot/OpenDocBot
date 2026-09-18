@@ -6,6 +6,7 @@
 - Zero-Proxy Architecture: Direct client-to-LLM communication without intermediary servers.
 - Privacy-First: No telemetry, no client tracking, local storage for API keys.
 - Multi-Model: Supports Ollama (local LLMs), OpenAI, DeepSeek, Anthropic, Gemini, OpenRouter, OpenCode, and other OpenAI-compatible endpoints.
+- Suggestion Mode: Read-only review; the agent adds native Word/Excel comments proposing changes instead of editing content.
 
 ## Documentation & Links
 - Website: https://opendocbot.com

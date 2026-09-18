@@ -32,6 +32,11 @@ export interface ToolDefinition {
    * "powerpoint" → only PowerPoint.
    */
   host?: "word" | "excel" | "powerpoint" | "both";
+  /**
+   * Tool that only exists in suggestion (read-only review) mode. Hidden by
+   * default; shown only when the mode is on.
+   */
+  suggestionOnly?: boolean;
 }
 
 export interface ToolResult {

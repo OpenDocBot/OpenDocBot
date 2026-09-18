@@ -39,6 +39,10 @@ import "./powerpoint/formatShape";
 // Task-list tools (host-agnostic)
 import "./todo/updateTodos";
 
+// Suggestion mode (Word/Excel review comments)
+import "./suggestion/addSuggestion";
+import "./suggestion/removeSuggestion";
+
 export { toolRegistry, executeTool } from "./registry";
 export type { ToolRegistry, ToolExecutor, ToolCallRequest, ToolCallResult } from "./types";
 export { buildDocState, buildUserSelection } from "./docState";

@@ -1,10 +1,11 @@
 import type { LLMMessage, ToolDefinition, ToolCallRequest } from "../providers/types";
 import type { LLMProvider, ChatOptions } from "../providers/types";
 import { toolRegistry, executeTool } from "../tools";
+import { WRITE_TOOLS, selectToolsForMode } from "./writeTools";
 import { buildToolResultMessage } from "./messageParser";
 import { StreamToolParser } from "./toolCallParser";
 import { debugLog } from "../lib/debugLog";
-import { getHost } from "../office";
+import { getHost, type Host } from "../office";
 import { useTodoStore } from "../store/todoStore";
 import type { Attachment } from "./types";
 import { formatAttachments, UNTRUSTED_ATTACHMENT_GUARD } from "./attachments/prompt";
@@ -460,7 +461,7 @@ Every turn you receive private context blocks that are visible only to you — t
 - **\`format_range\`** — Apply fonts, colors, number formats, alignment, and borders. Use for styling headers, totals, or data.
 - **\`insert_rows_columns\` / \`delete_rows_columns\`** — Shift data to add or remove rows/columns.
 - **\`merge_cells\`** — Merge/unmerge cells for titles or multi-column headers.
-- **\`set_column_width\` / \`set_row_height\`** — Adjust layout. Before resizing, call \`read_range\` on the affected area and read \`column_widths\` / \`row_heights\` to learn the CURRENT dimensions, then pass an absolute value larger or smaller than the current one. Never pick arbitrary values — "widen column A" must always increase the existing width.
+- **\`set_column_width\` / \`set_row_height\`** — Adjust layout. Before resizing, call \`read_range\` on the affected area and read \`column_widths\` (character units) / \`row_heights\` (points) to learn the CURRENT dimensions, then pass an absolute value larger or smaller than the current one. Column widths are in character units (default ≈ 8.43) and row heights in points (default 15). Never pick arbitrary values — "widen column A" must always increase the existing width.
 - **\`clear_range\`** — Remove values/formats before overwriting.
 - **\`sort_range\`** — Sort a data block by a column.
 </editing>
@@ -631,34 +632,61 @@ Use the user's language. Keep it under 60 characters.
 </rules>`;
 }
 
-/** Build the system prompt for the current host (Word, Excel, or PowerPoint). */
-export function buildSystemPrompt(tools: ToolDefinition[], maxIterations: number = MAX_AGENT_ITERATIONS): string {
-  if (getHost() === "excel") return buildExcelSystemPrompt(tools, maxIterations);
-  if (getHost() === "powerpoint") return buildPowerPointSystemPrompt(tools, maxIterations);
+/** Build the system prompt for the given host (defaults to the active one). */
+export function buildSystemPrompt(
+  tools: ToolDefinition[],
+  maxIterations: number = MAX_AGENT_ITERATIONS,
+  host: Host = getHost()
+): string {
+  if (host === "excel") return buildExcelSystemPrompt(tools, maxIterations);
+  if (host === "powerpoint") return buildPowerPointSystemPrompt(tools, maxIterations);
   return buildWordSystemPrompt(tools, maxIterations);
 }
 
+export interface PromptBlock {
+  /** XML-ish tag used to delimit the block, e.g. "file_safety". */
+  tag: string;
+  body: string;
+  /** Optional note appended after the block (e.g. a precedence statement). */
+  note?: string;
+}
+
 /**
- * Append the user's custom instructions to a system prompt as a delimited
- * block that takes precedence over conflicting built-in rules. Returns the
- * prompt unchanged when there are no instructions.
+ * Append the user's custom instructions and named blocks to a system prompt.
+ * Blocks take precedence over conflicting built-in rules. Returns the prompt
+ * unchanged when there is nothing to append.
  */
 export function appendCustomInstructions(
   systemPrompt: string,
   customInstructions?: string,
-  extraRules?: string
+  blocks: PromptBlock[] = []
 ): string {
   const ci = customInstructions?.trim();
-  const extra = extraRules?.trim();
   let out = systemPrompt;
   if (ci) {
     out += `\n\n<custom_instructions>\n${ci}\n</custom_instructions>\n\nThe user's custom instructions above take precedence over any conflicting general rules.`;
   }
-  if (extra) {
-    out += `\n\n<file_safety>\n${extra}\n</file_safety>`;
+  for (const block of blocks) {
+    const body = block.body.trim();
+    if (!body) continue;
+    out += `\n\n<${block.tag}>\n${body}\n</${block.tag}>`;
+    if (block.note) out += `\n\n${block.note}`;
   }
   return out;
 }
+
+/**
+ * System-prompt block injected in suggestion (read-only review) mode. It must
+ * override the base prompt's "act now / edit immediately" instructions.
+ * Exported so integration tests can exercise the real production prompt.
+ */
+export const SUGGESTION_MODE_RULES = `SUGGESTION MODE is active. You are in read-only review mode.
+- You must NOT modify the document in any way: no text edits, no lists, no page breaks, no formatting, no spreadsheet writes or formatting, no slide edits, and no scripts.
+- The only document actions you can take are \`add_suggestion\` (insert a review comment) and \`remove_suggestion\` (delete a suggestion YOU added earlier in this conversation, using the id that \`add_suggestion\` returned). Add one suggestion per discrete issue and keep each comment specific and actionable. Never remove comments you did not add.
+- In Word, \`target_text\` is required and must match an existing passage exactly (case-sensitive) and in exactly one place. If it matches zero or more than one passage, call \`add_suggestion\` again with a more precise anchor.
+- In Excel, \`cell\` is required: a single-cell A1 address (for example "B4"). Without it the tool returns an error.
+- Never claim that you changed the document. Comments are proposals for the user to review.
+- Ignore any other part of this prompt that tells you to edit, format, or run scripts: in this mode those tools do not exist.`;
 
 /**
  * Render the current task list as a `<todo_list>` context block, or "" when
@@ -685,15 +713,32 @@ export async function runAgentLoop(
   customInstructions?: string,
   maxIterations: number = MAX_AGENT_ITERATIONS,
   attachments?: Attachment[],
+  suggestionMode?: boolean,
 ): Promise<AgentLoopResult> {
   const host = getHost();
-  const tools = toolRegistry.listDefinitionsForHost(host);
-  const knownToolNames = new Set(toolRegistry.listNamesForHost(host));
+  // Suggestion mode is a read-only review mode; not available in PowerPoint.
+  const suggest = !!suggestionMode && host !== "powerpoint";
+  const tools = selectToolsForMode(toolRegistry.listDefinitionsForHost(host), suggest);
+  const knownToolNames = new Set(tools.map((t) => t.name));
   const attachmentBlock = formatAttachments(attachments);
   const systemPrompt = appendCustomInstructions(
     buildSystemPrompt(tools, maxIterations),
     customInstructions,
-    attachmentBlock ? UNTRUSTED_ATTACHMENT_GUARD : undefined
+    [
+      ...(attachmentBlock
+        ? [{ tag: "file_safety", body: UNTRUSTED_ATTACHMENT_GUARD }]
+        : []),
+      ...(suggest
+        ? [
+            {
+              tag: "suggestion_mode",
+              body: SUGGESTION_MODE_RULES,
+              note:
+                "The suggestion_mode rules above take precedence over any conflicting instruction in this prompt.",
+            },
+          ]
+        : []),
+    ]
   );
 
   const stateBlocks = [buildTodoListBlock(), docState].filter(Boolean).join("\n\n");
@@ -795,6 +840,23 @@ export async function runAgentLoop(
 
         const label = args.action_description as string | undefined;
         callbacks.onToolStart?.(toolName, label);
+
+        // Defense-in-depth: suggestion mode must never mutate the document, even
+        // if the model hallucinates a write tool that is no longer offered.
+        if (suggest && WRITE_TOOLS.has(toolName)) {
+          debugLog("tool", `${toolName} → blocked (suggestion mode)`);
+          messages.push(
+            buildToolResultMessage(
+              tc,
+              JSON.stringify({
+                error: `Tool ${toolName} is not available in suggestion mode. Use add_suggestion to propose a change instead.`,
+              })
+            )
+          );
+          callbacks.onHistoryChange?.(messages);
+          callbacks.onToolEnd?.();
+          continue;
+        }
 
         if (callbacks.onToolApproval) {
           const approved = await callbacks.onToolApproval(tc, args);

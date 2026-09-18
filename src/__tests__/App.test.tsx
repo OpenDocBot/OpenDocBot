@@ -24,6 +24,7 @@ beforeEach(() => {
       proxyRequests: false,
       anthropicCacheTtl: "5m",
   humanInTheLoop: false,
+  suggestionMode: false,
       maxIterations: 100,
       customInstructions: "",
       openRouterRegion: "global",
@@ -155,6 +156,7 @@ describe("App — first use welcome", () => {
         proxyRequests: false,
         anthropicCacheTtl: "5m",
         humanInTheLoop: false,
+        suggestionMode: false,
         maxIterations: 100,
         customInstructions: "",
         openRouterRegion: "global",
@@ -172,6 +174,10 @@ describe("App — first use welcome", () => {
     expect(screen.getByRole("button", { name: /connect a provider/i })).toBeDefined();
     // The chat input must not be reachable while unconfigured.
     expect(screen.queryByPlaceholderText("Type your request...")).toBeNull();
+    // Chat actions make no sense before a provider exists.
+    expect(screen.queryByTitle("Clear conversation")).toBeNull();
+    expect(screen.queryByTitle(/suggestion mode/i)).toBeNull();
+    expect(screen.getByTitle("Settings")).toBeDefined();
   });
 
   it("opens Settings when clicking Connect a provider", async () => {
@@ -208,6 +214,7 @@ describe("App — first use welcome", () => {
         proxyRequests: false,
         anthropicCacheTtl: "5m",
         humanInTheLoop: false,
+        suggestionMode: false,
         maxIterations: 100,
         customInstructions: "",
         openRouterRegion: "global",
@@ -219,5 +226,7 @@ describe("App — first use welcome", () => {
       expect(screen.getByPlaceholderText("Type your request...")).toBeDefined();
     });
     expect(screen.queryByText("Bring your own AI")).toBeNull();
+    expect(screen.getByTitle("Clear conversation")).toBeDefined();
+    expect(screen.getByTitle(/suggestion mode/i)).toBeDefined();
   });
 });

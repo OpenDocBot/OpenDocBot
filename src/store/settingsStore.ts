@@ -22,6 +22,9 @@ export interface ProviderConfig {
   anthropicCacheTtl: "5m" | "1h";
   /** Human-in-the-loop: require manual approval for document-modifying tool calls. */
   humanInTheLoop: boolean;
+  /** Suggestion mode: read-only review. Content-modifying tools are removed and
+   * the agent can only insert native comments via add_suggestion. Word/Excel only. */
+  suggestionMode: boolean;
   /** Maximum agent-loop iterations per message before the loop aborts. */
   maxIterations: number;
   /** Persistent instructions injected into the agent's system prompt on every turn. */
@@ -51,6 +54,7 @@ interface SettingsState {
   setProxyRequests: (value: boolean) => void;
   setAnthropicCacheTtl: (value: "5m" | "1h") => void;
   setHumanInTheLoop: (value: boolean) => void;
+  setSuggestionMode: (value: boolean) => void;
   setMaxIterations: (value: number) => void;
   setCustomInstructions: (value: string) => void;
   setCustomHeaders: (value: Record<string, string>) => void;
@@ -74,6 +78,7 @@ export const useSettingsStore = create<SettingsState>()(
         proxyRequests: false,
         anthropicCacheTtl: "5m",
         humanInTheLoop: false,
+        suggestionMode: false,
         maxIterations: 100,
         customInstructions: "",
         customHeaders: {},
@@ -119,6 +124,9 @@ export const useSettingsStore = create<SettingsState>()(
 
       setHumanInTheLoop: (humanInTheLoop) =>
         set((s) => ({ config: { ...s.config, humanInTheLoop } })),
+
+      setSuggestionMode: (suggestionMode) =>
+        set((s) => ({ config: { ...s.config, suggestionMode } })),
 
       setMaxIterations: (maxIterations) =>
         set((s) => ({ config: { ...s.config, maxIterations } })),

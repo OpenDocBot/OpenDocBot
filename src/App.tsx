@@ -12,6 +12,7 @@ import { isConfigured } from "./lib/effectiveConfig";
 import { getProvider } from "./providers/registry";
 import { clearDebugLogs } from "./lib/debugLog";
 import { stopGeneration } from "./chat/session";
+import { clearSuggestions } from "./chat/suggestionRegistry";
 import { resetSessionId } from "./lib/chatSession";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -46,7 +47,8 @@ function App() {
           <Header
             showSettings={showSettings}
             onToggleSettings={() => setShowSettings((s) => !s)}
-            onClearChat={() => { stopGeneration(); clearMessages(); clearDebugLogs(); resetSessionId(); useTodoStore.getState().clearTodos(); }}
+            configured={configured}
+            onClearChat={() => { stopGeneration(); clearMessages(); clearDebugLogs(); resetSessionId(); useTodoStore.getState().clearTodos(); clearSuggestions(); }}
           />
         }
       >

@@ -113,6 +113,26 @@ describe("GeminiProvider — context caching", () => {
     expect((bodies[1]?.contents as unknown[]).length).toBe(1);
   });
 
+  it("keeps using the cache across turns with a suggestion-mode prompt and tool set", async () => {
+    const m = createMockGemini();
+    const suggestionSystem =
+      "You are in read-only suggestion mode. Use add_suggestion. " +
+      "<suggestion_mode>Never edit the document.</suggestion_mode>";
+    const suggestionTools: ToolDefinition[] = [
+      { name: "add_suggestion", description: "Add a review comment", parameters: { type: "object", properties: {} } },
+      { name: "read_doc_section", description: "Read a section", parameters: { type: "object", properties: {} } },
+    ];
+    const base: LLMMessage[] = [{ role: "system", content: suggestionSystem }];
+    for (let i = 0; i < 8; i++) base.push({ role: "user", content: "hello world ".repeat(80) });
+
+    await provider.chat(base, suggestionTools, opts);
+    await provider.chat([...base, { role: "user", content: "another turn" }], suggestionTools, opts);
+
+    // Same system prompt + tools across turns: the cache is reused, not rebuilt.
+    expect(m.cacheCreates()).toBe(1);
+    expect(m.generateBodies()[1]?.cachedContent).toBe("cachedContents/c1");
+  });
+
   it("rebuilds the cache when the delta crosses the threshold and sends full body", async () => {
     const m = createMockGemini();
     await provider.chat(makeMessages(8), tools, opts);

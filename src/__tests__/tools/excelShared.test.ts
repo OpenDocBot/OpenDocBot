@@ -5,6 +5,8 @@ import {
   normalizeColumnRef,
   normalizeRowRef,
   columnLetter,
+  columnCharsToPoints,
+  columnPointsToChars,
 } from "../../tools/excel/shared";
 
 describe("parseRangeAddress", () => {
@@ -200,5 +202,23 @@ describe("columnLetter", () => {
     expect(columnLetter(52)).toBe("BA");
     expect(columnLetter(701)).toBe("ZZ");
     expect(columnLetter(702)).toBe("AAA");
+  });
+});
+
+describe("column width unit conversion", () => {
+  it("converts the Excel default width (8.43 chars = 48 pt)", () => {
+    expect(columnCharsToPoints(8.43)).toBeCloseTo(48, 1);
+    expect(columnPointsToChars(48)).toBeCloseTo(8.43, 2);
+  });
+
+  it("round-trips characters through points", () => {
+    for (const chars of [5, 12, 20, 40, 100]) {
+      expect(columnPointsToChars(columnCharsToPoints(chars))).toBeCloseTo(chars, 6);
+    }
+  });
+
+  it("never yields a negative width", () => {
+    expect(columnPointsToChars(0)).toBe(0);
+    expect(columnPointsToChars(-10)).toBe(0);
   });
 });
