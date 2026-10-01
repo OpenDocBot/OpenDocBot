@@ -11,15 +11,6 @@
 
 <p align="center"><strong>The Office AI agent you can actually trust<br/>Client-side, provider-agnostic, and fully auditable. No lock-in. No hidden telemetry.</strong></p>
 
-<div align="center">
-  <a href="https://github.com/opendocbot/opendocbot/stargazers" target="_blank">
-    <img alt="GitHub stars" src="https://img.shields.io/github/stars/opendocbot/opendocbot?style=flat&logo=github"></a>
-  <a href="https://github.com/opendocbot/opendocbot/releases" target="_blank">
-    <img alt="GitHub release" src="https://img.shields.io/github/v/release/opendocbot/opendocbot?style=flat"></a>
-  <a href="https://github.com/opendocbot/opendocbot/blob/main/LICENSE" target="_blank">
-    <img alt="License" src="https://img.shields.io/github/license/opendocbot/opendocbot?style=flat"></a>
-</div>
-
 <br />
 
 Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
