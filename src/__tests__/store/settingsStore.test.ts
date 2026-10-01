@@ -21,6 +21,7 @@ anthropicCacheTtl: "5m",
   customInstructions: "",
   customHeaders: {},
   openRouterRegion: "global",
+  bedrockRegion: "us-east-1",
   ocrLanguage: "eng",
 } as const;
 
@@ -61,6 +62,7 @@ anthropicCacheTtl: "5m",
   customInstructions: "",
   customHeaders: {},
   openRouterRegion: "global",
+  bedrockRegion: "us-east-1",
   ocrLanguage: "eng",
     });
   });

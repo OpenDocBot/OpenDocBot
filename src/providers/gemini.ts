@@ -12,6 +12,7 @@ import { GeminiCache, DEFAULT_RECACHE_THRESHOLD } from "../lib/geminiCache";
 import { debugLog } from "../lib/debugLog";
 import { buildRequestUrl } from "./proxyUrl";
 import { withCustomHeaders } from "../lib/customHeaders";
+import { proxyFetch } from "../lib/sessionAuth";
 
 const DEFAULT_BASE = "https://generativelanguage.googleapis.com/v1beta";
 const MIN_CACHE_TOKENS = 1024;
@@ -45,7 +46,7 @@ export class GeminiProvider implements LLMProvider {
   ): Promise<ModelInfo[]> {
     const url = buildRequestUrl(baseUrl || DEFAULT_BASE, "/models", proxyRequests);
 
-    const res = await fetch(url, {
+    const res = await proxyFetch(url, {
       headers: { "x-goog-api-key": apiKey },
     });
     if (!res.ok) {
@@ -205,7 +206,7 @@ export class GeminiProvider implements LLMProvider {
         options.maxTokens,
         options.reasoningEffort,
       );
-      const res = await fetch(url, {
+      const res = await proxyFetch(url, {
         method: "POST",
         headers: withCustomHeaders(
           {

@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { useChat } from "../../chat/useChat";
 import { useChatStore } from "../../store/chatStore";
 import { useSettingsStore } from "../../store/settingsStore";
+import { useManagedConfigStore } from "../../store/managedConfigStore";
 import { stopGeneration } from "../../chat/session";
 import type { AgentLoopCallbacks } from "../../chat/agentLoop";
 import type { LLMMessage } from "../../providers/types";
@@ -42,6 +43,7 @@ beforeEach(() => {
       maxIterations: 100,
       customInstructions: "",
       openRouterRegion: "global",
+      bedrockRegion: "us-east-1",
       ocrLanguage: "eng",
     },
   });
@@ -247,5 +249,37 @@ describe("useChat — lifecycle (session)", () => {
     expect(useChatStore.getState().pendingApproval).toBeNull();
     // The loop is no longer stuck; session is reset (no error surfaced).
     expect(useChatStore.getState().error).toBeNull();
+  });
+});
+
+describe("useChat — managed config", () => {
+  beforeEach(() => {
+    useManagedConfigStore.setState({ state: "unmanaged", payload: null });
+  });
+
+  it("sends the forced apiKey and baseUrl to the agent loop", async () => {
+    useManagedConfigStore.setState({
+      state: "managed",
+      payload: {
+        managedConfig: { apiKey: "managed-key", baseUrl: "https://managed.example.com/v1" },
+      },
+    });
+    mockedRunAgentLoop.mockImplementation(async () => ({
+      content: "ok",
+      iterations: 1,
+      finishReason: "stop",
+    }));
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    const opts = mockedRunAgentLoop.mock.calls[0][2] as {
+      apiKey: string;
+      baseUrl?: string;
+    };
+    expect(opts.apiKey).toBe("managed-key");
+    expect(opts.baseUrl).toBe("https://managed.example.com/v1");
   });
 });

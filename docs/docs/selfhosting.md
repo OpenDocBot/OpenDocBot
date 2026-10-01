@@ -59,18 +59,8 @@ cp .env.example .env
 
 Edit the new `.env` file to configure the application. Use your preferred text editor.
 
-Environment variables:
-
-| Var | Default | Meaning |
-|---|---|---|
-| `OPENDOCBOT_HOST_PORT` | `3000` | Host port for the add-in (compose) |
-| `PORT` | `3000` | Server listen port |
-| `HOST` | `0.0.0.0` | Bind address |
-| `DIST_DIR` | `/app/dist` | Built app to serve |
-| `TLS_CERT` | - | Base64-encoded PEM certificate (required for HTTPS) |
-| `TLS_KEY` | - | Base64-encoded PEM private key (required for HTTPS) |
-
-Configure `TLS_CERT` and `TLS_KEY` (see the HTTPS note below):
+Every variable is listed in [Environment variables](#environment-variables)
+below. At minimum, configure `TLS_CERT` and `TLS_KEY` (see the HTTPS note below):
 
 ::: details HTTPS Note
 
@@ -131,8 +121,9 @@ Make a copy of the example env file and configure it:
 cp .env.example .env
 ```
 
-The Node server (`scripts/serve.mjs`) reads the same variables as the container:
-`PORT` (default `3000`), `HOST`, `DIST_DIR`, plus the TLS cert/key. Provide the
+The Node server (`scripts/serve.mjs`) reads the same variables as the container
+(see [Environment variables](#environment-variables)): at minimum `PORT`
+(default `3000`), `HOST`, `DIST_DIR`, plus the TLS cert/key. Provide the
 certificate either via the `TLS_CERT` / `TLS_KEY` env vars (base64-encoded PEM,
 as in Option 1) or by leaving the default files created in
 [Prerequisites](#prerequisites) at `~/.opendocbot-cert.pem` and
@@ -192,3 +183,50 @@ your own channel).
 ### Security note
 
 When using proxy mode, user API keys pass directly through your server before reaching the provider. If hosting a multi-user deployment, protect your server with standard security measures (e.g., HTTPS and authentication) and restrict access so traffic only flows through trusted instances.
+
+## Enterprise features
+
+Two features are aimed at organizations that host OpenDocBot for a team:
+
+- **[SSO](/docs/enterprise/sso)**: put the instance behind your identity
+  provider with OIDC. Once enabled, the taskpane shows a sign-in gate and the
+  managed config is only served to authenticated users.
+- **[Managed configuration](/docs/enterprise/managed-configuration)**: force a
+  subset of the add-in settings for every user, served same-origin from
+  `/app-config.json`.
+
+## Environment variables
+
+All variables are optional except where noted. Runtime variables are read by
+`scripts/serve.mjs` (Docker and Node); build-time variables are baked into the
+bundle and cannot be changed at runtime; manifest variables are used by
+`scripts/build-manifest.mjs`.
+
+| Variable | Default | Scope | Usage |
+|---|---|---|---|
+| `OPENDOCBOT_HOST_PORT` | `3000` | Docker Compose | Host port mapped to the container's port 3000. |
+| `PORT` | `3000` | Runtime | Server listen port. |
+| `HOST` | `0.0.0.0` | Runtime | Bind address. |
+| `DIST_DIR` | `dist/` (Node), `/app/dist` (Docker) | Runtime | Directory of the built app to serve. |
+| `TLS_CERT` | `~/.opendocbot-cert.pem` (Node) | Runtime | HTTPS certificate. A file path, or the PEM/base64 contents (Docker passes base64). Required for HTTPS. |
+| `TLS_KEY` | `~/.opendocbot-key.pem` (Node) | Runtime | Matching private key. Same accepted forms as `TLS_CERT`. Required for HTTPS. |
+| `OPENDOCBOT_MANAGED_CONFIG` | - | Runtime | Inline JSON of forced settings. See [Managed configuration](/docs/enterprise/managed-configuration). |
+| `OPENDOCBOT_MANAGED_CONFIG_FILE` | - | Runtime | Path to a JSON file with the forced settings (alternative to the inline value). |
+| `OPENDOCBOT_MANAGED_REQUIRE_SSO` | `true` | Runtime | Refuse to start if a managed config is set without OIDC. Set to `false` to allow an intentionally open config. |
+| `OPENDOCBOT_OIDC_ISSUER` | - | Runtime | OIDC issuer URL. Enables SSO when set. See [SSO](/docs/enterprise/sso). |
+| `OPENDOCBOT_OIDC_CLIENT_ID` | - | Runtime | OIDC client id of the registered application. |
+| `OPENDOCBOT_OIDC_CLIENT_SECRET` | - | Runtime | OIDC client secret. Optional for a public PKCE client. |
+| `OPENDOCBOT_OIDC_SCOPES` | `openid profile email offline_access` | Runtime | Space-separated OIDC scopes. Keep `offline_access` to receive a refresh token. |
+| `OPENDOCBOT_OIDC_REDIRECT_URI` | computed as `https://<host>/auth/callback` | Runtime | Override the redirect URI (needed behind a proxy). Must match the IdP registration. |
+| `OPENDOCBOT_OIDC_ALLOWED_GROUPS` | empty (any authenticated user) | Runtime | Comma-separated group object IDs allowed to sign in. |
+| `OPENDOCBOT_OIDC_GROUPS_CLAIM` | `groups` | Runtime | ID token claim that carries group membership (list or single string). |
+| `OPENDOCBOT_SESSION_STORE` | `~/.opendocbot-sessions.json` (Node), `/data/opendocbot-sessions.json` (Docker) | Runtime | Session store file. Must survive restarts. |
+| `OPENDOCBOT_SESSION_SECRET` | auto-generated next to the store | Runtime | Key that encrypts stored refresh tokens. |
+| `VITE_PROXY_ENABLED` | `false` | Build | Bakes the server-side proxy into the bundle. The Docker image always builds with it enabled. |
+| `VITE_BASE` | `/` | Build | Base path for assets (used for GitHub Pages project sites). |
+| `VITE_CONFIG_EXPORT_EXCLUDE` | - | Build | Comma-separated setting keys to exclude from configuration exports. |
+| `OPENDOCBOT_URL` | derived from `GITHUB_REPOSITORY` | Manifest | Deployment URL written into `dist/manifest.xml`. |
+| `OPENDOCBOT_APP_PATH` | - | Manifest | Sub-path appended to the manifest URLs. |
+| `OPENDOCBOT_VERSION` | `1.0.0.0` | Manifest | Version written into the manifest. |
+| `GITHUB_REPOSITORY` | - | Manifest | Used to derive the GitHub Pages URL when `OPENDOCBOT_URL` is unset. |
+

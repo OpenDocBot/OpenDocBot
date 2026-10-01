@@ -2,6 +2,7 @@ import type { LLMProvider } from "./types";
 import { OpenAICompatibleProvider } from "./openai";
 import { GeminiProvider } from "./gemini";
 import { AnthropicProvider } from "./anthropic";
+import { BedrockProvider } from "./bedrock";
 
 const registry = new Map<string, LLMProvider>();
 
@@ -21,6 +22,8 @@ register(
 register(new AnthropicProvider());
 
 register(new GeminiProvider());
+
+register(new BedrockProvider());
 
 export function getProvider(id?: string): LLMProvider {
   if (id) return registry.get(id) ?? registry.values().next().value!;

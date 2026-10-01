@@ -57,12 +57,7 @@ This scripts requires admin priviledges due to the required creation of a local 
 audited at [https://opendocbot.com/sideload.ps1](https://opendocbot.com/sideload.ps1)
 :::
 
-<iframe width="600" height="337"
-  src="https://www.youtube-nocookie.com/embed/jrE7wh2EFDg"
-  title="OpenDocBot Sideloading Office Local"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen loading="lazy"></iframe>
+<LiteYouTube id="jrE7wh2EFDg" title="OpenDocBot Sideloading Office Local" />
 
   </Tab>
   <Tab label="macOS">
@@ -95,12 +90,7 @@ persistently, the add-in may vanish on page refresh.
 
 [Download manifest.xml](https://opendocbot.com/manifest.xml)
 
-<iframe width="600" height="337"
-  src="https://www.youtube-nocookie.com/embed/xbNe3VhVdd4"
-  title="OpenDocBot Sideloading Office Web"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen loading="lazy"></iframe>
+<LiteYouTube id="xbNe3VhVdd4" title="OpenDocBot Sideloading Office Web" />
 
   </Tab>
   <Tab label="Teams and IT-managed">
@@ -123,12 +113,7 @@ OpenDocBot is Source-Available and 100% free for personal use and small teams (u
 2. Pick a **Preset**, paste your **API key**
 3. **Test Connection**, then **Apply**
 
-<iframe width="720" height="405"
-  src="https://www.youtube-nocookie.com/embed/hkTQNekzxUE"
-  title="How to connect OpenDocBot to an AI Provider"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen loading="lazy"></iframe>
+<LiteYouTube id="hkTQNekzxUE" title="How to connect OpenDocBot to an AI Provider" />
 
 ### 3. Talk to your document
 
@@ -143,7 +128,10 @@ label style."*
 If you want full control, or need the **proxy** for providers without browser
 CORS (like OpenCode), you can run OpenDocBot on your own infrastructure. The
 full guide (Docker, Node, static hosting, HTTPS/TLS certificates, the proxy and
-production manifests) is on the [Self-hosting](/docs/selfhosting) page.
+production manifests) is on the [Self-hosting](/docs/selfhosting) page. That page
+also covers the team features you get when you self-host:
+[SSO](/docs/enterprise/sso) and
+[managed configuration](/docs/enterprise/managed-configuration).
 
 ---
 

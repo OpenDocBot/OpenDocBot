@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <title>OpenDocBot sign-in</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  </head>
+  <body style="font-family: monospace; padding: 24px; background: #111; color: #eee">
+    <h3>Signing you in...</h3>
+    <p id="status">Finishing sign-in.</p>
+    <script>
+      var SID_KEY = "opendocbot-session-id";
+
+      function officeReady() {
+        return new Promise(function (resolve) {
+          if (typeof Office !== "undefined" && Office.onReady) {
+            Office.onReady(function () { resolve(); });
+          } else {
+            resolve();
+          }
+        });
+      }
+
+      function inDialog() {
+        return (
+          typeof Office !== "undefined" &&
+          Office.context &&
+          Office.context.ui &&
+          typeof Office.context.ui.messageParent === "function"
+        );
+      }
+
+      (async function () {
+        var status = document.getElementById("status");
+        try {
+          var code = new URLSearchParams(location.hash.slice(1)).get("code");
+          if (!code) throw new Error("missing handoff code");
+
+          var res = await fetch("/auth/exchange", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: code }),
+          });
+          if (!res.ok) throw new Error("exchange failed: HTTP " + res.status);
+          var data = await res.json();
+
+          await officeReady();
+          if (inDialog()) {
+            Office.context.ui.messageParent(JSON.stringify({ sid: data.sid, user: data.user }));
+            status.textContent = "Signed in. You can close this window.";
+          } else {
+            // Browser dev (no Office dialog): persist and return to the app.
+            localStorage.setItem(SID_KEY, data.sid);
+            location.replace("/");
+          }
+        } catch (err) {
+          status.textContent = "Sign-in failed: " + (err && err.message ? err.message : err);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -12,13 +12,15 @@ interface SelectProps {
   options: Option[];
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
-function Select({ value, onValueChange, options, placeholder, className }: SelectProps) {
+function Select({ value, onValueChange, options, placeholder, className, disabled }: SelectProps) {
   return (
     <select
       value={value}
       onChange={(e) => onValueChange(e.target.value)}
+      disabled={disabled}
       className={cn(
         "flex h-9 w-full rounded-none border border-input bg-background px-3 py-1 font-mono text-sm transition-colors",
         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",

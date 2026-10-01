@@ -19,4 +19,4 @@ If an OpenAI-compatible endpoint behaves oddly, first try toggling the legacy
 endpoint option. Most incompatibilities are protocol-level, not model-level.
 :::
 
-<!-- Connection video: paste the <iframe> embed here. -->
+<!-- Connection video: add `<LiteYouTube id="VIDEO_ID" title="..." />` here. -->

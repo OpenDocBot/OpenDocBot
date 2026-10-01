@@ -11,7 +11,16 @@ locally in your browser via `localStorage`. No telemetry.
 The panel has two tabs, each mapped to a section below:
 
 - **Connection**: provider, endpoint, key, model, advanced options, test
-- **Behavior**: custom instructions, max iterations, Human in the Loop
+- **Behavior**: custom instructions, max iterations, Human in the Loop, OCR
+
+While Settings is open, the **file-cog icon** in the header exports or imports
+your configuration (see [Sharing Configuration](#sharing-configuration)).
+
+::: info Running on a managed instance?
+If your administrator set a managed configuration, some fields here are fixed
+and shown as read-only, and the export/import option is hidden. See
+[Managed configuration](/docs/enterprise/managed-configuration).
+:::
 
 ## Connection Configuration
 
@@ -202,6 +211,32 @@ The language Tesseract uses to read scanned (image-only) PDFs. Defaults to
   (Latin, Cyrillic, ...), not the specific language. Pick the document's language
   for the best accuracy.
 - Non-English languages download their model on first use.
+
+## Sharing Configuration
+
+The **file-cog icon** in the header (visible while Settings is open) exports your
+settings to an encrypted file, or imports one someone shared. Everything happens
+on your device: nothing is sent to OpenDocBot. API keys are always included
+unless the deployment excludes them with `VITE_CONFIG_EXPORT_EXCLUDE`.
+
+### Export
+
+1. Choose **Export**.
+2. Type a passphrase, or press **Generate** and copy it with the copy button.
+3. Press **Download**. The file `opendocbot-config.txt` downloads.
+
+Share the file and the passphrase through **separate channels**: anyone holding
+both can read your API keys. If you lose the passphrase, the file cannot be
+recovered.
+
+### Import
+
+1. Choose **Import**.
+2. Drop the file onto the dialog (or click to browse), then enter its passphrase.
+3. Press **Import**. This **replaces all of your current settings**.
+
+Files are encrypted with **Argon2id + AES-256-GCM**. Files from a newer version
+of OpenDocBot are rejected.
 
 ## Apply / Clean
 

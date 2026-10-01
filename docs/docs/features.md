@@ -264,3 +264,12 @@ needed to reproduce a bad turn.
   front of content it hides.
 - **Verification**: `verify_slides` checks overlaps, out-of-bounds shapes,
   WCAG text contrast, and z-order problems after styling.
+
+## Team features on a self-hosted instance
+
+Self-hosting adds two features aimed at teams:
+
+- **SSO**: users sign in with your organization's identity provider (OIDC, such as Microsoft Entra ID) before the add-in loads. See [SSO](/docs/enterprise/sso).
+- **Managed configuration**: fix a subset of the settings, such as the provider and API key, for everyone on the instance. Everything else stays editable. See [Managed configuration](/docs/enterprise/managed-configuration).
+
+Both are included in the free self-hosted product. See [Self-hosting](/docs/selfhosting) to set it up.

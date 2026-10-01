@@ -122,6 +122,38 @@ property-not-loaded failure.
 - **Reset settings**: clear browser storage for the add-in's origin, or
   overwrite fields and press **Apply**.
 
+## SSO: "redirect_uri_mismatch" from the identity provider
+
+The redirect URI the server sends must match, character for character, the one
+registered at your provider. Behind a reverse proxy the computed value can be
+wrong, so set it explicitly:
+
+```dotenv
+OPENDOCBOT_OIDC_REDIRECT_URI=https://<your-host>/auth/callback
+```
+
+Then restart and try again. See [SSO](/docs/enterprise/sso).
+
+## SSO: "group overage" / access denied
+
+When `OPENDOCBOT_OIDC_ALLOWED_GROUPS` is set and the user belongs to too many
+groups for the token to list them, the provider sends a group-overage claim and
+sign-in is refused. Reduce the user's group membership, or use app roles. The
+group values are **object IDs**, not display names.
+
+## SSO: users are signed out after a restart
+
+`OPENDOCBOT_SESSION_STORE` must point at a path that survives restarts (in
+Docker, the `/data` volume). If it is not writable, the server logs a warning and
+sessions are lost. Check the store path and its permissions.
+
+## Managed config: the refresh button shows an error
+
+The server could not be reached, so the add-in kept the last configuration it
+loaded. Use the refresh button (next to the settings icon) to retry. If no
+configuration ever loaded, configure a provider manually or import a
+configuration export.
+
 ## Still stuck?
 
 Use **debug export** (copy button in the chat); it captures the full

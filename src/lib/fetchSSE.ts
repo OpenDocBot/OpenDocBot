@@ -1,3 +1,5 @@
+import { proxyFetch } from "./sessionAuth";
+
 /** Idle time (ms) with no bytes received before the stream is aborted. */
 const SSE_IDLE_TIMEOUT_MS = 120_000;
 /** Total time (ms) before the stream is aborted, even if data keeps flowing. */
@@ -39,7 +41,7 @@ export function fetchSSE(
     onDone();
   }
 
-  fetch(url, {
+  proxyFetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

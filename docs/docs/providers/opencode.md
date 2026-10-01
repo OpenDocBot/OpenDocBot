@@ -49,7 +49,7 @@ for OpenCode Zen and at <https://opencode.ai/docs/go/> for OpenCode Go.
    `$SESSION_ID`.
 9. **Test Connection**, **Apply**
 
-<!-- Connection video: paste the <iframe> embed here. -->
+<!-- Connection video: add `<LiteYouTube id="VIDEO_ID" title="..." />` here. -->
 
 ::: warning The x-opencode-session header is required
 You **must** add the `x-opencode-session: $SESSION_ID` custom header. OpenCode

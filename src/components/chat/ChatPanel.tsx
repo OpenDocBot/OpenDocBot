@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../../store/chatStore";
-import { useSettingsStore } from "../../store/settingsStore";
+import type { ProviderConfig } from "../../store/settingsStore";
 import { useChat } from "../../chat/useChat";
 import { useOfficeReady, getHost } from "../../office";
 import { buildDocState, buildUserSelection } from "../../tools";
 import { debugLog, formatDebugLogs } from "../../lib/debugLog";
-import { getPresetInfo } from "../../lib/effectiveConfig";
+import { getPresetInfo, getEffectiveConfigState, getConfigSourceState } from "../../lib/effectiveConfig";
+import { readManagedBootstrap } from "../../lib/managedConfig";
 import { APP_VERSION, BUILD_ID } from "../../lib/buildInfo";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,7 +39,9 @@ const EMPTY_STATE_COPY: Record<ReturnType<typeof getHost>, { title: string; hint
 
 function formatConversation(
   messages: ReturnType<typeof useChatStore.getState>["messages"],
-  config: ReturnType<typeof useSettingsStore.getState>["config"]
+  config: ProviderConfig,
+  managed: boolean,
+  sso: boolean
 ): string {
   const lines: string[] = [];
 
@@ -56,6 +59,8 @@ function formatConversation(
   lines.push("|---|---|");
   lines.push(`| Version | v${APP_VERSION} |`);
   lines.push(`| Build | ${BUILD_ID} |`);
+  lines.push(`| Managed | ${managed} |`);
+  lines.push(`| SSO | ${sso} |`);
   lines.push(`| Provider | ${config.providerId} |`);
   lines.push(`| Preset | ${getPresetInfo(config).presetId} |`);
   const headerNames = Object.keys(config.customHeaders ?? {})
@@ -171,7 +176,12 @@ export function ChatPanel() {
   }, [menuOpen]);
 
   async function handleCopy() {
-    const text = formatConversation(messages, useSettingsStore.getState().config);
+    const text = formatConversation(
+      messages,
+      getEffectiveConfigState(),
+      getConfigSourceState() === "managed",
+      readManagedBootstrap().sso
+    );
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);

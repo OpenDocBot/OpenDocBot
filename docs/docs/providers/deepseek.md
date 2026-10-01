@@ -11,12 +11,7 @@ description: Connect OpenDocBot to DeepSeek. Create an API key, pick the preset,
 2. Create a key at **https://platform.deepseek.com/api_keys**
 3. Paste, **Test Connection**, **Apply**
 
-<iframe width="600" height="337"
-  src="https://www.youtube-nocookie.com/embed/oSsI0OGp7-w"
-  title="OpenDocBot Connecting DeepSeek"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen loading="lazy"></iframe>
+<LiteYouTube id="oSsI0OGp7-w" title="OpenDocBot Connecting DeepSeek" />
 
 Prompt caching is handled automatically by DeepSeek; no settings needed. See
 [Prompt caching](/docs/providers/#prompt-caching).

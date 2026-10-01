@@ -49,6 +49,7 @@ export function ConnectionTest({ config }: ConnectionTestProps) {
           proxyRequests: config.proxyRequests,
           cacheTtl: config.anthropicCacheTtl,
           customHeaders,
+          region: config.bedrockRegion,
         }
       );
       setLatency(Math.round(performance.now() - start));

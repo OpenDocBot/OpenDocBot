@@ -4,6 +4,7 @@ import {
   getPresetInfo,
   getConfigSource,
   getEffectiveConfig,
+  getForcedKeys,
   type ConfigSource,
 } from "../../lib/effectiveConfig";
 import type { ProviderConfig } from "../../store/settingsStore";
@@ -27,6 +28,7 @@ function makeConfig(overrides: Partial<ProviderConfig>): ProviderConfig {
     maxIterations: 100,
     customInstructions: "",
     openRouterRegion: "global",
+    bedrockRegion: "us-east-1",
     ocrLanguage: "eng",
     ...overrides,
   };
@@ -175,5 +177,28 @@ describe("effectiveConfig — config source", () => {
   it("getEffectiveConfig returns the config unchanged", () => {
     const cfg = makeConfig({ apiKey: "sk-test" });
     expect(getEffectiveConfig(cfg)).toBe(cfg);
+  });
+});
+
+describe("effectiveConfig — managed merge", () => {
+  it("forces present keys and keeps absent ones from local", () => {
+    const local = makeConfig({ apiKey: "local-key", model: "local-model", maxTokens: 4096 });
+    const managed = { apiKey: "managed-key", maxTokens: 8192 } as const;
+    const eff = getEffectiveConfig(local, managed);
+    expect(eff.apiKey).toBe("managed-key");
+    expect(eff.maxTokens).toBe(8192);
+    expect(eff.model).toBe("local-model");
+  });
+
+  it("getForcedKeys lists only the managed keys", () => {
+    expect(getForcedKeys({ apiKey: "x", baseUrl: "y" })).toEqual(["apiKey", "baseUrl"]);
+    expect(getForcedKeys(null)).toEqual([]);
+    expect(getForcedKeys({})).toEqual([]);
+  });
+
+  it("reports managed as the source when forced keys exist", () => {
+    expect(getConfigSource({ apiKey: "x" })).toBe("managed" satisfies ConfigSource);
+    expect(getConfigSource({})).toBe("local" satisfies ConfigSource);
+    expect(getConfigSource(null)).toBe("local" satisfies ConfigSource);
   });
 });

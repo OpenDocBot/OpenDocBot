@@ -30,15 +30,15 @@ describe("PresetSelector", () => {
     expect(select.value).toBe("deepseek");
   });
 
-  it("has 7 options", () => {
+  it("has 8 options", () => {
     render(<PresetSelector baseUrl="" model="" onChange={() => {}} />);
     const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.options.length).toBe(7);
+    expect(select.options.length).toBe(8);
   });
 
-  it("orders presets by popularity (OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter, Ollama, Custom)", () => {
+  it("orders presets by popularity (OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter, Ollama, Bedrock, Custom)", () => {
     const ids = getPresets().map((p) => p.id);
-    expect(ids).toEqual(["openai", "anthropic", "gemini", "deepseek", "openrouter", "ollama", "custom"]);
+    expect(ids).toEqual(["openai", "anthropic", "gemini", "deepseek", "openrouter", "ollama", "bedrock", "custom"]);
   });
 
   it("DeepSeek preset mirrors OpenAI but points at api.deepseek.com", () => {

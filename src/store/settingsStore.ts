@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { CURRENT_CONFIG_VERSION, migrateConfig } from "./migrations";
 
 export interface ProviderConfig {
   /** The preset the user selected (e.g. "ollama", "openai"). Persisted so that
@@ -35,6 +36,9 @@ export interface ProviderConfig {
    * (global -> openrouter.ai, eu -> eu.openrouter.ai, us -> us.openrouter.ai).
    * Only used by the openrouter preset. */
   openRouterRegion: "global" | "eu" | "us";
+  /** AWS region for the Bedrock preset. The runtime endpoint is derived from
+   * this value (https://bedrock-runtime.<region>.amazonaws.com). */
+  bedrockRegion: string;
   /** Tesseract language code used for local OCR of scanned PDFs (default eng). */
   ocrLanguage: string;
 }
@@ -59,32 +63,43 @@ interface SettingsState {
   setCustomInstructions: (value: string) => void;
   setCustomHeaders: (value: Record<string, string>) => void;
   setOpenRouterRegion: (value: "global" | "eu" | "us") => void;
+  setBedrockRegion: (value: string) => void;
   setOcrLanguage: (value: string) => void;
+  /** Replace the entire config at once (used by config import). */
+  replaceConfig: (config: ProviderConfig) => void;
 }
+
+/**
+ * Default configuration. Exported so config import can build a complete config
+ * from a partial imported bundle (replace-all semantics: imported keys apply,
+ * everything absent falls back to these defaults).
+ */
+export const DEFAULT_PROVIDER_CONFIG: ProviderConfig = {
+  providerId: "custom",
+  apiKey: "",
+  model: "",
+  baseUrl: "",
+  maxTokens: 4096,
+  enableCache: true,
+  recacheThreshold: 2000,
+  useLegacyChatCompletions: false,
+  reasoningEffort: "",
+  proxyRequests: false,
+  anthropicCacheTtl: "5m",
+  humanInTheLoop: false,
+  suggestionMode: false,
+  maxIterations: 100,
+  customInstructions: "",
+  customHeaders: {},
+  openRouterRegion: "global",
+  bedrockRegion: "us-east-1",
+  ocrLanguage: "eng",
+};
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      config: {
-        providerId: "custom",
-        apiKey: "",
-        model: "",
-        baseUrl: "",
-        maxTokens: 4096,
-        enableCache: true,
-        recacheThreshold: 2000,
-        useLegacyChatCompletions: false,
-        reasoningEffort: "",
-        proxyRequests: false,
-        anthropicCacheTtl: "5m",
-        humanInTheLoop: false,
-        suggestionMode: false,
-        maxIterations: 100,
-        customInstructions: "",
-        customHeaders: {},
-        openRouterRegion: "global",
-        ocrLanguage: "eng",
-      },
+      config: { ...DEFAULT_PROVIDER_CONFIG },
 
       setPresetId: (id) =>
         set((s) => ({ config: { ...s.config, presetId: id } })),
@@ -140,52 +155,37 @@ export const useSettingsStore = create<SettingsState>()(
       setOpenRouterRegion: (openRouterRegion) =>
         set((s) => ({ config: { ...s.config, openRouterRegion } })),
 
+      setBedrockRegion: (bedrockRegion) =>
+        set((s) => ({ config: { ...s.config, bedrockRegion } })),
+
       setOcrLanguage: (ocrLanguage) =>
         set((s) => ({ config: { ...s.config, ocrLanguage } })),
+
+      replaceConfig: (config) => set({ config: { ...config } }),
     }),
     {
       name: "opendocbot-settings",
       // Current schema version of the persisted config. Bump it every time the
       // config shape changes in a way `merge` cannot express (see `migrate`).
-      version: 1,
+      version: CURRENT_CONFIG_VERSION,
       partialize: (state) => ({ config: state.config }),
       /**
-       * Schema migration, run by zustand persist.
+       * Schema migration, run by zustand persist. The cascade itself lives in
+       * `migrateConfig` (shared with config import) so both paths stay in sync.
        *
        * HOW IT WORKS: zustand calls `migrate(persistedState, storedVersion)`
        * exactly ONCE on rehydrate when the stored version differs from
-       * `version` above. It does NOT auto-discover intermediate versions like
-       * a database migrator — this single function must apply every pending
-       * step itself. Use the cascade pattern below (`if (storedVersion < N)`)
-       * so a user jumping straight from an old version to the latest gets
-       * each step applied in order, oldest first.
-       *
-       * WHAT GOES HERE: structural changes only — renamed fields, removed
-       * fields, value transformations. Additive changes (new fields) are
-       * handled by `merge`, which fills them with defaults.
-       *
-       * HOW TO ADD A MIGRATION:
-       *  1. Bump `version` (e.g. 1 -> 2).
-       *  2. Add an `if (storedVersion < 2) { ... }` block transforming the
-       *     state v1 -> v2, keeping it idempotent and defensive (the
-       *     persisted config may be missing fields from older builds).
-       *  3. Test it by seeding a snapshot with the OLD version and asserting
-       *     the transformed shape (see src/__tests__/store/settingsStore.test.ts).
+       * `version` above. See `src/store/migrations.ts`.
        */
       migrate: (persistedState, storedVersion) => {
-        if (storedVersion >= 1) return persistedState;
-        // v0 -> v1: snapshots written before versioning existed. Drop keys
-        // that no longer exist in ProviderConfig (e.g. the long-removed
-        // `temperature`) so the merged config matches the current schema.
-        const state = persistedState as unknown as
-          | { config?: Record<string, unknown> }
+        if (storedVersion >= CURRENT_CONFIG_VERSION) return persistedState;
+        const state = persistedState as
+          | { config?: unknown; [key: string]: unknown }
           | undefined;
         if (!state || typeof state.config !== "object" || state.config === null) {
           return persistedState;
         }
-        const config = { ...state.config };
-        delete config.temperature;
-        return { config: config as unknown as ProviderConfig };
+        return { ...state, config: migrateConfig(state.config, storedVersion) };
       },
       // Merge persisted config over the defaults so newly added fields that
       // older persisted snapshots don't have fall back to their default

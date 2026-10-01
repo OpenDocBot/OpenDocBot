@@ -108,6 +108,11 @@ export interface ChatOptions {
    * include the field or the API returns 400. Enabled for the DeepSeek preset.
    */
   echoReasoningContent?: boolean;
+  /**
+   * AWS region for the Bedrock provider (e.g. "us-east-1"). Ignored by other
+   * providers. The Bedrock runtime endpoint is derived from this value.
+   */
+  region?: string;
 }
 
 export interface LLMProvider {
@@ -119,7 +124,8 @@ export interface LLMProvider {
   listModels(
     apiKey: string,
     baseUrl?: string,
-    proxyRequests?: boolean
+    proxyRequests?: boolean,
+    region?: string
   ): Promise<ModelInfo[]>;
   chat(
     messages: LLMMessage[],

@@ -11,6 +11,7 @@ import { fetchSSE } from "../lib/fetchSSE";
 import { debugLog } from "../lib/debugLog";
 import { buildRequestUrl } from "./proxyUrl";
 import { withCustomHeaders } from "../lib/customHeaders";
+import { proxyFetch } from "../lib/sessionAuth";
 
 const DEFAULT_BASE = "https://api.anthropic.com/v1";
 
@@ -74,7 +75,7 @@ export class AnthropicProvider implements LLMProvider {
   ): Promise<ModelInfo[]> {
     const url = buildRequestUrl(baseUrl || DEFAULT_BASE, "/models", proxyRequests);
 
-    const res = await fetch(url, {
+    const res = await proxyFetch(url, {
       headers: {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
@@ -101,7 +102,7 @@ export class AnthropicProvider implements LLMProvider {
     );
     const body = this._buildBody(messages, tools, options, false);
 
-    const res = await fetch(url, {
+    const res = await proxyFetch(url, {
       method: "POST",
       headers: buildHeaders(options.apiKey, options.customHeaders, {
         model: options.model,

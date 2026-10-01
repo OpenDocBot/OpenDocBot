@@ -20,7 +20,7 @@ Run a model locally with no API key and no data leaving your premises.
 4. Type your model name (the model list isn't auto-fetched for Ollama); e.g. `llama3.1`
 5. **Test Connection**, **Apply**
 
-<!-- Connection video: paste the <iframe> embed here. -->
+<!-- Connection video: add `<LiteYouTube id="VIDEO_ID" title="..." />` here. -->
 
 ::: tip
 If Ollama rejects the request, enable **Use old /chat/completions endpoint** in

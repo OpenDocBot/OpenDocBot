@@ -1,6 +1,6 @@
 ---
 title: Providers
-description: Set up OpenAI, DeepSeek, Anthropic, Gemini, Ollama, OpenRouter, or any other provider (e.g. OpenCode) via the Custom preset in OpenDocBot.
+description: Set up OpenAI, DeepSeek, Anthropic, Gemini, Ollama, OpenRouter, Amazon Bedrock, or any other provider (e.g. OpenCode) via the Custom preset in OpenDocBot.
 ---
 
 # Providers
@@ -13,6 +13,7 @@ OpenDocBot is **provider-agnostic**. Each AI provider has its own setup guide:
 - [DeepSeek](/docs/providers/deepseek)
 - [Ollama](/docs/providers/ollama)
 - [OpenRouter](/docs/providers/openrouter)
+- [Amazon Bedrock](/docs/providers/bedrock)
 - [Custom (any provider)](/docs/providers/custom)
 - [OpenCode](/docs/providers/opencode)
 
@@ -27,6 +28,7 @@ Different providers are implementations of the same
 | `OpenAICompatibleProvider` | OpenAI, DeepSeek, Ollama, OpenRouter, Custom | Responses API + `/chat/completions` |
 | `AnthropicProvider` | Claude | Messages API (`/v1/messages`) |
 | `GeminiProvider` | Google Gemini | `generateContent` / `streamGenerateContent` |
+| `BedrockProvider` | Amazon Bedrock | Converse / ConverseStream |
 
 A **preset** binds a provider to a concrete endpoint and default model. This ensures easy connection to different AI platforms. You can also configure a provider manually via the **Custom** preset.
 
@@ -43,6 +45,9 @@ depends on the provider:
   across turns. You can choose a **Cache TTL** (`5m` or `1h`) in Settings.
 - **Gemini** keeps a context cache with an automatic rebuild threshold. The
   cache is deleted when the taskpane closes so idle-storage billing stops.
+- **Amazon Bedrock** uses explicit `cachePoint` checkpoints on models that
+  support prompt caching, and implicit caching on models that do it
+  automatically. No configuration is required.
 
 See [Configuration](/docs/configuration#prompt-caching) for the exact settings.
 

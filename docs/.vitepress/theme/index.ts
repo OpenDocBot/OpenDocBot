@@ -5,6 +5,7 @@ import type { Theme } from "vitepress";
 import Tabs from "./components/Tabs.vue";
 import Tab from "./components/Tab.vue";
 import HeroVideo from "./components/HeroVideo.vue";
+import LiteYouTube from "./components/LiteYouTube.vue";
 import "./custom.css";
 
 export default {
@@ -12,6 +13,8 @@ export default {
   enhanceApp({ app }) {
     app.component("Tabs", Tabs);
     app.component("Tab", Tab);
+    // Click-to-play YouTube facade: no request to Google until the user clicks.
+    app.component("LiteYouTube", LiteYouTube);
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {

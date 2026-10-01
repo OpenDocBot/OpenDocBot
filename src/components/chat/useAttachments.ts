@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useChatStore } from "../../store/chatStore";
-import { useSettingsStore } from "../../store/settingsStore";
+import { getEffectiveConfigState } from "../../lib/effectiveConfig";
 import { extractFile, ocrPdf } from "../../chat/attachments/extract";
 import { attachmentFileCache } from "../../chat/attachments/fileCache";
 import {
@@ -100,7 +100,7 @@ export function useAttachments() {
       }
       updateAttachment(id, { status: "ocr", progress: undefined, error: undefined });
       try {
-        const language = useSettingsStore.getState().config.ocrLanguage;
+        const language = getEffectiveConfigState().ocrLanguage;
         const outcome = await ocrPdf(file, {
           language,
           onProgress: (progress) => updateAttachment(id, { progress }),

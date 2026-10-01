@@ -89,11 +89,30 @@ export default defineConfig({
               { text: "DeepSeek", link: "/docs/providers/deepseek" },
               { text: "Ollama", link: "/docs/providers/ollama" },
               { text: "OpenRouter", link: "/docs/providers/openrouter" },
+              { text: "Amazon Bedrock", link: "/docs/providers/bedrock" },
               { text: "Custom (any provider)", link: "/docs/providers/custom" },
               { text: "OpenCode", link: "/docs/providers/opencode" },
             ],
           },
           { text: "Self-hosting", link: "/docs/selfhosting" },
+          {
+            text: "Enterprise Features",
+            collapsed: false,
+            items: [
+              {
+                text: "Single Sign-On",
+                link: "/docs/enterprise/sso",
+                collapsed: false,
+                items: [
+                  { text: "Microsoft Entra ID", link: "/docs/enterprise/entra-id" },
+                ],
+              },
+              {
+                text: "Managed configuration",
+                link: "/docs/enterprise/managed-configuration",
+              },
+            ],
+          },
           { text: "Features", link: "/docs/features" },
           { text: "Troubleshooting", link: "/docs/troubleshooting" },
           { text: "License", link: "/docs/license" },

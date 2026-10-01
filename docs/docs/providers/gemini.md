@@ -18,11 +18,6 @@ variants like `-thinking` are skipped from the dropdown, but you can type one
 manually if you want it).
 :::
 
-<iframe width="600" height="337"
-  src="https://www.youtube-nocookie.com/embed/FZs6R7xsvA8"
-  title="OpenDocBot Connecting Google Gemini"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen loading="lazy"></iframe>
+<LiteYouTube id="FZs6R7xsvA8" title="OpenDocBot Connecting Google Gemini" />
 
 See [Configuration](/docs/configuration#prompt-caching) for the caching settings.

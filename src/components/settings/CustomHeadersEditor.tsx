@@ -6,6 +6,7 @@ import { HEADER_VARIABLES } from "../../lib/customHeaders";
 interface CustomHeadersEditorProps {
   value: Record<string, string>;
   onChange: (value: Record<string, string>) => void;
+  disabled?: boolean;
 }
 
 function toRecord(rows: Array<{ key: string; value: string }>): Record<string, string> {
@@ -16,7 +17,7 @@ function toRecord(rows: Array<{ key: string; value: string }>): Record<string, s
   return record;
 }
 
-export function CustomHeadersEditor({ value, onChange }: CustomHeadersEditorProps) {
+export function CustomHeadersEditor({ value, onChange, disabled }: CustomHeadersEditorProps) {
   const rows = Object.entries(value).map(([key, v]) => ({ key, value: v }));
 
   function updateRow(index: number, field: "key" | "value", text: string) {
@@ -41,12 +42,14 @@ export function CustomHeadersEditor({ value, onChange }: CustomHeadersEditorProp
             placeholder="Header name"
             value={row.key}
             onChange={(e) => updateRow(index, "key", e.target.value)}
+            disabled={disabled}
           />
           <Input
             className="flex-1 font-mono"
             placeholder="Value (may contain $VAR)"
             value={row.value}
             onChange={(e) => updateRow(index, "value", e.target.value)}
+            disabled={disabled}
           />
           <Button
             variant="ghost"
@@ -54,12 +57,13 @@ export function CustomHeadersEditor({ value, onChange }: CustomHeadersEditorProp
             onClick={() => removeRow(index)}
             aria-label="Remove header"
             type="button"
+            disabled={disabled}
           >
             <X className="w-3.5 h-3.5" />
           </Button>
         </div>
       ))}
-      <Button variant="outline" size="sm" onClick={addRow} type="button">
+      <Button variant="outline" size="sm" onClick={addRow} type="button" disabled={disabled}>
         <Plus className="w-3.5 h-3.5 mr-1" />
         Add header
       </Button>

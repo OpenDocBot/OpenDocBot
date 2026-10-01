@@ -11,6 +11,7 @@ import { fetchSSE } from "../lib/fetchSSE";
 import { debugLog } from "../lib/debugLog";
 import { buildRequestUrl } from "./proxyUrl";
 import { withCustomHeaders } from "../lib/customHeaders";
+import { proxyFetch } from "../lib/sessionAuth";
 
 /** Responses API minimum for max_output_tokens (enforced by OpenAI). */
 const MIN_RESPONSES_OUTPUT_TOKENS = 16;
@@ -36,7 +37,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
     const headers: Record<string, string> = {};
     if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
 
-    const res = await fetch(url, { headers });
+    const res = await proxyFetch(url, { headers });
     if (!res.ok) {
       throw new Error(`Failed to list models: ${res.status} ${res.statusText}`);
     }
@@ -85,7 +86,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
       body.reasoning_effort = options.reasoningEffort;
     }
 
-    const res = await fetch(url, {
+    const res = await proxyFetch(url, {
       method: "POST",
       headers: withCustomHeaders(
         {
@@ -140,7 +141,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
       body.reasoning = { effort: options.reasoningEffort };
     }
 
-    const res = await fetch(url, {
+    const res = await proxyFetch(url, {
       method: "POST",
       headers: withCustomHeaders(
         {

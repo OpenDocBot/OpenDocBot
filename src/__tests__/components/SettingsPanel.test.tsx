@@ -24,6 +24,7 @@ beforeEach(() => {
       maxIterations: 100,
       customInstructions: "",
       openRouterRegion: "global",
+      bedrockRegion: "us-east-1",
       ocrLanguage: "eng",
     },
   });
@@ -286,31 +287,11 @@ describe("SettingsPanel", () => {
     expect(useSettingsStore.getState().config.humanInTheLoop).toBe(true);
   });
 
-  it("shows Suggestion Mode in Word and hides it in PowerPoint", async () => {
+  it("does not include a Suggestion Mode control (it lives in the header)", async () => {
     const user = userEvent.setup();
-    const g = globalThis as { Office?: unknown };
-    const realOffice = g.Office;
-    g.Office = undefined;
-
-    const first = render(<SettingsPanel />);
-    await user.click(screen.getByText("Behavior"));
-    const toggle = screen.getByLabelText("Suggestion Mode") as HTMLInputElement;
-    expect(toggle.checked).toBe(false);
-    await user.click(toggle);
-    await user.click(screen.getByText("Apply"));
-    expect(useSettingsStore.getState().config.suggestionMode).toBe(true);
-    first.unmount();
-
-    g.Office = {
-      onReady: () => {},
-      context: { host: "PowerPoint" },
-      HostType: { Word: "Word", Excel: "Excel", PowerPoint: "PowerPoint" },
-    };
     render(<SettingsPanel />);
     await user.click(screen.getByText("Behavior"));
     expect(screen.queryByText("Suggestion Mode")).toBeNull();
-
-    g.Office = realOffice;
   });
 
   it("shows Custom Instructions textarea and persists its value on Apply", async () => {

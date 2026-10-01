@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useSettingsStore } from "../../store/settingsStore";
+import { getPresetInfo, useEffectiveConfig } from "../../lib/effectiveConfig";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export function ApiKeyInput() {
-  const apiKey = useSettingsStore((s) => s.config.apiKey);
+  const config = useEffectiveConfig();
   const setApiKey = useSettingsStore((s) => s.setApiKey);
   const [showKey, setShowKey] = useState(false);
+  const { preset } = getPresetInfo(config);
 
   return (
     <div className="space-y-1.5">
@@ -16,9 +18,9 @@ export function ApiKeyInput() {
         <Input
           id="apiKey"
           type={showKey ? "text" : "password"}
-          value={apiKey}
+          value={config.apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder="sk-..."
+          placeholder={preset?.keyPlaceholder ?? "sk-..."}
           className="pr-16"
         />
         <Button

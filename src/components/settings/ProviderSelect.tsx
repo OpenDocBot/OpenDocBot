@@ -5,9 +5,10 @@ import { Select } from "@/components/ui/select";
 interface ProviderSelectProps {
   value: string;
   onChange: (id: string) => void;
+  disabled?: boolean;
 }
 
-export function ProviderSelect({ value, onChange }: ProviderSelectProps) {
+export function ProviderSelect({ value, onChange, disabled }: ProviderSelectProps) {
   const providers = listProviders();
   const options = providers.map((p) => ({
     value: p.id,
@@ -21,6 +22,7 @@ export function ProviderSelect({ value, onChange }: ProviderSelectProps) {
         value={value || providers[0]?.id || ""}
         onValueChange={onChange}
         options={options}
+        disabled={disabled}
       />
     </div>
   );

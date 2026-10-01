@@ -6,20 +6,22 @@ import { ChatPanel } from "./components/chat/ChatPanel";
 import { WelcomePanel } from "./components/chat/WelcomePanel";
 import { SettingsPanel } from "./components/settings/SettingsPanel";
 import { useChatStore } from "./store/chatStore";
-import { useSettingsStore } from "./store/settingsStore";
 import { useTodoStore } from "./store/todoStore";
-import { isConfigured } from "./lib/effectiveConfig";
+import { isConfigured, useEffectiveConfig, getEffectiveConfigState } from "./lib/effectiveConfig";
 import { getProvider } from "./providers/registry";
 import { clearDebugLogs } from "./lib/debugLog";
 import { stopGeneration } from "./chat/session";
 import { clearSuggestions } from "./chat/suggestionRegistry";
 import { resetSessionId } from "./lib/chatSession";
 import { Toaster } from "@/components/ui/sonner";
+import { SignInGate } from "./components/auth/SignInGate";
+import { useAuthStore } from "./store/authStore";
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
   const clearMessages = useChatStore((s) => s.clearMessages);
-  const config = useSettingsStore((s) => s.config);
+  const config = useEffectiveConfig();
+  const authStatus = useAuthStore((s) => s.status);
   useOfficeReady();
   const inOffice = isInsideOffice();
   const configured = isConfigured(config);
@@ -29,7 +31,7 @@ function App() {
     // chance to clean up server-side resources (e.g. delete the Gemini cache
     // so idle-storage billing stops).
     const flush = () => {
-      const { providerId } = useSettingsStore.getState().config;
+      const { providerId } = getEffectiveConfigState();
       getProvider(providerId)?.flushCache?.();
     };
     window.addEventListener("pagehide", flush);
@@ -39,6 +41,16 @@ function App() {
       window.removeEventListener("beforeunload", flush);
     };
   }, []);
+
+  // A managed instance that requires sign-in gates the whole taskpane.
+  if (authStatus === "signedOut") {
+    return (
+      <>
+        <SignInGate />
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <>

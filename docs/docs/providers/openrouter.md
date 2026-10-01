@@ -17,12 +17,7 @@ The "Free models only" checkbox filters the model list to IDs ending in `:free`.
 Very handy for trying the add-in at zero cost.
 :::
 
-<iframe width="600" height="337"
-  src="https://www.youtube-nocookie.com/embed/rFmtoiN6VjM"
-  title="OpenDocBot Connecting OpenRouter"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen loading="lazy"></iframe>
+<LiteYouTube id="rFmtoiN6VjM" title="OpenDocBot Connecting OpenRouter" />
 
 ::: tip Inference region (Sovereign AI)
 With the **OpenRouter** preset active, the **Advanced** settings show an

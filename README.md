@@ -33,6 +33,7 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 - **Human-in-the-Loop Safety**: Review and approve model actions before any text, formula, or slide layout is modified in your document.
 - **Suggestion Mode**: Read-only review. The agent adds native Word/Excel comments proposing changes instead of editing your content.
 - **BYOK & Self-Hostable**: 100% free for individuals and small teams (up to 30 users). Bring your own API keys, avoid seat markups, or deploy on your own infrastructure.
+- **Team-ready on your own server**: Self-host and require sign-in with your organization's identity provider (OIDC, for example Microsoft Entra ID), and set the AI provider once for everyone. Both SSO and managed configuration are part of the free self-hosted product. See [SSO](https://opendocbot.com/docs/enterprise/sso) and [Managed configuration](https://opendocbot.com/docs/enterprise/managed-configuration).
 
 ## Compatibility
 
@@ -82,9 +83,12 @@ See the full technical documentation at [opendocbot.com/docs](https://opendocbot
 
 ## Self-Hosting
 
-Serve OpenDocbot directly from your own infrastructure.
+Serve OpenDocBot directly from your own infrastructure. Self-hosting also unlocks the team features:
 
-📖 [opendocbot.com/docs/selfhosting](https://opendocbot.com/docs/selfhosting)
+- **SSO**: require sign-in with your organization's identity provider (OIDC, for example Microsoft Entra ID) before the add-in loads.
+- **Managed configuration**: set the provider, API key, and model once for everyone on the instance, while the rest stays editable.
+
+Both ship with the free self-hosted product. See the [Self-hosting guide](https://opendocbot.com/docs/selfhosting) for setup.
 
 ## Tech Stack
 

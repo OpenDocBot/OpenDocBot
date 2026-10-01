@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSettingsStore, type ProviderConfig } from "../../store/settingsStore";
+import { getEffectiveConfig, useForcedKeys } from "../../lib/effectiveConfig";
+import { useManagedConfigStore } from "../../store/managedConfigStore";
 import { PresetSelector, matchPreset, getPreset } from "./PresetSelector";
 import { ProviderSelect } from "./ProviderSelect";
 import { ModelSelector } from "./ModelSelector";
 import { ConnectionTest } from "./ConnectionTest";
 import { CustomHeadersEditor } from "./CustomHeadersEditor";
 import { isProxyEnabled } from "../../lib/proxyEnabled";
-import { getHost } from "../../office";
 import { APP_VERSION, BUILD_ID } from "../../lib/buildInfo";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,9 @@ import { ChevronDown } from "lucide-react";
  * Pages builds set VITE_PROXY_ENABLED=false, which hides the checkbox.
  */
 const proxyEnabled = isProxyEnabled();
+
+/** Loose AWS region id check (us-east-1, eu-north-1, us-gov-west-1, ...). */
+const BEDROCK_REGION_RE = /^[a-z]{2}(-gov)?-[a-z0-9-]+-\d$/;
 
 /** Common Tesseract language codes for scanned-PDF OCR (single-select). */
 const OCR_LANGUAGE_OPTIONS = [
@@ -54,49 +58,69 @@ const OCR_LANGUAGE_OPTIONS = [
 
 function useDraftConfig() {
   const store = useSettingsStore();
-  const [draft, setDraft] = useState<ProviderConfig>(() => ({ ...store.config }));
+  const forcedKeys = useForcedKeys();
+  const managed = useManagedConfigStore((s) => s.payload?.managedConfig ?? null);
+  const [draft, setDraft] = useState<ProviderConfig>(() =>
+    getEffectiveConfig(store.config, managed)
+  );
+
+  // Re-seed the draft when the managed config changes (e.g. after a manual
+  // refresh), so the form reflects the new forced values. Any unsaved local
+  // edits are discarded, which is expected for a refresh.
+  useEffect(() => {
+    // Syncing the draft to an external (managed) config change is intentional.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDraft(getEffectiveConfig(useSettingsStore.getState().config, managed));
+  }, [managed]);
 
   function update<K extends keyof ProviderConfig>(key: K, value: ProviderConfig[K]) {
+    // A key forced by the managed config cannot be edited; ignore the change so
+    // the disabled control can never mutate the draft.
+    if (forcedKeys.includes(key)) return;
     setDraft((prev) => ({ ...prev, [key]: value }));
   }
 
   function apply() {
-    store.setPresetId(draft.presetId ?? "");
-    store.setApiKey(draft.apiKey);
-    store.setModel(draft.model);
-    store.setBaseUrl(draft.baseUrl);
-    store.setMaxTokens(draft.maxTokens);
-    store.setProviderId(draft.providerId);
-    store.setEnableCache(draft.enableCache);
-    store.setRecacheThreshold(draft.recacheThreshold);
-    store.setUseLegacyChatCompletions(draft.useLegacyChatCompletions);
-    store.setReasoningEffort(draft.reasoningEffort);
-    store.setProxyRequests(draft.proxyRequests);
-    store.setAnthropicCacheTtl(draft.anthropicCacheTtl);
-    store.setHumanInTheLoop(draft.humanInTheLoop);
-    store.setSuggestionMode(draft.suggestionMode);
-    store.setMaxIterations(draft.maxIterations);
-    store.setCustomInstructions(draft.customInstructions ?? "");
-    store.setCustomHeaders(draft.customHeaders ?? {});
-    store.setOpenRouterRegion(draft.openRouterRegion);
-    store.setOcrLanguage(draft.ocrLanguage ?? "eng");
+    // Forced keys are owned by the managed config: never copy them into the
+    // local store, so the user's own value survives if the instance is later
+    // un-managed.
+    if (!forcedKeys.includes("presetId")) store.setPresetId(draft.presetId ?? "");
+    if (!forcedKeys.includes("apiKey")) store.setApiKey(draft.apiKey);
+    if (!forcedKeys.includes("model")) store.setModel(draft.model);
+    if (!forcedKeys.includes("baseUrl")) store.setBaseUrl(draft.baseUrl);
+    if (!forcedKeys.includes("maxTokens")) store.setMaxTokens(draft.maxTokens);
+    if (!forcedKeys.includes("providerId")) store.setProviderId(draft.providerId);
+    if (!forcedKeys.includes("enableCache")) store.setEnableCache(draft.enableCache);
+    if (!forcedKeys.includes("recacheThreshold")) store.setRecacheThreshold(draft.recacheThreshold);
+    if (!forcedKeys.includes("useLegacyChatCompletions")) store.setUseLegacyChatCompletions(draft.useLegacyChatCompletions);
+    if (!forcedKeys.includes("reasoningEffort")) store.setReasoningEffort(draft.reasoningEffort);
+    if (!forcedKeys.includes("proxyRequests")) store.setProxyRequests(draft.proxyRequests);
+    if (!forcedKeys.includes("anthropicCacheTtl")) store.setAnthropicCacheTtl(draft.anthropicCacheTtl);
+    if (!forcedKeys.includes("humanInTheLoop")) store.setHumanInTheLoop(draft.humanInTheLoop);
+    if (!forcedKeys.includes("suggestionMode")) store.setSuggestionMode(draft.suggestionMode);
+    if (!forcedKeys.includes("maxIterations")) store.setMaxIterations(draft.maxIterations);
+    if (!forcedKeys.includes("customInstructions")) store.setCustomInstructions(draft.customInstructions ?? "");
+    if (!forcedKeys.includes("customHeaders")) store.setCustomHeaders(draft.customHeaders ?? {});
+    if (!forcedKeys.includes("openRouterRegion")) store.setOpenRouterRegion(draft.openRouterRegion);
+    if (!forcedKeys.includes("bedrockRegion")) store.setBedrockRegion(draft.bedrockRegion);
+    if (!forcedKeys.includes("ocrLanguage")) store.setOcrLanguage(draft.ocrLanguage ?? "eng");
     return true;
   }
 
   function reset() {
-    setDraft({ ...store.config });
+    setDraft(getEffectiveConfig(store.config, managed));
   }
 
-  return { draft, update, apply, reset };
+  return { draft, update, apply, reset, forcedKeys, managed: Boolean(managed) };
 }
 
 export function SettingsPanel() {
-  const { draft, update, apply, reset } = useDraftConfig();
+  const { draft, update, apply, reset, forcedKeys, managed } = useDraftConfig();
   const [activeTab, setActiveTab] = useState<"connection" | "behavior">("connection");
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [applied, setApplied] = useState(false);
-  // Suggestion mode only exists in Word and Excel; hide the toggle in PowerPoint.
-  const host = getHost();
+
+  const isForced = (key: keyof ProviderConfig) => forcedKeys.includes(key);
 
   const TAB_LABELS: Record<"connection" | "behavior", string> = {
     connection: "Connection",
@@ -128,6 +152,9 @@ export function SettingsPanel() {
       update("maxTokens", preset.maxTokens);
     }
     update("useLegacyChatCompletions", preset.useLegacyChatCompletions ?? false);
+    if (preset.defaultRegion) update("bedrockRegion", preset.defaultRegion);
+    // Proxy routing is provider-specific; don't carry it across presets.
+    update("proxyRequests", false);
   }
 
   function handleRegionChange(region: "global" | "eu" | "us") {
@@ -157,31 +184,60 @@ export function SettingsPanel() {
         ))}
       </div>
 
-      {activeTab === "connection" ? (
+      {managed && (
+        <div className="border border-border bg-muted/30 px-2.5 py-2 font-mono text-xs text-muted-foreground">
+          Managed by your administrator. Some settings cannot be changed.
+        </div>
+      )}
+
+      {activeTab === "connection" && (
         <>
       <PresetSelector
         baseUrl={draft.baseUrl}
         model={draft.model}
         presetId={draft.presetId}
         onChange={handlePresetChange}
+        disabled={isForced("presetId")}
       />
 
       {currentPresetId === "custom" && (
         <ProviderSelect
           value={draft.providerId}
           onChange={(id) => update("providerId", id)}
+          disabled={isForced("providerId")}
         />
       )}
 
-      <div className="space-y-1.5">
-        <Label htmlFor="endpoint">Endpoint URL</Label>
-        <Input
-          id="endpoint"
-          value={draft.baseUrl}
-          onChange={(e) => update("baseUrl", e.target.value)}
-          placeholder="https://api.openai.com/v1"
-        />
-      </div>
+      {currentPresetId !== "bedrock" && (
+        <div className="space-y-1.5">
+          <Label htmlFor="endpoint">Endpoint URL</Label>
+          <Input
+            id="endpoint"
+            value={draft.baseUrl}
+            onChange={(e) => update("baseUrl", e.target.value)}
+            placeholder="https://api.openai.com/v1"
+            disabled={isForced("baseUrl")}
+          />
+        </div>
+      )}
+
+      {currentPresetId === "bedrock" && (
+        <div className="space-y-1.5">
+          <Label htmlFor="bedrockRegion">Region</Label>
+          <Input
+            id="bedrockRegion"
+            value={draft.bedrockRegion}
+            onChange={(e) => update("bedrockRegion", e.target.value)}
+            placeholder="eu-north-1"
+            disabled={isForced("bedrockRegion")}
+          />
+          {draft.bedrockRegion && !BEDROCK_REGION_RE.test(draft.bedrockRegion) && (
+            <p className="text-xs text-amber-500">
+              Expected an AWS region id such as us-east-1 or eu-north-1.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <Label htmlFor="apiKey">API Key {!requiresKey && <span className="text-muted-foreground">(optional)</span>}</Label>
@@ -191,7 +247,8 @@ export function SettingsPanel() {
           autoComplete="new-password"
           value={draft.apiKey}
           onChange={(e) => update("apiKey", e.target.value)}
-          placeholder="sk-..."
+          placeholder={currentPreset?.keyPlaceholder ?? "sk-..."}
+          disabled={isForced("apiKey")}
         />
       </div>
 
@@ -201,8 +258,11 @@ export function SettingsPanel() {
         baseUrl={draft.baseUrl}
         providerId={draft.providerId}
         proxyRequests={draft.proxyRequests}
+        region={draft.bedrockRegion}
+        allowCustomModel={currentPresetId === "bedrock"}
         onChange={(model) => update("model", model)}
         filterFree={currentPresetId === "openrouter"}
+        disabled={isForced("model")}
       />
 
       <Separator />
@@ -227,6 +287,7 @@ export function SettingsPanel() {
               onChange={(e) => update("maxTokens", parseInt(e.target.value) || 0)}
               min={1}
               max={128000}
+              disabled={isForced("maxTokens")}
             />
           </div>
 
@@ -238,6 +299,7 @@ export function SettingsPanel() {
               value={draft.reasoningEffort}
               onChange={(e) => update("reasoningEffort", e.target.value)}
               placeholder="e.g. low, medium, high, xhigh, max (blank = off)"
+              disabled={isForced("reasoningEffort")}
             />
             <p className="text-xs text-muted-foreground">
               How much the model thinks before answering. Blank uses the provider
@@ -245,7 +307,7 @@ export function SettingsPanel() {
             </p>
           </div>
 
-          {draft.providerId !== "gemini" && draft.providerId !== "anthropic" && (
+          {draft.providerId !== "gemini" && draft.providerId !== "anthropic" && draft.providerId !== "bedrock" && (
             <div className="space-y-1.5">
               <label className="flex items-center gap-2 font-mono text-sm cursor-pointer">
                 <input
@@ -253,6 +315,7 @@ export function SettingsPanel() {
                   checked={draft.useLegacyChatCompletions}
                   onChange={(e) => update("useLegacyChatCompletions", e.target.checked)}
                   className="accent-primary"
+                  disabled={isForced("useLegacyChatCompletions")}
                 />
                 Use old /chat/completions endpoint
               </label>
@@ -271,6 +334,7 @@ export function SettingsPanel() {
                   checked={draft.proxyRequests}
                   onChange={(e) => update("proxyRequests", e.target.checked)}
                   className="accent-primary"
+                  disabled={isForced("proxyRequests")}
                 />
                 Proxy API requests through this server
               </label>
@@ -297,6 +361,7 @@ export function SettingsPanel() {
                       { value: "5m", label: "5 minutes" },
                       { value: "1h", label: "1 hour (2x write cost)" },
                     ]}
+                    disabled={isForced("anthropicCacheTtl")}
                   />
                   <p className="text-xs text-muted-foreground">
                     5m refreshes for free within active bursts. Choose 1h only if
@@ -319,6 +384,7 @@ export function SettingsPanel() {
                     checked={draft.enableCache}
                     onChange={(e) => update("enableCache", e.target.checked)}
                     className="accent-primary"
+                    disabled={isForced("enableCache")}
                   />
                   Enable Prompt Caching
                 </label>
@@ -332,7 +398,7 @@ export function SettingsPanel() {
                     min={1024}
                     max={65536}
                     step={1024}
-                    disabled={!draft.enableCache}
+                    disabled={!draft.enableCache || isForced("recacheThreshold")}
                   />
                 </div>
               </div>
@@ -346,6 +412,7 @@ export function SettingsPanel() {
                 <CustomHeadersEditor
                   value={draft.customHeaders ?? {}}
                   onChange={(headers) => update("customHeaders", headers)}
+                  disabled={isForced("customHeaders")}
                 />
               </div>
             </>
@@ -366,6 +433,7 @@ export function SettingsPanel() {
                       { value: "eu", label: "EU" },
                       { value: "us", label: "US" },
                     ]}
+                    disabled={isForced("openRouterRegion")}
                   />
                   <p className="text-xs text-muted-foreground">
                     Routes requests through the in-region endpoint (eu.openrouter.ai or
@@ -412,7 +480,9 @@ export function SettingsPanel() {
         Your API key is stored locally and sent directly to the provider.
       </p>
         </>
-      ) : (
+        )}
+
+        {activeTab === "behavior" && (
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="customInstructions">Custom Instructions</Label>
@@ -422,6 +492,7 @@ export function SettingsPanel() {
               onChange={(e) => update("customInstructions", e.target.value)}
               placeholder="e.g. Always write in British English. Use a formal tone."
               rows={3}
+              disabled={isForced("customInstructions")}
             />
             <p className="text-xs text-muted-foreground">
               Persistent instructions injected into the agent's system prompt on
@@ -440,6 +511,7 @@ export function SettingsPanel() {
               onChange={(e) => update("maxIterations", parseInt(e.target.value) || 1)}
               min={1}
               max={999}
+              disabled={isForced("maxIterations")}
             />
             <p className="text-xs text-muted-foreground">
               Maximum agent-loop iterations per message before the loop aborts.
@@ -455,6 +527,7 @@ export function SettingsPanel() {
                 checked={draft.humanInTheLoop}
                 onChange={(e) => update("humanInTheLoop", e.target.checked)}
                 className="accent-primary"
+                disabled={isForced("humanInTheLoop")}
               />
               Human in the Loop
             </label>
@@ -462,28 +535,6 @@ export function SettingsPanel() {
               Require user approval for every document-modifying tool call.
             </p>
           </div>
-
-          {host !== "powerpoint" && (
-            <>
-              <Separator />
-
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 font-mono text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={draft.suggestionMode}
-                    onChange={(e) => update("suggestionMode", e.target.checked)}
-                    className="accent-primary"
-                  />
-                  Suggestion Mode
-                </label>
-                <p className="text-xs text-muted-foreground">
-                  Read-only review. The agent cannot edit content; it can only add comments
-                  proposing changes.
-                </p>
-              </div>
-            </>
-          )}
 
           <Separator />
 
@@ -493,6 +544,7 @@ export function SettingsPanel() {
               value={draft.ocrLanguage ?? "eng"}
               onValueChange={(value) => update("ocrLanguage", value)}
               options={OCR_LANGUAGE_OPTIONS}
+              disabled={isForced("ocrLanguage")}
             />
             <p className="text-xs text-muted-foreground">
               Language used for scanned-PDF OCR.
@@ -517,7 +569,7 @@ export function SettingsPanel() {
             </Button>
           </div>
         </div>
-      )}
+        )}
 
       <div className="border border-border bg-muted/30 px-2.5 py-2 text-center font-mono text-[10px] leading-relaxed text-muted-foreground">
         <p>version v{APP_VERSION}</p>

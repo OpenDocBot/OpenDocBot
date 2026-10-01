@@ -21,6 +21,7 @@ organizations that scale past that threshold need a commercial license.
 * **Fork it.** Take the project in your own direction. The license notice must
   stay intact, and you cannot present your fork as the official OpenDocBot.
 * **Self-host it.** Deploy it on your own infrastructure, with no connection to us.
+* **Use SSO and managed configuration.** Both ship with the self-hosted instance and are not tied to a commercial license.
 * **Deploy it inside an organization of up to 30 users.** No license required.
 
 ## What the commercial license unlocks
@@ -33,7 +34,7 @@ The commercial license grants two things:
 * **Whitelabeling.** The right to replace the OpenDocBot branding with your own
   and distribute the add-in under your own name and logo.
 
-Everything else, including self-hosting and running up to 30 users, stays free.
+Everything else, including self-hosting, the SSO and managed configuration features, and running up to 30 users, stays free.
 
 ## Why this model
 

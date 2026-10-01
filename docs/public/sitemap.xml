@@ -29,6 +29,14 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://opendocbot.com/docs/enterprise/sso</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://opendocbot.com/docs/enterprise/managed-configuration</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://opendocbot.com/docs/troubleshooting</loc>
     <priority>0.6</priority>
   </url>

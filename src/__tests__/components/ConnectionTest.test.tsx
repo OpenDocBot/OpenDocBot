@@ -24,6 +24,7 @@ const testConfig: ProviderConfig = {
   maxIterations: 100,
   customInstructions: "",
   openRouterRegion: "global",
+  bedrockRegion: "us-east-1",
   ocrLanguage: "eng",
 };
 

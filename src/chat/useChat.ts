@@ -1,8 +1,7 @@
 import { useCallback } from "react";
 import { useChatStore } from "../store/chatStore";
-import { useSettingsStore } from "../store/settingsStore";
 import { getProvider } from "../providers/registry";
-import { isConfigured, getPresetInfo } from "../lib/effectiveConfig";
+import { isConfigured, getPresetInfo, useEffectiveConfig } from "../lib/effectiveConfig";
 import { runAgentLoop } from "./agentLoop";
 import { debugLog } from "../lib/debugLog";
 import type { Attachment } from "./types";
@@ -18,7 +17,7 @@ import {
 import { WRITE_TOOLS } from "./writeTools";
 
 export function useChat() {
-  const settings = useSettingsStore((s) => s.config);
+  const settings = useEffectiveConfig();
   const {
     addUserMessage,
     addAssistantPlaceholder,
@@ -109,6 +108,7 @@ export function useChat() {
           proxyRequests: settings.proxyRequests,
           cacheTtl: settings.anthropicCacheTtl,
           customHeaders,
+          region: settings.bedrockRegion,
           // DeepSeek thinking mode requires reasoning_content echoed back on
           // every assistant message; the DeepSeek preset enables the echo.
           echoReasoningContent: settings.presetId === "deepseek",
