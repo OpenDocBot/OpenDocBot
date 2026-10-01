@@ -24,8 +24,6 @@ features:
     details: Optional human-in-the-loop approval gate lets you review model proposals before edits are applied. Self-host anytime.
   - title: Word, Excel & PowerPoint
     details: One agent for your entire workflow. Summarize reports in Word, analyze data and write formulas in Excel, and draft slides in PowerPoint.
-  - title: For Teams
-    details: Self-host it and require sign-in with your organization's identity provider (OIDC), with the provider and key set once for everyone. SSO and managed configuration are included in the free self-hosted product.
 ---
 
 ## FAQ
