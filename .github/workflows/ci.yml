@@ -54,6 +54,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          FOUNDRY_API_KEY: ${{ secrets.FOUNDRY_API_KEY }}
+          FOUNDRY_BASE_URL: ${{ secrets.FOUNDRY_BASE_URL }}
+          FOUNDRY_DEPLOYMENT: ${{ secrets.FOUNDRY_DEPLOYMENT }}
         run: npm test -- --run src/__tests__/providers/integration.test.ts
 
       # Live Amazon Bedrock inference (real Converse / ConverseStream calls)
