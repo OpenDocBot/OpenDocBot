@@ -34,9 +34,24 @@ function encodeHeaders(headers: Record<string, string>): Uint8Array {
   return new Uint8Array(bytes);
 }
 
-function frame(payload: unknown, headers: Record<string, string> = { ":message-type": "event" }): Uint8Array {
-  const payloadBytes = encoder.encode(JSON.stringify(payload));
-  const headerBytes = encodeHeaders(headers);
+/**
+ * Build one AWS EventStream frame. Tests pass a compact single-key object
+ * (`{ eventType: body }`); on the wire the event type is the `:event-type`
+ * header and the body is the bare payload, so lift it here.
+ */
+function frame(payload: unknown, headers: Record<string, string> = {}): Uint8Array {
+  const hdrs: Record<string, string> = { ":message-type": "event" };
+  let body = payload;
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const entries = Object.entries(payload as Record<string, unknown>);
+    if (entries.length === 1) {
+      hdrs[":event-type"] = entries[0][0];
+      body = entries[0][1];
+    }
+  }
+  Object.assign(hdrs, headers);
+  const payloadBytes = encoder.encode(JSON.stringify(body));
+  const headerBytes = encodeHeaders(hdrs);
   const total = 12 + headerBytes.length + payloadBytes.length + 4;
   const buf = new Uint8Array(total);
   const view = new DataView(buf.buffer);
@@ -203,6 +218,7 @@ describe("buildConverseBody — messages", () => {
 const CACHE = { cachePoint: { type: "default" } };
 const cachingCaps = {
   explicitPromptCaching: true,
+  toolCachePoint: true,
   reasoning: false,
   systemRoleSupported: true,
   userImageTypesSupported: [],
@@ -246,6 +262,22 @@ describe("buildConverseBody — prompt caching", () => {
   it("does not add a checkpoint when there are no messages", () => {
     const body = buildConverseBody([], tools, { ...opts }, cachingCaps);
     expect(body.messages).toEqual([]);
+  });
+
+  it("omits the tool checkpoint for models that reject it (e.g. Nova)", () => {
+    const body = buildConverseBody(
+      [{ role: "system", content: "s" }, { role: "user", content: "u" }],
+      tools,
+      opts,
+      { ...cachingCaps, toolCachePoint: false }
+    );
+    const list = (body.toolConfig as { tools: unknown[] }).tools;
+    expect(list).toHaveLength(1);
+    expect(last(list)).not.toEqual(CACHE);
+    // System and message checkpoints are still applied.
+    expect(last(body.system as unknown[])).toEqual(CACHE);
+    const out = body.messages as { content: unknown[] }[];
+    expect(last(last(out).content)).toEqual(CACHE);
   });
 
   it("does not add caching when the model does not support it", () => {
@@ -703,7 +735,7 @@ function countCachePoints(body: unknown): number {
 
 describe("buildConverseBody — cache checkpoint placement edge cases", () => {
   const tools: ToolDefinition[] = [{ name: "t", description: "d", parameters: {} }];
-  const caps = { explicitPromptCaching: true, reasoning: false, systemRoleSupported: true, userImageTypesSupported: [] };
+  const caps = { explicitPromptCaching: true, toolCachePoint: true, reasoning: false, systemRoleSupported: true, userImageTypesSupported: [] };
 
   it("uses exactly three checkpoints for system + tools + user", () => {
     const body = buildConverseBody(

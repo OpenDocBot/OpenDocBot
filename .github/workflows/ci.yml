@@ -56,6 +56,19 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: npm test -- --run src/__tests__/providers/integration.test.ts
 
+      # Live Amazon Bedrock inference (real Converse / ConverseStream calls)
+      # plus the free control-plane discovery tests. Self-skips when
+      # BEDROCK_API_KEY is empty, so this step is safe without the secret.
+      # Set the repo secret BEDROCK_API_KEY (optionally BEDROCK_REGION /
+      # BEDROCK_MODEL) to run it on every push and PR.
+      - name: Integration tests (Amazon Bedrock)
+        env:
+          BEDROCK_API_KEY: ${{ secrets.BEDROCK_API_KEY }}
+          BEDROCK_REGION: ${{ secrets.BEDROCK_REGION || 'us-east-1' }}
+          BEDROCK_MODEL: ${{ secrets.BEDROCK_MODEL || 'nvidia.nemotron-super-3-120b' }}
+          BEDROCK_LIVE_INFERENCE: "1"
+        run: npm test -- --run src/__tests__/providers/bedrockLive.test.ts
+
   deploy:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -1,6 +1,6 @@
 ---
 title: Providers
-description: Set up OpenAI, DeepSeek, Anthropic, Gemini, Ollama, OpenRouter, Amazon Bedrock, or any other provider (e.g. OpenCode) via the Custom preset in OpenDocBot.
+description: Set up OpenAI, DeepSeek, Anthropic, Gemini, Ollama, OpenRouter, Amazon Bedrock, Microsoft Foundry, or any other provider (e.g. OpenCode) via the Custom preset in OpenDocBot.
 ---
 
 # Providers
@@ -11,9 +11,10 @@ OpenDocBot is **provider-agnostic**. Each AI provider has its own setup guide:
 - [Anthropic Claude](/docs/providers/anthropic)
 - [Google Gemini](/docs/providers/gemini)
 - [DeepSeek](/docs/providers/deepseek)
+- [Amazon Bedrock](/docs/providers/bedrock)
+- [Microsoft Foundry](/docs/providers/foundry)
 - [Ollama](/docs/providers/ollama)
 - [OpenRouter](/docs/providers/openrouter)
-- [Amazon Bedrock](/docs/providers/bedrock)
 - [Custom (any provider)](/docs/providers/custom)
 - [OpenCode](/docs/providers/opencode)
 
@@ -25,7 +26,7 @@ Different providers are implementations of the same
 
 | Provider | Handles | Underlying protocol |
 |---|---|---|
-| `OpenAICompatibleProvider` | OpenAI, DeepSeek, Ollama, OpenRouter, Custom | Responses API + `/chat/completions` |
+| `OpenAICompatibleProvider` | OpenAI, DeepSeek, Microsoft Foundry, Ollama, OpenRouter, Custom | Responses API + `/chat/completions` |
 | `AnthropicProvider` | Claude | Messages API (`/v1/messages`) |
 | `GeminiProvider` | Google Gemini | `generateContent` / `streamGenerateContent` |
 | `BedrockProvider` | Amazon Bedrock | Converse / ConverseStream |

@@ -14,6 +14,13 @@ export interface BedrockModelInfo {
  */
 export interface BedrockCapabilities {
   explicitPromptCaching: boolean;
+  /**
+   * Whether a `cachePoint` may be placed inside `toolConfig.tools`. The API's
+   * `explicitPromptCaching` flag does not distinguish by location: Nova reports
+   * support yet rejects a checkpoint there with HTTP 400, so this tracks the
+   * models verified to accept it (Anthropic).
+   */
+  toolCachePoint: boolean;
   reasoning: boolean;
   maxTokensMaximum?: number;
   systemRoleSupported: boolean;
@@ -154,8 +161,14 @@ function profilePrefix(profileId: string): string {
 }
 
 function extractCapabilities(m: FmSummary): BedrockCapabilities {
+  const provider = (m.providerName || "").toLowerCase();
+  const modelId = m.modelId || "";
   return {
     explicitPromptCaching: m.explicitPromptCaching?.isSupported === true,
+    // Only Anthropic is verified to accept a `cachePoint` inside
+    // `toolConfig.tools`; Nova rejects it, so third parties default to off.
+    toolCachePoint:
+      provider === "anthropic" || /(^|\.)anthropic\./.test(modelId),
     reasoning: m.converse?.reasoningSupported != null,
     maxTokensMaximum: m.converse?.maxTokensMaximum,
     systemRoleSupported: m.converse?.systemRoleSupported !== false,

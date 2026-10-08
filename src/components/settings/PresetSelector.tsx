@@ -2,6 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { DEFAULT_BEDROCK_REGION } from "../../lib/bedrockModels";
+import { isFoundryHost } from "../../lib/foundryEndpoint";
 
 export interface Preset {
   id: string;
@@ -19,6 +20,8 @@ export interface Preset {
   defaultRegion?: string;
   /** Placeholder shown in the API key field for this preset. */
   keyPlaceholder?: string;
+  /** Placeholder shown in the endpoint field for this preset. */
+  endpointPlaceholder?: string;
 }
 
 const ALL_PRESETS: Preset[] = [
@@ -26,9 +29,10 @@ const ALL_PRESETS: Preset[] = [
   { id: "anthropic", label: "Anthropic Claude", providerId: "anthropic", baseUrl: "https://api.anthropic.com/v1", model: "claude-haiku-4-5", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false, keyPlaceholder: "sk-..." },
   { id: "gemini", label: "Google Gemini", providerId: "gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta", model: "gemini-3.5-flash-lite", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false, keyPlaceholder: "AIza... / AQ...." },
   { id: "deepseek", label: "DeepSeek", providerId: "openaicompat", baseUrl: "https://api.deepseek.com", model: "deepseek-v4-flash", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: true, keyPlaceholder: "sk-..." },
-  { id: "openrouter", label: "OpenRouter", providerId: "openaicompat", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false, keyPlaceholder: "sk-...", regions: { global: "https://openrouter.ai/api/v1", eu: "https://eu.openrouter.ai/api/v1", us: "https://us.openrouter.ai/api/v1" } },
-  { id: "ollama", label: "Ollama", providerId: "openaicompat", baseUrl: "http://localhost:11434/v1", model: "llama3.1", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false, keyPlaceholder: "opcional" },
   { id: "bedrock", label: "Amazon Bedrock", providerId: "bedrock", baseUrl: "", model: "nvidia.nemotron-super-3-120b", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false, defaultRegion: DEFAULT_BEDROCK_REGION, keyPlaceholder: "ABSK..." },
+  { id: "foundry", label: "Microsoft Foundry", providerId: "openaicompat", baseUrl: "", model: "", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: true, keyPlaceholder: "Azure API key", endpointPlaceholder: "https://<resource>.services.ai.azure.com/openai/v1" },
+  { id: "ollama", label: "Ollama", providerId: "openaicompat", baseUrl: "http://localhost:11434/v1", model: "llama3.1", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false, keyPlaceholder: "opcional" },
+  { id: "openrouter", label: "OpenRouter", providerId: "openaicompat", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o", requiresKey: true, maxTokens: 8192, useLegacyChatCompletions: false, keyPlaceholder: "sk-...", regions: { global: "https://openrouter.ai/api/v1", eu: "https://eu.openrouter.ai/api/v1", us: "https://us.openrouter.ai/api/v1" } },
   { id: "custom", label: "Custom", providerId: "openaicompat", baseUrl: "", model: "", requiresKey: false, maxTokens: 8192, useLegacyChatCompletions: false, keyPlaceholder: "sk-..." },
 ];
 
@@ -37,11 +41,17 @@ export function getPresets(): Preset[] {
 }
 
 export function matchPreset(baseUrl: string, _model: string): string {
-  // An empty endpoint is always the Custom preset (Bedrock also omits its
-  // endpoint, since the region derives it), so it must not be mis-detected.
+  // An empty endpoint is always the Custom preset (Bedrock and Microsoft
+  // Foundry also omit their endpoint, since it is deployment-specific), so it
+  // must not be mis-detected.
   if (!baseUrl) return "custom";
   const exact = getPresets().find((p) => p.baseUrl === baseUrl);
-  return exact ? exact.id : "custom";
+  if (exact) return exact.id;
+  // Microsoft Foundry / Azure OpenAI endpoints are resource-specific, so they
+  // never match by equality. Detect them by host (the path varies: the portal
+  // may copy `/models`, `/models/chat/completions`, or the v1 base).
+  if (isFoundryHost(baseUrl)) return "foundry";
+  return "custom";
 }
 
 export function getPreset(id: string): Preset | undefined {

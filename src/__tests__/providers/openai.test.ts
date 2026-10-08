@@ -1391,6 +1391,25 @@ describe("chatStream", () => {
 
     expect(reasoning).toEqual([""]);
   });
+
+  it("ignores null reasoning_content instead of concatenating \"null\"", async () => {
+    const reasoning: string[] = [];
+    mockSSEFetch([
+      'data: {"choices":[{"delta":{"reasoning_content":null,"content":"a"}}]}\n\n',
+      'data: {"choices":[{"delta":{"content":"b"}}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+
+    await provider.chatStream(
+      [{ role: "user", content: "Hi" }],
+      () => {},
+      () => {},
+      [],      { apiKey: "sk-test", model: "deepseek-v4-flash" },
+      (r) => reasoning.push(r)
+    );
+
+    expect(reasoning).toEqual([]);
+  });
 });
 
 // =========================================================================

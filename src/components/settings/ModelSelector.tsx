@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { getProvider } from "../../providers/registry";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,14 @@ import { Loader2 } from "lucide-react";
 import type { ModelInfo } from "../../providers/types";
 
 const CUSTOM_VALUE = "__custom__";
+
+/** Turn opaque network failures into an actionable message. */
+function describeModelError(error: string): string {
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(error)) {
+    return "Couldn't reach the provider to list models. Enter the model name below.";
+  }
+  return error;
+}
 
 interface ModelSelectorProps {
   apiKey: string;
@@ -19,44 +27,61 @@ interface ModelSelectorProps {
   region?: string;
   /** Show a "Custom model ID" option so users can override the fetched list. */
   allowCustomModel?: boolean;
+  /** Skip model discovery entirely and accept a free-text name (Foundry
+   * deployments are addressed by their deployment name, not a catalogue id). */
+  manualModel?: boolean;
   onChange: (model: string) => void;
   filterFree?: boolean;
   /** Disable the control (managed config forces the model). */
   disabled?: boolean;
 }
 
-export function ModelSelector({ apiKey, model, baseUrl, providerId, proxyRequests, region, allowCustomModel, onChange, filterFree: showFreeFilter, disabled }: ModelSelectorProps) {
+export function ModelSelector({ apiKey, model, baseUrl, providerId, proxyRequests, region, allowCustomModel, manualModel, onChange, filterFree: showFreeFilter, disabled }: ModelSelectorProps) {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [freeOnly, setFreeOnly] = useState(false);
   const [custom, setCustom] = useState(false);
 
-  const fetchModels = useCallback(async () => {
+  useEffect(() => {
+    if (manualModel) {
+      setModels([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
     const provider = getProvider(providerId);
 
     if (!apiKey || (!baseUrl && !region)) {
       setModels([]);
       setError(null);
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
 
     setLoading(true);
     setError(null);
-    try {
-      const result = await provider.listModels(apiKey, baseUrl || undefined, proxyRequests, region);
-      setModels(result);
-    } catch (err) {
-      setError((err as Error).message);
-      setModels([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiKey, baseUrl, providerId, proxyRequests, region]);
+    provider
+      .listModels(apiKey, baseUrl || undefined, proxyRequests, region)
+      .then((result) => {
+        if (cancelled) return;
+        setModels(result);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError((err as Error).message);
+        setModels([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-  useEffect(() => {
-    fetchModels();
-  }, [fetchModels]);
+    return () => {
+      cancelled = true;
+    };
+  }, [apiKey, baseUrl, providerId, proxyRequests, region, manualModel]);
 
   // Keep the visible selection consistent with state: a native <select> with
   // value="" would otherwise show the first option as if selected while the
@@ -68,6 +93,20 @@ export function ModelSelector({ apiKey, model, baseUrl, providerId, proxyRequest
   }, [models, model, custom, onChange]);
 
   const customSelected = custom;
+
+  if (manualModel) {
+    return (
+      <div className="space-y-1.5">
+        <Label>Model</Label>
+        <Input
+          value={model}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Deployment name, e.g. DeepSeek-V4-Flash"
+          disabled={disabled}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1.5">
@@ -86,7 +125,7 @@ export function ModelSelector({ apiKey, model, baseUrl, providerId, proxyRequest
             placeholder="Enter model name..."
             disabled={disabled}
           />
-          <p className="text-xs text-amber-500">{error}</p>
+          <p className="text-xs text-amber-500">{describeModelError(error)}</p>
         </div>
       ) : models.length > 0 || customSelected ? (
         <>

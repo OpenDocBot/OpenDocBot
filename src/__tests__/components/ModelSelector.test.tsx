@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { useState } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ModelSelector } from "../../components/settings/ModelSelector";
@@ -18,6 +19,28 @@ describe("ModelSelector", () => {
   it("shows loading state initially", () => {
     render(<ModelSelector {...baseProps} />);
     expect(screen.getByText(/loading models/i)).toBeDefined();
+  });
+
+  it("manual mode skips the model fetch and shows a plain input", async () => {
+    const spy = vi.spyOn(globalThis, "fetch");
+    const user = userEvent.setup();
+
+    function Controlled() {
+      const [value, setValue] = useState("DeepSeek-V4-Flash");
+      return <ModelSelector {...baseProps} model={value} manualModel onChange={setValue} />;
+    }
+
+    render(<Controlled />);
+
+    expect(spy).not.toHaveBeenCalled();
+    const input = screen.getByPlaceholderText(
+      "Deployment name, e.g. DeepSeek-V4-Flash"
+    ) as HTMLInputElement;
+    expect(input.value).toBe("DeepSeek-V4-Flash");
+
+    await user.clear(input);
+    await user.type(input, "MyDeployment");
+    expect(input.value).toBe("MyDeployment");
   });
 
   it("shows models after fetch succeeds", async () => {
@@ -42,6 +65,16 @@ describe("ModelSelector", () => {
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Enter model name...")).toBeDefined();
     });
+  });
+
+  it("shows a friendly message when the network fetch fails", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+    render(<ModelSelector {...baseProps} />);
+    await waitFor(() => {
+      expect(screen.getByText(/Couldn't reach the provider to list models/i)).toBeDefined();
+    });
+    expect(screen.getByPlaceholderText("Enter model name...")).toBeDefined();
   });
 
   it("routes the models fetch through /proxy/ when proxyRequests is on", async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { PresetSelector, getPresets, getPreset } from "../../components/settings/PresetSelector";
+import { PresetSelector, getPresets, getPreset, matchPreset } from "../../components/settings/PresetSelector";
 
 beforeEach(() => {
   localStorage.clear();
@@ -30,15 +30,15 @@ describe("PresetSelector", () => {
     expect(select.value).toBe("deepseek");
   });
 
-  it("has 8 options", () => {
+  it("has 9 options", () => {
     render(<PresetSelector baseUrl="" model="" onChange={() => {}} />);
     const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.options.length).toBe(8);
+    expect(select.options.length).toBe(9);
   });
 
-  it("orders presets by popularity (OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter, Ollama, Bedrock, Custom)", () => {
+  it("orders presets by popularity (OpenAI, Anthropic, Gemini, DeepSeek, Bedrock, Microsoft Foundry, Ollama, OpenRouter, Custom)", () => {
     const ids = getPresets().map((p) => p.id);
-    expect(ids).toEqual(["openai", "anthropic", "gemini", "deepseek", "openrouter", "ollama", "bedrock", "custom"]);
+    expect(ids).toEqual(["openai", "anthropic", "gemini", "deepseek", "bedrock", "foundry", "ollama", "openrouter", "custom"]);
   });
 
   it("DeepSeek preset mirrors OpenAI but points at api.deepseek.com", () => {
@@ -83,5 +83,32 @@ describe("PresetSelector", () => {
     render(<PresetSelector baseUrl="https://api.openai.com/v1" model="gpt-5.6-luna" presetId="custom" onChange={() => {}} />);
     const select = screen.getByRole("combobox") as HTMLSelectElement;
     expect(select.value).toBe("custom");
+  });
+
+  it("Microsoft Foundry preset uses the OpenAI-compatible provider and legacy chat completions", () => {
+    const preset = getPreset("foundry");
+    expect(preset?.providerId).toBe("openaicompat");
+    expect(preset?.requiresKey).toBe(true);
+    expect(preset?.useLegacyChatCompletions).toBe(true);
+    expect(preset?.maxTokens).toBe(8192);
+    expect(preset?.baseUrl).toBe("");
+    expect(preset?.endpointPlaceholder).toBe(
+      "https://<resource>.services.ai.azure.com/openai/v1"
+    );
+  });
+
+  it("matchPreset detects Microsoft Foundry by Azure host (any path)", () => {
+    expect(matchPreset("https://odb-foundry-spain.services.ai.azure.com/openai/v1", "")).toBe(
+      "foundry"
+    );
+    expect(matchPreset("https://my-resource.openai.azure.com/openai/v1", "")).toBe("foundry");
+    expect(
+      matchPreset("https://res.services.ai.azure.com/openai/v1/chat/completions", "")
+    ).toBe("foundry");
+    // The portal may copy the legacy Model Inference path; it is still Foundry.
+    expect(matchPreset("https://res.services.ai.azure.com/models/chat/completions", "")).toBe(
+      "foundry"
+    );
+    expect(matchPreset("https://api.openai.com/v1", "")).toBe("openai");
   });
 });

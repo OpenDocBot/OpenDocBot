@@ -258,6 +258,67 @@ describe("SettingsPanel", () => {
     expect(screen.getByLabelText(/API Key/)).toBeDefined();
   });
 
+  it("shows the Microsoft Foundry endpoint placeholder and helper text", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "foundry");
+
+    expect(
+      screen.getByPlaceholderText("https://<resource>.services.ai.azure.com/openai/v1")
+    ).toBeDefined();
+    expect(screen.getByText(/Paste the endpoint from the Foundry portal/i)).toBeDefined();
+  });
+
+  it("normalizes a pasted Foundry completion URL to the /openai/v1 base", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "foundry");
+
+    const endpointInput = screen.getByPlaceholderText(
+      "https://<resource>.services.ai.azure.com/openai/v1"
+    ) as HTMLInputElement;
+
+    await user.type(
+      endpointInput,
+      "https://res.services.ai.azure.com/openai/v1/chat/completions?api-version=preview"
+    );
+    await user.tab();
+
+    expect(endpointInput.value).toBe("https://res.services.ai.azure.com/openai/v1");
+
+    await user.click(screen.getByText("Apply"));
+    expect(useSettingsStore.getState().config.presetId).toBe("foundry");
+    expect(useSettingsStore.getState().config.baseUrl).toBe(
+      "https://res.services.ai.azure.com/openai/v1"
+    );
+  });
+
+  it("normalizes the legacy /models/chat/completions endpoint to the v1 base", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "foundry");
+
+    const endpointInput = screen.getByPlaceholderText(
+      "https://<resource>.services.ai.azure.com/openai/v1"
+    ) as HTMLInputElement;
+    await user.type(endpointInput, "https://res.services.ai.azure.com/models/chat/completions");
+
+    expect(endpointInput.value).toBe("https://res.services.ai.azure.com/openai/v1");
+    expect(screen.queryByText(/Expected an endpoint/i)).toBeNull();
+  });
+
+  it("shows a manual deployment-name input for Microsoft Foundry", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "foundry");
+
+    expect(screen.getByPlaceholderText("Deployment name, e.g. DeepSeek-V4-Flash")).toBeDefined();
+  });
+
   it("renders Connection and Behavior tabs", () => {
     render(<SettingsPanel />);
     expect(screen.getByText("Connection")).toBeDefined();

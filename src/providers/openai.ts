@@ -248,10 +248,13 @@ export class OpenAICompatibleProvider implements LLMProvider {
             const delta = choice.delta;
             if (!delta) continue;
 
-            if (onReasoningToken && "reasoning_content" in delta) {
+            if (onReasoningToken && typeof delta.reasoning_content === "string") {
               // DeepSeek thinking mode may emit an empty reasoning_content on
               // tool-call turns; it is still meaningful and must be echoed.
-              onReasoningToken(delta.reasoning_content as string);
+              // Some Azure/Foundry deployments instead send
+              // `reasoning_content: null` on plain content deltas, which must
+              // not be concatenated into the reasoning text.
+              onReasoningToken(delta.reasoning_content);
             }
 
             if (delta.content) {

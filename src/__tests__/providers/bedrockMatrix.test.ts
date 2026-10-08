@@ -22,6 +22,7 @@ const baseOpts: ChatOptions = {
 
 const cachingCaps = {
   explicitPromptCaching: true,
+  toolCachePoint: true,
   reasoning: false,
   systemRoleSupported: true,
   userImageTypesSupported: [],
@@ -77,6 +78,21 @@ describe("caching matrix (system x tools x enableCache x capability)", () => {
       expect(countCachePoints(body)).toBe(expected);
     }
   );
+
+  it("drops only the tool checkpoint when the model rejects it (Nova)", () => {
+    const messages: LLMMessage[] = [
+      { role: "system", content: "sys" },
+      { role: "user", content: "hi" },
+    ];
+    const body = buildConverseBody(messages, tools, baseOpts, {
+      ...cachingCaps,
+      toolCachePoint: false,
+    });
+    // System + last-message checkpoints remain; no tool checkpoint.
+    expect(countCachePoints(body)).toBe(2);
+    const list = (body.toolConfig as { tools: unknown[] }).tools;
+    expect(list).toHaveLength(1);
+  });
 
   const assistantCases: [boolean, boolean, number][] = [
     [true, true, 2],
@@ -234,10 +250,25 @@ describe("chat error matrix", () => {
 // chatStream event matrix
 // ---------------------------------------------------------------------------
 
-function frame(payload: unknown, headers: Record<string, string> = { ":message-type": "event" }): Uint8Array {
-  const payloadBytes = encoder.encode(JSON.stringify(payload));
+/**
+ * Build one AWS EventStream frame. Tests pass a compact single-key object
+ * (`{ eventType: body }`); on the wire the event type is the `:event-type`
+ * header and the body is the bare payload, so lift it here.
+ */
+function frame(payload: unknown, headers: Record<string, string> = {}): Uint8Array {
+  const hdrs: Record<string, string> = { ":message-type": "event" };
+  let body = payload;
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const entries = Object.entries(payload as Record<string, unknown>);
+    if (entries.length === 1) {
+      hdrs[":event-type"] = entries[0][0];
+      body = entries[0][1];
+    }
+  }
+  Object.assign(hdrs, headers);
+  const payloadBytes = encoder.encode(JSON.stringify(body));
   const headerParts: number[] = [];
-  for (const [key, value] of Object.entries(headers)) {
+  for (const [key, value] of Object.entries(hdrs)) {
     const name = encoder.encode(key);
     const val = encoder.encode(value);
     headerParts.push(name.length, ...name, 7, (val.length >> 8) & 0xff, val.length & 0xff, ...val);

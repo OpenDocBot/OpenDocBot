@@ -37,9 +37,11 @@ Connection tab.
 | Preset | Provider | Endpoint | Default model | Key required |
 |---|---|---|---|---|
 | **OpenAI** | OpenAI-compatible | `https://api.openai.com/v1` | `gpt-5.6-luna` | Yes |
-| **DeepSeek** | OpenAI-compatible | `https://api.deepseek.com` | `deepseek-v4-flash` | Yes |
 | **Anthropic Claude** | Anthropic | `https://api.anthropic.com/v1` | `claude-haiku-4-5` | Yes |
 | **Google Gemini** | Gemini | `https://generativelanguage.googleapis.com/v1beta` | `gemini-3.5-flash-lite` | Yes |
+| **DeepSeek** | OpenAI-compatible | `https://api.deepseek.com` | `deepseek-v4-flash` | Yes |
+| **Amazon Bedrock** | Amazon Bedrock | Region-derived (`bedrock-runtime.<region>.amazonaws.com`) | `nvidia.nemotron-super-3-120b` | Yes |
+| **Microsoft Foundry** | OpenAI-compatible | Your resource's `/openai/v1` endpoint | Your deployment name | Yes |
 | **Ollama** | OpenAI-compatible | `http://localhost:11434/v1` | `llama3.1` | No |
 | **OpenRouter** | OpenAI-compatible | `https://openrouter.ai/api/v1` | `openai/gpt-4o` | Yes |
 | **Custom** | OpenAI-compatible / Anthropic / Gemini | _Custom_ | _Custom_ | Optional |

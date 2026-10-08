@@ -214,74 +214,86 @@ export class BedrockProvider implements LLMProvider {
             frame.headers[":message-type"] === "exception" ||
             exceptionType
           ) {
-            const key = exceptionType || "exception";
+            const key =
+              frame.headers[":exception-type"] || exceptionType || "exception";
             const detail = event[key] as { message?: string } | undefined;
-            throw new Error(
-              `Amazon Bedrock stream error (${key}): ${detail?.message || payloadText}`
-            );
+            const message =
+              detail?.message ||
+              (event.message as string | undefined) ||
+              payloadText;
+            throw new Error(`Amazon Bedrock stream error (${key}): ${message}`);
           }
 
-          if (event.contentBlockStart) {
-            const e = event.contentBlockStart as {
-              contentBlockIndex: number;
-              start?: { toolUse?: { toolUseId?: string; name?: string } };
-            };
-            const tu = e.start?.toolUse;
-            if (tu) {
-              pending.set(e.contentBlockIndex, {
-                toolUseId: tu.toolUseId || "",
-                name: tu.name || "",
-                arguments: "",
-              });
+          // The event type lives in the `:event-type` header; the payload is the
+          // bare event body (e.g. `{"contentBlockIndex":0,"delta":{...}}`).
+          switch (frame.headers[":event-type"]) {
+            case "contentBlockStart": {
+              const index = event.contentBlockIndex;
+              const tu = (
+                event.start as
+                  | { toolUse?: { toolUseId?: string; name?: string } }
+                  | undefined
+              )?.toolUse;
+              if (typeof index === "number" && tu) {
+                pending.set(index, {
+                  toolUseId: tu.toolUseId || "",
+                  name: tu.name || "",
+                  arguments: "",
+                });
+              }
+              break;
             }
-            continue;
-          }
 
-          if (event.contentBlockDelta) {
-            const e = event.contentBlockDelta as {
-              contentBlockIndex: number;
-              delta?: {
-                text?: string;
-                toolUse?: { input?: string };
-                reasoningContent?: { text?: string };
-              };
-            };
-            const delta = e.delta;
-            if (!delta) continue;
-            if (delta.text) onToken(delta.text);
-            if (delta.toolUse?.input) {
-              const p = pending.get(e.contentBlockIndex);
-              if (p) p.arguments += delta.toolUse.input;
+            case "contentBlockDelta": {
+              const index = event.contentBlockIndex;
+              const delta = event.delta as
+                | {
+                    text?: string;
+                    toolUse?: { input?: string };
+                    reasoningContent?: { text?: string };
+                  }
+                | undefined;
+              if (typeof index !== "number" || !delta) break;
+              if (delta.text) onToken(delta.text);
+              if (delta.toolUse?.input) {
+                const p = pending.get(index);
+                if (p) p.arguments += delta.toolUse.input;
+              }
+              if (delta.reasoningContent?.text && onReasoningToken) {
+                onReasoningToken(delta.reasoningContent.text);
+              }
+              break;
             }
-            if (delta.reasoningContent?.text && onReasoningToken) {
-              onReasoningToken(delta.reasoningContent.text);
+
+            case "contentBlockStop": {
+              const index = event.contentBlockIndex;
+              if (typeof index !== "number") break;
+              const p = pending.get(index);
+              if (p) {
+                onToolCall({
+                  id: p.toolUseId,
+                  type: "function",
+                  function: { name: p.name, arguments: p.arguments || "{}" },
+                });
+                pending.delete(index);
+              }
+              break;
             }
-            continue;
-          }
 
-          if (event.contentBlockStop) {
-            const e = event.contentBlockStop as { contentBlockIndex: number };
-            const p = pending.get(e.contentBlockIndex);
-            if (p) {
-              onToolCall({
-                id: p.toolUseId,
-                type: "function",
-                function: { name: p.name, arguments: p.arguments || "{}" },
-              });
-              pending.delete(e.contentBlockIndex);
+            case "messageStop": {
+              finishReason = mapStreamStopReason(
+                event.stopReason as string | undefined
+              );
+              break;
             }
-            continue;
-          }
 
-          if (event.messageStop) {
-            const e = event.messageStop as { stopReason?: string };
-            finishReason = mapStreamStopReason(e.stopReason);
-            continue;
-          }
+            case "metadata": {
+              streamUsage = event.usage as ConverseResponse["usage"];
+              break;
+            }
 
-          if (event.metadata) {
-            const e = event.metadata as { usage?: ConverseResponse["usage"] };
-            streamUsage = e.usage;
+            default:
+              break;
           }
         }
       }
@@ -326,10 +338,13 @@ export function buildConverseBody(
   capabilities?: BedrockCapabilities
 ): Record<string, unknown> {
   // Explicit prompt caching is only safe for models that advertise support;
-  // sending a cachePoint to any other model fails the request.
+  // sending a cachePoint to any other model fails the request. A checkpoint
+  // inside `toolConfig.tools` is additionally rejected by some caching-capable
+  // models (e.g. Nova), so it is gated on a separate capability.
   const useCache =
     options.enableCache !== false &&
     capabilities?.explicitPromptCaching === true;
+  const useToolCache = useCache && capabilities?.toolCachePoint === true;
   const cachePoint = () => ({ cachePoint: { type: "default" } });
 
   const system: Record<string, unknown>[] = [];
@@ -399,7 +414,7 @@ export function buildConverseBody(
         inputSchema: { json: t.parameters },
       },
     }));
-    if (useCache) toolList.push(cachePoint());
+    if (useToolCache) toolList.push(cachePoint());
     body.toolConfig = { tools: toolList };
   }
 

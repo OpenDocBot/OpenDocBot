@@ -17,7 +17,7 @@ hero:
 
 features:
   - title: Bring Any AI Model
-    details: OpenAI, DeepSeek, Anthropic, Gemini, OpenRouter, or local models via Ollama. Use your own keys, swap models on the fly, and avoid vendor lock-in.
+    details: OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter, or local models via Ollama. Use your own keys, swap models on the fly, and avoid vendor lock-in.
   - title: Zero-Trust by Design
     details: 100% client-side. Source and development public on GitHub. No document data ever touches our servers. The app runs completely client-side.
   - title: You Stay in Control

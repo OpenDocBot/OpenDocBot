@@ -3,6 +3,7 @@ import { useSettingsStore, type ProviderConfig } from "../../store/settingsStore
 import { getEffectiveConfig, useForcedKeys } from "../../lib/effectiveConfig";
 import { useManagedConfigStore } from "../../store/managedConfigStore";
 import { PresetSelector, matchPreset, getPreset } from "./PresetSelector";
+import { normalizeFoundryEndpoint } from "../../lib/foundryEndpoint";
 import { ProviderSelect } from "./ProviderSelect";
 import { ModelSelector } from "./ModelSelector";
 import { ConnectionTest } from "./ConnectionTest";
@@ -214,10 +215,29 @@ export function SettingsPanel() {
           <Input
             id="endpoint"
             value={draft.baseUrl}
-            onChange={(e) => update("baseUrl", e.target.value)}
-            placeholder="https://api.openai.com/v1"
+            onChange={(e) => {
+              const raw = e.target.value;
+              // Foundry: any resource URL (root, /models, /models/chat/…, a full
+              // completion URL) normalizes to the canonical `/openai/v1` base.
+              update(
+                "baseUrl",
+                currentPresetId === "foundry" ? normalizeFoundryEndpoint(raw) : raw
+              );
+            }}
+            onBlur={() => {
+              if (currentPresetId === "foundry") {
+                const normalized = normalizeFoundryEndpoint(draft.baseUrl);
+                if (normalized !== draft.baseUrl) update("baseUrl", normalized);
+              }
+            }}
+            placeholder={currentPreset?.endpointPlaceholder ?? "https://api.openai.com/v1"}
             disabled={isForced("baseUrl")}
           />
+          {currentPresetId === "foundry" && (
+            <p className="text-xs text-muted-foreground">
+              Paste the endpoint from the Foundry portal.
+            </p>
+          )}
         </div>
       )}
 
@@ -260,6 +280,7 @@ export function SettingsPanel() {
         proxyRequests={draft.proxyRequests}
         region={draft.bedrockRegion}
         allowCustomModel={currentPresetId === "bedrock"}
+        manualModel={currentPresetId === "foundry"}
         onChange={(model) => update("model", model)}
         filterFree={currentPresetId === "openrouter"}
         disabled={isForced("model")}

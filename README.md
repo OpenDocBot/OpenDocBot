@@ -45,13 +45,15 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 | **Anthropic** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Gemini** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **DeepSeek** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Microsoft Foundry** | ✅\* | ⚠️\*\* | ✅ | ✅ | ⚠️ |
 | **Ollama (Local)** | ✅\* | ❌\*\* | ✅ | ❌ | ❌ |
 | **OpenRouter** | ✅\* | ⚠️\*\* | ✅ | ✅ | ✅ |
 | **OpenCode** | ✅ | ⚠️\*\* | ✅ | ✅ | ⚠️\*\*\* |
 
 \* *Reasoning availability depends on the underlying model.*  
 \*\* *Reasoning effort depends on endpoint support.*  
-\*\*\* *No one-click preset: configure OpenCode via the **Custom** preset. See [here](https://opendocbot.com/docs/providers/opencode).*
+\*\*\* *No one-click preset: configure OpenCode via the **Custom** preset. See [here](https://opendocbot.com/docs/providers/opencode).*  
+*Microsoft Foundry uses the OpenAI-compatible v1 API; the model field is your **deployment name**. See [here](https://opendocbot.com/docs/providers/foundry).*
 
 ## Quickstart
 

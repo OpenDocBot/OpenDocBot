@@ -165,6 +165,30 @@ describe("buildBedrockModelList — capabilities", () => {
     expect(caps?.explicitPromptCaching).toBe(false);
     expect(caps?.reasoning).toBe(false);
   });
+
+  it("allows the tool checkpoint only for Anthropic (Nova rejects it)", () => {
+    buildBedrockModelList(
+      [
+        fm({
+          modelId: "global.anthropic.claude-haiku-5-5",
+          providerName: "Anthropic",
+          explicitPromptCaching: { isSupported: true },
+        }),
+        fm({
+          modelId: "amazon.nova-2-lite-v1:0",
+          providerName: "Amazon",
+          explicitPromptCaching: { isSupported: true },
+        }),
+      ],
+      []
+    );
+    expect(
+      getBedrockCapabilities("global.anthropic.claude-haiku-5-5")?.toolCachePoint
+    ).toBe(true);
+    expect(
+      getBedrockCapabilities("amazon.nova-2-lite-v1:0")?.toolCachePoint
+    ).toBe(false);
+  });
 });
 
 function jsonResponse(body: unknown, status = 200): Response {

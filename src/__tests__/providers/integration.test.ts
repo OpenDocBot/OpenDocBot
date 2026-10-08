@@ -31,6 +31,7 @@ import type {
   ToolCallRequest,
   ToolDefinition,
 } from "../../providers/types";
+import { normalizeFoundryEndpoint } from "../../lib/foundryEndpoint";
 
 import "../../tools";
 
@@ -39,6 +40,9 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
+const FOUNDRY_API_KEY = process.env.FOUNDRY_API_KEY || "";
+const FOUNDRY_BASE_URL = process.env.FOUNDRY_BASE_URL || "";
+const FOUNDRY_DEPLOYMENT = process.env.FOUNDRY_DEPLOYMENT || "";
 const BASE_URL = "https://opencode.ai/zen/go/v1";
 const TIMEOUT = 120000;
 
@@ -68,6 +72,7 @@ const openaiShouldRun = !!OPENAI_API_KEY;
 const geminiShouldRun = !!GEMINI_API_KEY;
 const anthropicShouldRun = !!ANTHROPIC_API_KEY;
 const deepseekShouldRun = !!DEEPSEEK_API_KEY;
+const foundryShouldRun = !!FOUNDRY_API_KEY && !!FOUNDRY_BASE_URL && !!FOUNDRY_DEPLOYMENT;
 
 // Make live coverage explicit in CI logs: a provider skipped for a missing
 // secret must not look like it was tested.
@@ -78,6 +83,7 @@ beforeAll(() => {
     ["DeepSeek", deepseekShouldRun],
     ["Gemini", geminiShouldRun],
     ["Anthropic", anthropicShouldRun],
+    ["Microsoft Foundry", foundryShouldRun],
   ];
   const enabled = flags.filter(([, on]) => on).map(([name]) => name);
   const skipped = flags.filter(([, on]) => !on).map(([name]) => name);
@@ -124,6 +130,236 @@ async function mockExecuteTool(name: string): Promise<string> {
     default:
       return JSON.stringify({ success: true });
   }
+}
+
+// --- Microsoft Foundry (Azure, OpenAI-compatible v1) ---
+
+// The portal copies many endpoint shapes (root, /models, /models/chat/completions,
+// or a full /openai/v1/chat/completions URL); normalize to the v1 base.
+const FOUNDRY_V1_BASE = FOUNDRY_BASE_URL ? normalizeFoundryEndpoint(FOUNDRY_BASE_URL) : "";
+
+// Foundry deployments have per-deployment TPM/RPM quotas. Requests run serially
+// and are spaced out; 429s are retried with backoff so quota pressure never
+// surfaces as a flaky failure.
+const FOUNDRY_MIN_INTERVAL_MS = 1500;
+let foundryQueue: Promise<unknown> = Promise.resolve();
+let foundryLastCall = 0;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withFoundryRetry<T>(fn: () => Promise<T>, attempts = 6): Promise<T> {
+  let delay = 4000;
+  for (let i = 0; ; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const rateLimited = /429|RateLimitReached|rate limit|too many requests/i.test(message);
+      if (!rateLimited || i >= attempts - 1) throw err;
+      await sleep(delay);
+      delay = Math.min(delay * 2, 60000);
+    }
+  }
+}
+
+/** Run a Foundry request through the shared throttle + 429 backoff. */
+function foundryCall<T>(fn: () => Promise<T>): Promise<T> {
+  const task = foundryQueue.then(async () => {
+    const wait = foundryLastCall + FOUNDRY_MIN_INTERVAL_MS - Date.now();
+    if (wait > 0) await sleep(wait);
+    foundryLastCall = Date.now();
+    return withFoundryRetry(fn);
+  });
+  // Keep the queue alive even when this request rejects.
+  foundryQueue = task.then(() => undefined, () => undefined);
+  return task;
+}
+
+/** OpenAI-compatible provider with every call routed through `foundryCall`. */
+function foundryProvider(): LLMProvider {
+  const base = new OpenAICompatibleProvider(
+    "foundry",
+    "Microsoft Foundry",
+    true,
+    FOUNDRY_DEPLOYMENT
+  );
+  return {
+    id: base.id,
+    label: base.label,
+    requiresKey: base.requiresKey,
+    defaultModel: base.defaultModel,
+    listModels: (apiKey, baseUrl, proxyRequests) =>
+      base.listModels(apiKey, baseUrl, proxyRequests),
+    chat: (messages, tools, options) => foundryCall(() => base.chat(messages, tools, options)),
+    chatStream: (messages, onToken, onToolCall, tools, options, onReasoningToken, onFinish) =>
+      foundryCall(() =>
+        base.chatStream(messages, onToken, onToolCall, tools, options, onReasoningToken, onFinish)
+      ),
+  };
+}
+
+const foundryOpts: ChatOptions = {
+  apiKey: FOUNDRY_API_KEY,
+  model: FOUNDRY_DEPLOYMENT,
+  maxTokens: 2048,
+  baseUrl: FOUNDRY_V1_BASE,
+  useLegacyChatCompletions: true,
+};
+
+for (const host of HOSTS) {
+  const prompts = HOST_PROMPTS[host];
+  const hostTools = getTestTools(host);
+
+  describe(`Microsoft Foundry — ${FOUNDRY_DEPLOYMENT} — ${host}`, () => {
+    (foundryShouldRun ? it : it.skip)(
+      "emits tool calls (non-streaming chat)",
+      async () => {
+        const response = await foundryProvider().chat(
+          [
+            { role: "system", content: prompts.system },
+            { role: "user", content: prompts.user },
+          ],
+          hostTools,
+          { ...foundryOpts }
+        );
+
+        expect(
+          response.toolCalls.length,
+          `${host}: Tool calls: ${response.toolCalls.map((c) => c.function.name).join(", ") || "none"}`
+        ).toBeGreaterThan(0);
+      },
+      TIMEOUT
+    );
+
+    (foundryShouldRun ? it : it.skip)(
+      "emits tool calls (streaming)",
+      async () => {
+        const properCalls: ToolCallRequest[] = [];
+
+        await foundryProvider().chatStream(
+          [
+            { role: "system", content: prompts.system },
+            { role: "user", content: prompts.user },
+          ],
+          () => {},
+          (tc) => {
+            properCalls.push(tc);
+          },
+          hostTools,
+          { ...foundryOpts }
+        );
+
+        const toolNames = properCalls.map((c) => c.function.name);
+        expect(
+          toolNames.length,
+          `${host}: Tool calls via streaming: ${toolNames.join(", ") || "none"}`
+        ).toBeGreaterThan(0);
+      },
+      TIMEOUT
+    );
+
+    (foundryShouldRun ? it : it.skip)(
+      "full loop: call tool → execute → model responds",
+      async () => {
+        const provider = foundryProvider();
+        const parser = new StreamToolParser();
+        let properCalls: ToolCallRequest[] = [];
+        let textContent = "";
+        let reasoningText = "";
+
+        const messages: Array<Record<string, unknown>> = [
+          { role: "system", content: prompts.system },
+          { role: "user", content: prompts.user },
+        ];
+
+        // Step 1: the model calls a tool.
+        await provider.chatStream(
+          messages as any,
+          (token) => {
+            parser.feed(token);
+            textContent += token;
+          },
+          (tc) => {
+            properCalls.push(tc);
+          },
+          hostTools,
+          { ...foundryOpts },
+          (token) => {
+            reasoningText += token;
+          }
+        );
+
+        const synthNames = parser.getCapturedTools();
+        const knownNames = new Set(toolRegistry.listNames());
+        const synthCalls = synthNames
+          .filter((n) => knownNames.has(n))
+          .map((n) => makeToolCall(n));
+
+        const allCalls = [...properCalls];
+        for (const sc of synthCalls) {
+          if (!allCalls.some((c) => c.function.name === sc.function.name)) {
+            allCalls.push(sc);
+          }
+        }
+
+        expect(allCalls.length, `${host}: Model did not call any tool in step 1`).toBeGreaterThan(
+          0
+        );
+
+        messages.push({
+          role: "assistant",
+          content: textContent || null,
+          tool_calls: allCalls,
+          ...(reasoningText ? { reasoningContent: reasoningText } : {}),
+        });
+
+        for (const tc of allCalls) {
+          const result = await mockExecuteTool(tc.function.name);
+          messages.push({
+            role: "tool",
+            content: result,
+            tool_call_id: tc.id,
+            name: tc.function.name,
+          });
+        }
+
+        // Step 2: the model continues after the tool result. gpt-oss can
+        // occasionally emit an empty final turn; retry a couple of times so
+        // model nondeterminism never surfaces as a flaky failure.
+        let responded = false;
+        for (let attempt = 0; attempt < 3 && !responded; attempt++) {
+          parser.reset();
+          properCalls = [];
+          textContent = "";
+          reasoningText = "";
+          await provider.chatStream(
+            messages as any,
+            (token) => {
+              parser.feed(token);
+              textContent += token;
+            },
+            (tc) => {
+              properCalls.push(tc);
+            },
+            hostTools,
+            { ...foundryOpts },
+            (token) => {
+              reasoningText += token;
+            }
+          );
+          responded = textContent.length > 0 || properCalls.length > 0;
+        }
+
+        expect(
+          responded,
+          `${host}: Model stalled after tool result (no text, no tool calls)`
+        ).toBe(true);
+      },
+      TIMEOUT
+    );
+  });
 }
 
 // --- OpenAI-compatible (OpenCode) ---
@@ -587,7 +823,7 @@ for (const host of HOSTS) {
             { role: "user", content: prompts.user },
           ],
           hostTools,
-          { apiKey: ANTHROPIC_API_KEY, model: "claude-haiku-4-5", maxTokens: 4096 }
+          { apiKey: ANTHROPIC_API_KEY, model: "claude-haiku-5-5", maxTokens: 4096 }
         );
 
         expect(
@@ -613,7 +849,7 @@ for (const host of HOSTS) {
           () => {},
           (tc) => { properCalls.push(tc); },
           hostTools,
-          { apiKey: ANTHROPIC_API_KEY, model: "claude-haiku-4-5", maxTokens: 4096 }
+          { apiKey: ANTHROPIC_API_KEY, model: "claude-haiku-5-5", maxTokens: 4096 }
         );
 
         const toolNames = properCalls.map(c => c.function.name);
@@ -791,9 +1027,15 @@ describe("Suggestion mode — providers accept the review tool set", () => {
       },
       options: () => ({
         apiKey: ANTHROPIC_API_KEY,
-        model: "claude-haiku-4-5",
+        model: "claude-haiku-5-5",
         maxTokens: 4096,
       }),
+    },
+    {
+      label: "Microsoft Foundry",
+      shouldRun: foundryShouldRun,
+      provider: async () => foundryProvider(),
+      options: () => ({ ...foundryOpts }),
     },
   ];
 
