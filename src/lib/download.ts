@@ -1,6 +1,6 @@
-/** Trigger a client-side download of a text file. */
-export function downloadTextFile(name: string, text: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+/** Trigger a client-side download of a blob. */
+export function downloadBlob(name: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = name;
@@ -8,4 +8,9 @@ export function downloadTextFile(name: string, text: string): void {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+}
+
+/** Trigger a client-side download of a text file. */
+export function downloadTextFile(name: string, text: string): void {
+  downloadBlob(name, new Blob([text], { type: "text/plain" }));
 }

@@ -65,14 +65,15 @@ function useDraftConfig() {
     getEffectiveConfig(store.config, managed)
   );
 
-  // Re-seed the draft when the managed config changes (e.g. after a manual
-  // refresh), so the form reflects the new forced values. Any unsaved local
-  // edits are discarded, which is expected for a refresh.
+  // Re-seed the draft whenever the source config changes: a managed-config
+  // refresh (new forced values) or a programmatic replace such as a settings
+  // import. Any unsaved local edits are discarded, which is expected — the
+  // store is the source of truth and the form must never show stale values.
   useEffect(() => {
-    // Syncing the draft to an external (managed) config change is intentional.
+    // Syncing the draft to an external config change is intentional.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDraft(getEffectiveConfig(useSettingsStore.getState().config, managed));
-  }, [managed]);
+    setDraft(getEffectiveConfig(store.config, managed));
+  }, [store.config, managed]);
 
   function update<K extends keyof ProviderConfig>(key: K, value: ProviderConfig[K]) {
     // A key forced by the managed config cannot be edited; ignore the change so

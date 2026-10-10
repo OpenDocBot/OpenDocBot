@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SettingsPanel } from "../../components/settings/SettingsPanel";
 import { useSettingsStore } from "../../store/settingsStore";
@@ -91,6 +91,26 @@ describe("SettingsPanel — managed config", () => {
     rerender(<SettingsPanel />);
 
     expect((document.getElementById("apiKey") as HTMLInputElement).value).toBe("managed-key");
+  });
+
+  it("re-seeds the draft when the store config is replaced (e.g. after an import)", () => {
+    render(<SettingsPanel />);
+    expect((document.getElementById("apiKey") as HTMLInputElement).value).toBe("local-key");
+
+    act(() => {
+      useSettingsStore.getState().replaceConfig({
+        ...useSettingsStore.getState().config,
+        apiKey: "imported-key",
+        model: "imported-model",
+        baseUrl: "https://imported.example.com/v1",
+      });
+    });
+
+    // The form reflects the imported config without unmounting/remounting.
+    expect((document.getElementById("apiKey") as HTMLInputElement).value).toBe("imported-key");
+    expect((document.getElementById("endpoint") as HTMLInputElement).value).toBe(
+      "https://imported.example.com/v1"
+    );
   });
 
   it("ignores a forced field change attempted through update", async () => {

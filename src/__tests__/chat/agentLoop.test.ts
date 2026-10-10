@@ -4,6 +4,7 @@ import { toolRegistry } from "../../tools/registry";
 import { clearDebugLogs, getDebugLogs } from "../../lib/debugLog";
 import { clearSuggestions, getSuggestion } from "../../chat/suggestionRegistry";
 import type { LLMProvider, ModelInfo, LLMMessage, ToolCallRequest, ToolDefinition, ChatOptions } from "../../providers/types";
+import type { Skill } from "../../chat/skills/types";
 
 interface StreamStep {
   content?: string | null;
@@ -572,6 +573,108 @@ describe("runAgentLoop — custom instructions", () => {
 
     const systemMsg = captured[0][0];
     expect(systemMsg.content).not.toContain("<custom_instructions>");
+  });
+});
+
+describe("runAgentLoop — skills catalog", () => {
+  function capturingProvider(captured: LLMMessage[][], offered?: string[]): LLMProvider {
+    return {
+      id: "capture", label: "Capture", requiresKey: false, defaultModel: "",
+      async listModels(): Promise<ModelInfo[]> { return []; },
+      async chat() { throw new Error("not used"); },
+      async chatStream(
+        messages: LLMMessage[],
+        _onToken: (t: string) => void,
+        _onToolCall: (tc: ToolCallRequest) => void,
+        tools: ToolDefinition[],
+      ): Promise<void> {
+        captured.push(messages);
+        if (offered) offered.push(...tools.map((t) => t.name));
+      },
+    };
+  }
+
+  const concise: Skill = {
+    id: "s1",
+    name: "Concise answers",
+    slug: "concise-answers",
+    description: "Short answers for busy readers.",
+    instructions: "ANSWER_IN_HAIKU.",
+    hosts: ["word", "excel", "powerpoint"],
+  };
+
+  it("advertises enabled skills by slug + description, not their body", async () => {
+    const captured: LLMMessage[][] = [];
+    await runAgentLoop(
+      capturingProvider(captured),
+      "Hi",
+      opts,
+      {},
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      [concise],
+    );
+
+    const systemMsg = captured[0][0];
+    expect(systemMsg.role).toBe("system");
+    expect(systemMsg.content).toContain("<skills>");
+    expect(systemMsg.content).toContain(
+      '<skill name="concise-answers">Short answers for busy readers.</skill>',
+    );
+    expect(systemMsg.content).toContain("load_skill");
+    expect(systemMsg.content).not.toContain("ANSWER_IN_HAIKU.");
+  });
+
+  it("offers the load_skill tool to the model", async () => {
+    const offered: string[] = [];
+    await runAgentLoop(
+      capturingProvider([], offered),
+      "Hi",
+      opts,
+      {},
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      [concise],
+    );
+    expect(offered).toContain("load_skill");
+  });
+
+  it("omits the catalog when no skills are passed", async () => {
+    const captured: LLMMessage[][] = [];
+    await runAgentLoop(capturingProvider(captured), "Hi", opts);
+    expect(captured[0][0].content).not.toContain("<skills>");
+  });
+
+  it("injects an explicitly invoked skill body into the user content", async () => {
+    const captured: LLMMessage[][] = [];
+    await runAgentLoop(
+      capturingProvider(captured),
+      "summarize this",
+      opts,
+      {},
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      [concise],
+      concise,
+    );
+
+    const userMsg = captured[0][captured[0].length - 1];
+    expect(userMsg.role).toBe("user");
+    expect(userMsg.content).toContain('<skill name="concise-answers">');
+    expect(userMsg.content).toContain("ANSWER_IN_HAIKU.");
+    expect(userMsg.content).toContain("summarize this");
   });
 });
 

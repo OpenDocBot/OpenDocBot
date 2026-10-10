@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ConfigTransferDialog } from "../../components/settings/ConfigTransferDialog";
+import { SettingsPanel } from "../../components/settings/SettingsPanel";
 import { DEFAULT_PROVIDER_CONFIG, useSettingsStore } from "../../store/settingsStore";
 import { exportConfigBlob } from "../../lib/configExport";
 
@@ -240,6 +241,49 @@ describe("ConfigTransferDialog — import", () => {
     rerender(<ConfigTransferDialog onClose={second} />);
 
     await waitFor(() => expect(second).toHaveBeenCalledTimes(1), { timeout: 3000 });
+  });
+});
+
+describe("ConfigTransferDialog — refreshes the settings form after import", () => {
+  it("shows the imported values in the SettingsPanel without reopening it", async () => {
+    const user = userEvent.setup();
+    const source = {
+      ...DEFAULT_PROVIDER_CONFIG,
+      apiKey: "imported-key",
+      model: "imported-model",
+      baseUrl: "https://imported.example.com/v1",
+    };
+    const blob = await exportConfigBlob(source, PASS);
+
+    const { container } = render(
+      <>
+        <SettingsPanel />
+        <ConfigTransferDialog onClose={vi.fn()} />
+      </>
+    );
+
+    // The panel starts on the seeded local config.
+    expect((document.getElementById("apiKey") as HTMLInputElement).value).toBe("sk-secret");
+
+    await user.click(screen.getByRole("button", { name: "Import" }));
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [makeFile(blob)] },
+    });
+    await screen.findByText("opendocbot-config.txt");
+    await user.type(passphraseInput("transferImportPassphrase"), PASS);
+
+    const importButton = screen.getByRole("button", { name: "Import" });
+    await waitFor(() => expect(importButton).toBeEnabled());
+    await user.click(importButton);
+
+    expect(await screen.findByText("Settings imported successfully.")).toBeInTheDocument();
+    // The panel must reflect the import while still mounted (no reopen needed).
+    await waitFor(() =>
+      expect((document.getElementById("apiKey") as HTMLInputElement).value).toBe("imported-key")
+    );
+    expect((document.getElementById("endpoint") as HTMLInputElement).value).toBe(
+      "https://imported.example.com/v1"
+    );
   });
 });
 

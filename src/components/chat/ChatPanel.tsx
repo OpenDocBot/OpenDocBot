@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChatStore } from "../../store/chatStore";
 import type { ProviderConfig } from "../../store/settingsStore";
 import { useChat } from "../../chat/useChat";
@@ -16,6 +16,10 @@ import QuestionCard from "./QuestionCard";
 import ApprovalCard from "./ApprovalCard";
 import TodoPanel from "./TodoPanel";
 import { AttachmentQueue } from "./AttachmentQueue";
+import { AddMenu } from "./AddMenu";
+import { useSkillsStore } from "../../store/skillsStore";
+import { availableSkills } from "../../chat/skills/availability";
+import { parseSkillInvocation } from "../../chat/skills/invoke";
 import { useAttachments } from "./useAttachments";
 import { useFileDrop } from "./useFileDrop";
 import { ATTACHMENT_ACCEPT } from "../../chat/attachments/config";
@@ -36,6 +40,18 @@ const EMPTY_STATE_COPY: Record<ReturnType<typeof getHost>, { title: string; hint
     hint: "Just describe what you want.",
   },
 };
+
+/** Extract the slug fragment from a bare `/slug` input, else null. */
+function parseSlashQuery(value: string): string | null {
+  const match = /^\/([a-z0-9-]*)$/i.exec(value);
+  return match ? match[1] : null;
+}
+
+/** The chat input grows up to this many lines, then scrolls. */
+const MAX_INPUT_LINES = 3;
+
+/** Impure timing helper kept out of the component body. */
+const now = () => performance.now();
 
 function formatConversation(
   messages: ReturnType<typeof useChatStore.getState>["messages"],
@@ -132,18 +148,36 @@ export function ChatPanel() {
   const { messages, isLoading, error, activeToolLabel, activeQuestions, setActiveQuestions, pendingApproval } = useChatStore();
   const { sendMessage, stopMessage, resolveApproval } = useChat();
   const { setLoading } = useChatStore();
+  const skills = useSkillsStore((s) => s.skills);
+  const hostSkills = availableSkills(skills, getHost());
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const mirrorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const officeReady = useOfficeReady();
   const { attachments, addFiles } = useAttachments();
   const { isDragging, handlers } = useFileDrop(addFiles);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [expandedReasoning, setExpandedReasoning] = useState<Set<string>>(new Set());
   const [answers, setAnswers] = useState<Record<number, string | null>>({});
   const [stopHover, setStopHover] = useState(false);
+  const [highlightedSkill, setHighlightedSkill] = useState(0);
+
+  // `/slug` autocomplete: shown while the input is exactly a slash command.
+  const slashQuery = parseSlashQuery(input);
+  const skillSuggestions =
+    slashQuery !== null
+      ? hostSkills.filter((s) => s.slug.includes(slashQuery.toLowerCase()))
+      : [];
+  const showSkillPicker = skillSuggestions.length > 0;
+  const highlightedIndex = Math.min(highlightedSkill, skillSuggestions.length - 1);
+  // True when the input is a valid `/slug` command → the command prefix is
+  // painted green to signal that a skill will be used.
+  const skillCommandActive = parseSkillInvocation(input, hostSkills) !== null;
+  const skillCommandPrefix = skillCommandActive
+    ? (/^\/[a-z0-9-]+/i.exec(input)?.[0] ?? "")
+    : "";
+
   const hasReadyAttachments = attachments.some((a) => a.status === "ready");
   const isExtractingAttachments = attachments.some(
     (a) => a.status === "extracting" || a.status === "ocr"
@@ -157,23 +191,20 @@ export function ChatPanel() {
     debugLog("info", `isLoading → ${isLoading}`);
   }, [isLoading]);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    function onPointerDown(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setMenuOpen(false);
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [menuOpen]);
+  // Auto-grow the input up to MAX_INPUT_LINES, then scroll. Runs after every
+  // input change, including programmatic ones (e.g. `/slug` insertion).
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const styles = getComputedStyle(el);
+    const lineHeight = parseFloat(styles.lineHeight) || parseFloat(styles.fontSize) * 1.4;
+    const padding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+    const maxHeight = lineHeight * MAX_INPUT_LINES + padding;
+
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+    el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";
+  }, [input]);
 
   async function handleCopy() {
     const text = formatConversation(
@@ -212,13 +243,13 @@ export function ChatPanel() {
     debugLog("info", `Send: "${text.slice(0, 80)}${text.length > 80 ? "..." : ""}"`);
 
     let docState = "";
-    const t0 = performance.now();
+    const t0 = now();
     try {
       debugLog("info", "buildDocState: starting...");
       const state = await buildDocState();
       const selection = await buildUserSelection();
       docState = [state, selection].filter(Boolean).join("\n\n");
-      const elapsed = Math.round(performance.now() - t0);
+      const elapsed = Math.round(now() - t0);
       debugLog("info", `buildDocState: done (${elapsed}ms, ${docState.length} chars)`);
     } catch (err) {
       debugLog("warn", `buildDocState: failed — ${(err as Error).message}`);
@@ -249,7 +280,30 @@ export function ChatPanel() {
     });
   }
 
+  function applySkill(slug: string) {
+    setInput(`/${slug} `);
+    setHighlightedSkill(0);
+    inputRef.current?.focus();
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
+    if (showSkillPicker) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightedSkill((h) => Math.min(h + 1, skillSuggestions.length - 1));
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightedSkill((h) => Math.max(h - 1, 0));
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        applySkill(skillSuggestions[highlightedIndex].slug);
+        return;
+      }
+    }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -478,57 +532,28 @@ export function ChatPanel() {
       )}
 
       <div className="border-t p-3 bg-muted/20">
-        <div className="flex items-center gap-2 font-mono">
-          <div className="relative shrink-0" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              disabled={isLoading}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              aria-label="Add"
-              title="Add"
-              className="group relative grid h-8 w-7 place-items-center text-primary disabled:opacity-40"
-            >
-              <span
-                className={`pointer-events-none absolute inset-0 grid place-items-center text-base leading-none transition-all duration-200 ${
-                  menuOpen
-                    ? "-rotate-90 scale-0 opacity-0"
-                    : "rotate-0 scale-100 opacity-100 group-hover:-rotate-90 group-hover:scale-0 group-hover:opacity-0"
+        {showSkillPicker && (
+          <div className="mb-1.5 max-h-40 overflow-y-auto border border-border bg-card font-mono text-xs shadow-lg">
+            {skillSuggestions.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  applySkill(s.slug);
+                }}
+                className={`flex w-full items-baseline gap-2 px-2.5 py-1.5 text-left ${
+                  i === highlightedIndex ? "bg-accent text-accent-foreground" : ""
                 }`}
               >
-                ❯
-              </span>
-              <span
-                className={`pointer-events-none absolute inset-0 grid place-items-center text-xl font-bold leading-none transition-all duration-200 ${
-                  menuOpen
-                    ? "rotate-0 scale-100 opacity-100"
-                    : "-rotate-90 scale-0 opacity-0 group-hover:rotate-0 group-hover:scale-100 group-hover:opacity-100"
-                }`}
-              >
-                +
-              </span>
-            </button>
-            {menuOpen && (
-              <div
-                role="menu"
-                className="absolute bottom-full left-0 z-40 mb-2 w-44 border border-border bg-card font-mono text-xs shadow-lg"
-              >
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    fileInputRef.current?.click();
-                  }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground hover:bg-accent hover:text-accent-foreground"
-                >
-                  <Paperclip className="w-3.5 h-3.5" />
-                  Attach file
-                </button>
-              </div>
-            )}
+                <span className="shrink-0 text-primary">/{s.slug}</span>
+                <span className="min-w-0 truncate text-muted-foreground">{s.description}</span>
+              </button>
+            ))}
           </div>
+        )}
+        <div className="flex items-center gap-2 font-mono">
+          <AddMenu disabled={isLoading} onAttachFile={() => fileInputRef.current?.click()} />
           <input
             ref={fileInputRef}
             type="file"
@@ -541,15 +566,38 @@ export function ChatPanel() {
               e.target.value = "";
             }}
           />
-          <Textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your request..."
-            rows={1}
-            className="min-h-0 resize-none text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:border-none px-0"
-          />
+          <div className="relative min-w-0 flex-1">
+            {/* Mirror layer: paints the visible text; only the `/slug` prefix is
+                green. The textarea itself is transparent (caret kept visible). */}
+            <div
+              ref={mirrorRef}
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 overflow-hidden whitespace-pre-wrap break-words px-0 py-2 font-mono text-sm"
+            >
+              {skillCommandPrefix ? (
+                <>
+                  <span className="text-primary">{skillCommandPrefix}</span>
+                  <span className="text-foreground">{input.slice(skillCommandPrefix.length)}</span>
+                </>
+              ) : (
+                <span className="text-foreground">{input}</span>
+              )}
+            </div>
+            <Textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onScroll={(e) => {
+                if (mirrorRef.current) mirrorRef.current.scrollTop = e.currentTarget.scrollTop;
+              }}
+              placeholder="Type your request..."
+              rows={1}
+              className={`chat-input-scroll relative min-h-0 resize-none text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:border-none px-0 text-transparent ${
+                skillCommandActive ? "caret-primary" : "caret-foreground"
+              }`}
+            />
+          </div>
           {isLoading ? (
             <Button
               onClick={stopMessage}

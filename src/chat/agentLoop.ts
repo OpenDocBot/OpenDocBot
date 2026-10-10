@@ -9,6 +9,8 @@ import { getHost, type Host } from "../office";
 import { useTodoStore } from "../store/todoStore";
 import type { Attachment } from "./types";
 import { formatAttachments, UNTRUSTED_ATTACHMENT_GUARD } from "./attachments/prompt";
+import type { Skill } from "./skills/types";
+import { buildSkillsCatalog, SKILLS_NOTE } from "./skills/prompt";
 
 export const MAX_AGENT_ITERATIONS = 100;
 
@@ -714,17 +716,27 @@ export async function runAgentLoop(
   maxIterations: number = MAX_AGENT_ITERATIONS,
   attachments?: Attachment[],
   suggestionMode?: boolean,
+  skills?: Skill[],
+  invokedSkill?: Skill,
 ): Promise<AgentLoopResult> {
   const host = getHost();
   // Suggestion mode is a read-only review mode; not available in PowerPoint.
   const suggest = !!suggestionMode && host !== "powerpoint";
-  const tools = selectToolsForMode(toolRegistry.listDefinitionsForHost(host), suggest);
+  const hostSkills = (skills ?? []).filter((s) => s.hosts.includes(host));
+  const skillsCatalog = buildSkillsCatalog(hostSkills);
+  // Only offer `load_skill` when there is something to load.
+  const tools = selectToolsForMode(toolRegistry.listDefinitionsForHost(host), suggest).filter(
+    (t) => t.name !== "load_skill" || skillsCatalog.length > 0,
+  );
   const knownToolNames = new Set(tools.map((t) => t.name));
   const attachmentBlock = formatAttachments(attachments);
   const systemPrompt = appendCustomInstructions(
     buildSystemPrompt(tools, maxIterations),
     customInstructions,
     [
+      ...(skillsCatalog
+        ? [{ tag: "skills", body: skillsCatalog, note: SKILLS_NOTE }]
+        : []),
       ...(attachmentBlock
         ? [{ tag: "file_safety", body: UNTRUSTED_ATTACHMENT_GUARD }]
         : []),
@@ -741,7 +753,14 @@ export async function runAgentLoop(
     ]
   );
 
-  const stateBlocks = [buildTodoListBlock(), docState].filter(Boolean).join("\n\n");
+  // A skill explicitly invoked by the user (`/slug`) is loaded straight into
+  // the turn, so the model doesn't need to call `load_skill` for it.
+  const invokedBlock = invokedSkill
+    ? `<skill name="${invokedSkill.slug}">\n${invokedSkill.instructions.trim()}\n</skill>`
+    : "";
+  const stateBlocks = [invokedBlock, buildTodoListBlock(), docState]
+    .filter(Boolean)
+    .join("\n\n");
   const userContent = [stateBlocks, attachmentBlock, userMessage]
     .filter(Boolean)
     .join("\n\n---\n\n");

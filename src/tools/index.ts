@@ -39,6 +39,9 @@ import "./powerpoint/formatShape";
 // Task-list tools (host-agnostic)
 import "./todo/updateTodos";
 
+// Skills (host-agnostic): load a skill's full instructions on demand
+import "./skills/loadSkill";
+
 // Suggestion mode (Word/Excel review comments)
 import "./suggestion/addSuggestion";
 import "./suggestion/removeSuggestion";

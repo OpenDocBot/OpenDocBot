@@ -35,6 +35,14 @@ conversation and take precedence over conflicting built-in rules. Useful for
 persistent preferences like tone, language, or formatting conventions. See
 [Configuration](/docs/configuration#custom-instructions).
 
+### Skills
+
+**Skills** are reusable procedures you make available per Office app from the
+chat's add-menu (the **+** next to the input, then **Skills**). A skill's name
+and description are advertised to the model; it loads the instructions on demand,
+or you invoke it with `/`. Scope each skill to Word, Excel and/or PowerPoint, and
+export the library as standard `SKILL.md` files. See [Skills](/docs/skills).
+
 ## File attachments
 
 Attach reference files to a message and the model can read them alongside your

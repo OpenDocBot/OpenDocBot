@@ -2,10 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useChat } from "../../chat/useChat";
 import { useChatStore } from "../../store/chatStore";
+import { useSkillsStore } from "../../store/skillsStore";
 import { useSettingsStore } from "../../store/settingsStore";
 import { useManagedConfigStore } from "../../store/managedConfigStore";
 import { stopGeneration } from "../../chat/session";
 import type { AgentLoopCallbacks } from "../../chat/agentLoop";
+import type { Skill } from "../../chat/skills/types";
 import type { LLMMessage } from "../../providers/types";
 
 // Mock the agent loop so the test controls tool callbacks and the return value.
@@ -56,6 +58,7 @@ beforeEach(() => {
     activeQuestions: null,
     pendingApproval: null,
   });
+  useSkillsStore.setState({ skills: [] });
   capturedCallbacks = {};
   mockedRunAgentLoop.mockReset();
 });
@@ -155,6 +158,91 @@ describe("useChat — custom instructions", () => {
     });
 
     expect(capturedCustom).toBe("");
+  });
+});
+
+describe("useChat — skills", () => {
+  const alpha: Skill = {
+    id: "a",
+    name: "Alpha",
+    slug: "alpha",
+    description: "Alpha skill",
+    instructions: "Do alpha.",
+    hosts: ["word", "excel", "powerpoint"],
+  };
+  const beta: Skill = {
+    id: "b",
+    name: "Beta",
+    slug: "beta",
+    description: "Beta skill",
+    instructions: "Do beta.",
+    hosts: ["word", "excel", "powerpoint"],
+  };
+
+  function capture() {
+    const out: { text?: string; skills?: unknown; invoked?: unknown } = {};
+    mockedRunAgentLoop.mockImplementation(
+      async (_p, text, _o, _c, _h, _d, _ci, _mi, _at, _sm, skills, invoked) => {
+        out.text = text;
+        out.skills = skills;
+        out.invoked = invoked;
+        return { content: "ok", iterations: 1, finishReason: "stop" };
+      },
+    );
+    return out;
+  }
+
+  it("passes the host-applicable skills to runAgentLoop", async () => {
+    useSkillsStore.setState({ skills: [alpha, beta] });
+    const out = capture();
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    expect(out.skills).toEqual([alpha, beta]);
+    expect(out.invoked).toBeUndefined();
+  });
+
+  it("excludes skills not available in the current host", async () => {
+    useSkillsStore.setState({ skills: [alpha, { ...beta, hosts: ["excel"] }] });
+    const out = capture();
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    expect(out.skills).toEqual([alpha]);
+  });
+
+  it("resolves `/slug args` into an invoked skill + the trailing message", async () => {
+    useSkillsStore.setState({ skills: [alpha] });
+    const out = capture();
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("/alpha summarize this");
+    });
+
+    expect(out.text).toBe("summarize this");
+    expect(out.invoked).toEqual(alpha);
+    // The transcript keeps the original command.
+    expect(useChatStore.getState().messages[0].content).toBe("/alpha summarize this");
+  });
+
+  it("uses the skill body as the message when `/slug` has no arguments", async () => {
+    useSkillsStore.setState({ skills: [alpha] });
+    const out = capture();
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("/alpha");
+    });
+
+    expect(out.text).toBe("Do alpha.");
+    expect(out.invoked).toBeUndefined();
   });
 });
 

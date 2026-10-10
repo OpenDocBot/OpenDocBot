@@ -1,5 +1,9 @@
 import { useCallback } from "react";
 import { useChatStore } from "../store/chatStore";
+import { useSkillsStore } from "../store/skillsStore";
+import { parseSkillInvocation } from "./skills/invoke";
+import { availableSkills } from "./skills/availability";
+import { getHost } from "../office";
 import { getProvider } from "../providers/registry";
 import { isConfigured, getPresetInfo, useEffectiveConfig } from "../lib/effectiveConfig";
 import { runAgentLoop } from "./agentLoop";
@@ -65,6 +69,17 @@ export function useChat() {
 
       const history = useChatStore.getState().modelHistory;
 
+      // Skills available in the current Office host.
+      const activeSkills = availableSkills(useSkillsStore.getState().skills, getHost());
+
+      // A leading `/slug` explicitly invokes a skill: with trailing text the
+      // skill body is injected as context; alone, the body becomes the message.
+      const invocation = parseSkillInvocation(text, activeSkills);
+      const userMessage = invocation
+        ? invocation.rest || invocation.skill.instructions
+        : text;
+      const invokedSkill = invocation && invocation.rest ? invocation.skill : undefined;
+
       // Custom headers are a Custom-preset feature: only send them when the
       // active preset is Custom (so a preset switch never leaks them).
       const customHeaders =
@@ -80,7 +95,6 @@ export function useChat() {
       addUserMessage(text, attachments);
       clearAttachments();
 
-      const userMessage = text;
       setRejectedThisTurn(false);
 
       // Placeholder: created only when first content token arrives (not during reasoning)
@@ -205,7 +219,7 @@ export function useChat() {
               }
             }
           },
-        }, history, docState, settings.customInstructions || "", settings.maxIterations, attachments, settings.suggestionMode);
+        }, history, docState, settings.customInstructions || "", settings.maxIterations, attachments, settings.suggestionMode, activeSkills, invokedSkill);
 
         debugLog("info", `Agent loop finished (${Math.round(performance.now() - t0)}ms, ${result.iterations} iter, finish=${result.finishReason})`);
 
