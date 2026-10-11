@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 > [!NOTE]
 > **OpenDocBot is in Early Access** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
 

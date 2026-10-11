@@ -17,7 +17,7 @@ const CHEAP_MODEL = process.env.BEDROCK_MODEL || "nvidia.nemotron-super-3-120b";
 const RUN_INFERENCE = process.env.BEDROCK_LIVE_INFERENCE === "1";
 const TIMEOUT = 30000;
 
-describe.skipIf(!API_KEY)("Bedrock live discovery", () => {
+describe.skipIf(!API_KEY)("Bedrock live discovery", { retry: 3 }, () => {
   it(
     "lists Converse-capable models including the default",
     async () => {
@@ -55,7 +55,7 @@ describe.skipIf(!API_KEY)("Bedrock live discovery", () => {
  * a tiny output budget. Run with:
  *   BEDROCK_LIVE_INFERENCE=1 npx vitest run src/__tests__/providers/bedrockLive.test.ts
  */
-describe.skipIf(!API_KEY || !RUN_INFERENCE)("Bedrock live inference", () => {
+describe.skipIf(!API_KEY || !RUN_INFERENCE)("Bedrock live inference", { retry: 3 }, () => {
   const provider = new BedrockProvider();
   const options = { apiKey: API_KEY, model: CHEAP_MODEL, region: REGION, maxTokens: 16 };
 

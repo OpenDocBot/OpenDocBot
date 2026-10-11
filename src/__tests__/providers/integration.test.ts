@@ -212,7 +212,7 @@ for (const host of HOSTS) {
   const prompts = HOST_PROMPTS[host];
   const hostTools = getTestTools(host);
 
-  describe(`Microsoft Foundry — ${FOUNDRY_DEPLOYMENT} — ${host}`, () => {
+  describe(`Microsoft Foundry — ${FOUNDRY_DEPLOYMENT} — ${host}`, { retry: 3 }, () => {
     (foundryShouldRun ? it : it.skip)(
       "emits tool calls (non-streaming chat)",
       async () => {
@@ -326,10 +326,10 @@ for (const host of HOSTS) {
         }
 
         // Step 2: the model continues after the tool result. gpt-oss can
-        // occasionally emit an empty final turn; retry a couple of times so
+        // occasionally emit an empty final turn; retry several times so
         // model nondeterminism never surfaces as a flaky failure.
         let responded = false;
-        for (let attempt = 0; attempt < 3 && !responded; attempt++) {
+        for (let attempt = 0; attempt < 5 && !responded; attempt++) {
           parser.reset();
           properCalls = [];
           textContent = "";
@@ -382,7 +382,7 @@ for (const host of HOSTS) {
       echoReasoningContent: true,
     };
 
-    describe(`OpenCode — ${MODEL} — ${host}`, () => {
+    describe(`OpenCode — ${MODEL} — ${host}`, { retry: 3 }, () => {
       (opencodeShouldRun ? it.concurrent : it.skip)(
         "emits tool calls via delta.tool_calls",
         async () => {
@@ -535,7 +535,7 @@ for (const host of HOSTS) {
   const prompts = HOST_PROMPTS[host];
   const hostTools = getTestTools(host);
 
-  describe(`OpenAI — ${host}`, () => {
+  describe(`OpenAI — ${host}`, { retry: 3 }, () => {
     (openaiShouldRun ? it.concurrent : it.skip)(
       "emits tool calls (non-streaming chat)",
       async () => {
@@ -616,7 +616,7 @@ for (const host of HOSTS) {
     echoReasoningContent: true,
   };
 
-  describe(`DeepSeek — ${host}`, () => {
+  describe(`DeepSeek — ${host}`, { retry: 3 }, () => {
     (deepseekShouldRun ? it.concurrent : it.skip)(
       "emits tool calls (non-streaming chat)",
       async () => {
@@ -753,7 +753,7 @@ for (const host of HOSTS) {
   const prompts = HOST_PROMPTS[host];
   const hostTools = getTestTools(host);
 
-  describe(`Google Gemini — ${host}`, () => {
+  describe(`Google Gemini — ${host}`, { retry: 3 }, () => {
     (geminiShouldRun ? it.concurrent : it.skip)(
       "emits tool calls (non-streaming chat)",
       async () => {
@@ -811,7 +811,7 @@ for (const host of HOSTS) {
   const prompts = HOST_PROMPTS[host];
   const hostTools = getTestTools(host);
 
-  describe(`Anthropic Claude — ${host}`, () => {
+  describe(`Anthropic Claude — ${host}`, { retry: 3 }, () => {
     (anthropicShouldRun ? it.concurrent : it.skip)(
       "emits tool calls (non-streaming chat)",
       async () => {
@@ -948,7 +948,7 @@ async function capturedSuggestionTools(
   return [...collected];
 }
 
-describe("Suggestion mode — providers accept the review tool set", () => {
+describe("Suggestion mode — providers accept the review tool set", { retry: 3 }, () => {
   it("exposes add_suggestion and hides write tools (Word and Excel)", () => {
     for (const host of ["word", "excel"] as const) {
       const names = suggestionToolsForHost(host).map((t) => t.name);
