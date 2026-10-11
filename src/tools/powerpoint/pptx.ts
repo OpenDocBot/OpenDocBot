@@ -18,6 +18,7 @@
  */
 
 import JSZip from "jszip";
+import { truncateChars } from "../../lib/text";
 
 // ---------------------------------------------------------------------------
 // XML escaping
@@ -183,7 +184,7 @@ export function parseSlideShapes(slideXml: string): ParsedShape[] {
     if (txBody) {
       const text = extractTextFromTxBody(txBody);
       if (text) {
-        shape.textPreview = text.length > 200 ? text.slice(0, 200) + "…" : text;
+        shape.textPreview = truncateChars(text, 200);
       }
     }
 

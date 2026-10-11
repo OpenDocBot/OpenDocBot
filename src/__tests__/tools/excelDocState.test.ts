@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { buildDocState, buildUserSelection } from "../../tools/docState";
+import { sanitizeLoneSurrogates } from "../../lib/text";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const g = globalThis as any;
@@ -111,6 +112,16 @@ describe("buildExcelDocState (mocked Excel)", () => {
     expect(state).toContain("1 | 2");
     expect(state).toContain('Sheet "Empty" (0 rows × 0 cols)');
     expect(state).toContain("(empty)");
+  });
+
+  it("does not emit a lone surrogate when a cell is cut mid-emoji", async () => {
+    const { sheet1Used } = installMockExcelWorkbook();
+    sheet1Used.rowCount = 1;
+    sheet1Used.columnCount = 1;
+    sheet1Used.values = [["Fuente: Notion · HQ Cracovia 🇵🇱 · https://app.notion.com"]];
+    const state = await buildDocState();
+    expect(sanitizeLoneSurrogates(state)).toBe(state);
+    expect(state).toContain("Cracovia");
   });
 
   it("falls back to dev-mode text when Excel.run throws", async () => {

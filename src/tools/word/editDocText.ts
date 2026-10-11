@@ -1,6 +1,7 @@
 import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice } from "../../office";
+import { truncateChars } from "../../lib/text";
 
 const editDocText: ToolDefinition = {
   name: "edit_doc_text",
@@ -97,7 +98,7 @@ toolRegistry.register(editDocText, async (args) => {
           await context.sync();
           if (firstSearch.items.length === 0) {
             return {
-              error: `First paragraph not found: "${oldParas[0].slice(0, 80)}..."`,
+              error: `First paragraph not found: "${truncateChars(oldParas[0], 80, "")}..."`,
             };
           }
         }
@@ -142,7 +143,7 @@ toolRegistry.register(editDocText, async (args) => {
           const expected = oldParas[j].trim();
           if (actual !== expected) {
             return {
-              error: `Paragraph ${j + 1} doesn't match. Expected "${expected.slice(0, 60)}", got "${actual.slice(0, 60)}". Re-read with read_doc_section.`,
+              error: `Paragraph ${j + 1} doesn't match. Expected "${truncateChars(expected, 60, "")}", got "${truncateChars(actual, 60, "")}". Re-read with read_doc_section.`,
             };
           }
         }

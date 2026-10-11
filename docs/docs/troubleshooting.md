@@ -37,6 +37,11 @@ description: Common OpenDocBot problems and fixes. HTTPS, provider connection is
 - **CORS or network error**: the add-in runs in your browser, so the MCP server
   must allow browser-origin requests. If it does not, the connection fails. Try
   another server, or check the server's CORS settings.
+- **Connects with OAuth but the tools never load (network or CORS error)**: some
+  servers check the exact browser origin and reject the one they see.
+  Cloudflare's hosted MCP (`https://mcp.cloudflare.com/mcp`) allows only
+  localhost, so it works from a local instance but not from a hosted one. You
+  cannot change the origin the browser sends.
 - **401 / "requires authorization"**: the key or token is missing or wrong. For
   **API key / bearer**, check the header and value. For **OAuth**, press
   **Connect** (or **Reconnect**) to sign in again.

@@ -1,6 +1,7 @@
 import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice, getHost } from "../../office";
+import { truncateChars } from "../../lib/text";
 import { parseRangeAddress, resolveWorksheet } from "../excel/shared";
 import { registerSuggestion } from "../../chat/suggestionRegistry";
 
@@ -54,7 +55,7 @@ function supports(apiSet: string, minVersion: string): boolean {
 }
 
 function snippet(value: string): string {
-  return value.length > 80 ? `${value.slice(0, 80)}...` : value;
+  return truncateChars(value, 80, "...");
 }
 
 toolRegistry.register(addSuggestion, async (args) => {

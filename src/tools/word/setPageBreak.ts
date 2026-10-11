@@ -1,6 +1,7 @@
 import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice } from "../../office";
+import { truncateChars } from "../../lib/text";
 
 const setPageBreak: ToolDefinition = {
   name: "set_page_break",
@@ -64,7 +65,7 @@ function resolveByText(
 
   // Not found: list nearby candidates so the model can pick an index.
   const samples = paragraphs
-    .map((p, i) => `${i}: ${p.text.slice(0, 60)}`)
+    .map((p, i) => `${i}: ${truncateChars(p.text, 60, "")}`)
     .slice(0, 30)
     .join("\n");
   return {

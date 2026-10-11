@@ -1,6 +1,7 @@
 import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice } from "../../office";
+import { truncateChars } from "../../lib/text";
 
 const searchDocText: ToolDefinition = {
   name: "search_doc_text",
@@ -80,10 +81,7 @@ toolRegistry.register(searchDocText, async (args) => {
             }
           }
 
-          const snippet =
-            srPara.text.length > 150
-              ? srPara.text.slice(0, 150) + "…"
-              : srPara.text;
+          const snippet = truncateChars(srPara.text, 150);
 
           matches.push({ paragraph_index: paraIdx, snippet });
         }

@@ -12,6 +12,7 @@ import { debugLog } from "../lib/debugLog";
 import { buildRequestUrl } from "./proxyUrl";
 import { withCustomHeaders } from "../lib/customHeaders";
 import { proxyFetch } from "../lib/sessionAuth";
+import { sanitizeLoneSurrogates } from "../lib/text";
 
 /** Responses API minimum for max_output_tokens (enforced by OpenAI). */
 const MIN_RESPONSES_OUTPUT_TOKENS = 16;
@@ -504,14 +505,14 @@ function serializeOutbound(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {
     role: msg.role,
-    content: msg.content,
+    content: typeof msg.content === "string" ? sanitizeLoneSurrogates(msg.content) : msg.content,
   };
 
   if (msg.tool_call_id) {
     out.tool_call_id = msg.tool_call_id;
   }
   if (msg.name) {
-    out.name = msg.name;
+    out.name = sanitizeLoneSurrogates(msg.name);
   }
   if (msg.tool_calls) {
     out.tool_calls = msg.tool_calls.map((tc) => ({
@@ -519,7 +520,7 @@ function serializeOutbound(
       type: tc.type,
       function: {
         name: tc.function.name,
-        arguments: tc.function.arguments,
+        arguments: sanitizeLoneSurrogates(tc.function.arguments),
       },
     }));
   }
@@ -528,9 +529,9 @@ function serializeOutbound(
   // message once the request carries `tools`; echo verbatim (or `""` when a
   // message predates reasoning capture, e.g. a provider switch mid-session).
   if (options.echoReasoningContent && msg.role === "assistant") {
-    out.reasoning_content = msg.reasoningContent ?? "";
+    out.reasoning_content = sanitizeLoneSurrogates(msg.reasoningContent ?? "");
   } else if (msg.reasoningContent !== undefined) {
-    out.reasoning_content = msg.reasoningContent;
+    out.reasoning_content = sanitizeLoneSurrogates(msg.reasoningContent);
   }
 
   return out;
@@ -558,7 +559,7 @@ function serializeResponsesInput(messages: LLMMessage[]): unknown[] {
       items.push({
         type: "message",
         role: "user",
-        content: [{ type: "input_text", text: msg.content || "" }],
+        content: [{ type: "input_text", text: sanitizeLoneSurrogates(msg.content || "") }],
       });
       continue;
     }
@@ -568,7 +569,7 @@ function serializeResponsesInput(messages: LLMMessage[]): unknown[] {
         items.push({
           type: "message",
           role: "assistant",
-          content: [{ type: "output_text", text: msg.content }],
+          content: [{ type: "output_text", text: sanitizeLoneSurrogates(msg.content) }],
         });
       }
       if (msg.tool_calls) {
@@ -577,7 +578,7 @@ function serializeResponsesInput(messages: LLMMessage[]): unknown[] {
             type: "function_call",
             call_id: tc.id,
             name: tc.function.name,
-            arguments: tc.function.arguments,
+            arguments: sanitizeLoneSurrogates(tc.function.arguments),
           });
         }
       }
@@ -588,7 +589,7 @@ function serializeResponsesInput(messages: LLMMessage[]): unknown[] {
       items.push({
         type: "function_call_output",
         call_id: msg.tool_call_id || "",
-        output: msg.content || "",
+        output: sanitizeLoneSurrogates(msg.content || ""),
       });
       continue;
     }

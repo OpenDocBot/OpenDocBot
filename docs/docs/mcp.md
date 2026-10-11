@@ -133,7 +133,6 @@ before you connect.
 | **GitHub** | `https://api.githubcopilot.com/mcp/` | API key / bearer with a personal access token, or OAuth. |
 | **Linear** | `https://mcp.linear.app/mcp` | OAuth (dynamic registration). |
 | **Notion** | `https://mcp.notion.com/mcp` | OAuth (dynamic registration). |
-| **Cloudflare** | `https://mcp.cloudflare.com/mcp` | OAuth (dynamic registration). |
 
 ### GitHub with a token
 
@@ -161,6 +160,12 @@ GitHub does not offer dynamic registration, so you register your own client:
   browser-origin requests (CORS). If it does not, the connection fails with a
   network or CORS error. This is the most common reason a server will not
   connect.
+- **Origin allowlists**: some servers check the exact browser origin and reject
+  anything they do not recognize. Cloudflare's hosted MCP
+  (`https://mcp.cloudflare.com/mcp`) is one example: it allows only localhost and
+  non-browser clients, so it works from a local (self-hosted) instance but not
+  from a hosted origin. You cannot change the origin the browser sends, so a
+  server like this cannot be used from a hosted deployment.
 - **Tools only**: OpenDocBot uses the server's tools. Resources and prompts are
   not used.
 - **Streamable HTTP only**: the older HTTP+SSE transport is not supported.

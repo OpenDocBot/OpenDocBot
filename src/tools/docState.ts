@@ -1,4 +1,5 @@
 import { isInsideOffice, getHost } from "../office";
+import { truncateChars } from "../lib/text";
 
 export interface DocParagraph {
   text: string;
@@ -166,7 +167,7 @@ async function buildWordDocState(): Promise<string> {
         const p = data.paragraphs[i];
         if (!p || !p.text.trim()) continue;
         const marker = buildParagraphMarker(p);
-        const text = p.text.length > 200 ? p.text.slice(0, 200) + "…" : p.text;
+        const text = truncateChars(p.text, 200);
         lines.push(`[${i}] ${marker}${text}`);
       }
       if (data.totalParas > PARAGRAPH_PREVIEW_LIMIT) {
@@ -198,7 +199,7 @@ async function buildWordUserSelection(): Promise<string> {
 
     const lines: string[] = [];
     lines.push("<user_selection>");
-    lines.push(info.text.length > 1000 ? info.text.slice(0, 1000) + "…" : info.text);
+    lines.push(truncateChars(info.text, 1000));
     lines.push("</user_selection>");
     return lines.join("\n");
   } catch {
@@ -217,7 +218,7 @@ function formatCellValue(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "object") return JSON.stringify(value);
   const str = String(value);
-  return str.length > 30 ? str.slice(0, 30) + "…" : str;
+  return truncateChars(str, 30);
 }
 
 async function buildExcelDocState(): Promise<string> {
@@ -363,7 +364,7 @@ async function buildPowerPointDocState(): Promise<string> {
         for (const shape of shapes.items) {
           const t = shape.textFrame?.textRange?.text?.trim() ?? "";
           if (t) {
-            title = t.length > 80 ? t.slice(0, 80) + "…" : t;
+            title = truncateChars(t, 80);
             break;
           }
         }

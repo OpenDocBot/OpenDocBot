@@ -1,6 +1,7 @@
 import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice } from "../../office";
+import { truncateChars } from "../../lib/text";
 
 const getPresentationStructure: ToolDefinition = {
   name: "get_presentation_structure",
@@ -50,7 +51,7 @@ toolRegistry.register(getPresentationStructure, async () => {
           for (const shape of shapes.items) {
             const text = shape.textFrame?.textRange?.text?.trim() ?? "";
             if (text) {
-              title = text.length > 120 ? text.slice(0, 120) + "…" : text;
+              title = truncateChars(text, 120);
               break;
             }
           }
