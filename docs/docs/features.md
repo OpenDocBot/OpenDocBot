@@ -43,14 +43,14 @@ and description are advertised to the model; it loads the instructions on demand
 or you invoke it with `/`. Scope each skill to Word, Excel and/or PowerPoint, and
 export the library as standard `SKILL.md` files. See [Skills](/docs/skills).
 
-### MCP servers
+### MCP
 
-**MCP servers** connect external tools to the chat (search your repositories,
-query a database, call your own service). Add a server from the add-menu
-(the **+** next to the input, then **MCP servers**), choose how it authenticates,
-and enable it for the conversation. The model then calls its tools
+**MCP** (Model Context Protocol) connects external tools to the chat (search
+your repositories, query a database, call your own service). Add a server from
+the add-menu (the **+** next to the input, then **MCP servers**), choose how it
+authenticates, and enable it for the conversation. The model then calls its tools
 (`mcp__<server>__<tool>`) like any other tool. When Human in the Loop is on, every
-MCP tool call is approval-gated. See [MCP servers](/docs/mcp).
+MCP tool call is approval-gated. See [MCP](/docs/mcp).
 
 ## File attachments
 
@@ -135,7 +135,7 @@ call pauses for your approval:
   `modify_presentation_structure`, `insert_slide_element`,
   `remove_slide_element`, `edit_slide_text`, `edit_slide_xml`, `format_shape`,
   and `execute_office_js`.
-- When MCP servers are enabled, their tools (`mcp__*`) are approval-gated too.
+- When MCP is enabled, its tools (`mcp__*`) are approval-gated too.
 - Read-only tools run without prompting.
 - Rejecting a tool feeds a "user rejected this tool call" result back to the
   model so it can adapt rather than repeat the call.

@@ -8,7 +8,7 @@
 - Multi-Model: Supports Ollama (local LLMs), OpenAI, DeepSeek, Anthropic, Gemini, OpenRouter, OpenCode, and other OpenAI-compatible endpoints.
 - Suggestion Mode: Read-only review; the agent adds native Word/Excel comments proposing changes instead of editing content.
 - Skills: Reusable procedures scoped per Office app, following the open Agent Skills format (SKILL.md import/export).
-- MCP servers: Connect external tools through the Model Context Protocol (Streamable HTTP). No auth, API key/bearer, or OAuth. Enabled per conversation, approval-gated by Human in the Loop.
+- MCP: Connect external tools through the Model Context Protocol (Streamable HTTP). No auth, API key/bearer, or OAuth. Enabled per conversation, approval-gated by Human in the Loop.
 
 ## Documentation & Links
 - Website: https://opendocbot.com

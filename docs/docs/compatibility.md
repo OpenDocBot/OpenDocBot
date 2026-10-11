@@ -108,7 +108,7 @@ no preset; configure it through the **Custom** preset with the proxy enabled
 | OpenRouter | ✅ | ✅ |
 | **OpenCode** | ❌ | ✅ (via proxy) |
 
-The same browser limit applies to **MCP servers** (see [MCP servers](/docs/mcp)):
+The same browser limit applies to **MCP** (see [MCP](/docs/mcp)):
 they must allow browser-origin requests, and the proxy does not apply to them.
 
 Request proxying can be turned ON/OFF via Settings → Connection → Advanced →

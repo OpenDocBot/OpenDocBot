@@ -141,5 +141,5 @@ also covers the team features you get when you self-host:
 - [Configuration](/docs/configuration): every setting explained
 - [Features](/docs/features): HITL, prompt caching, reasoning and more
 - [Skills](/docs/skills): reusable procedures scoped per Office app
-- [MCP servers](/docs/mcp): connect external tools to the chat
+- [MCP](/docs/mcp): connect external tools to the chat
 - [Self-hosting](/docs/selfhosting): Docker, the proxy, production manifests

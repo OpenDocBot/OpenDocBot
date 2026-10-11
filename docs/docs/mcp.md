@@ -1,9 +1,9 @@
 ---
-title: MCP servers
+title: MCP
 description: Connect external tools and data to OpenDocBot through MCP. Add a server, choose how it authenticates, enable it per conversation, and review every call with human-in-the-loop.
 ---
 
-# MCP servers
+# MCP
 
 **MCP** (Model Context Protocol) lets the assistant use **tools from outside
 Office**: search your repositories, look up a database, call your own service,

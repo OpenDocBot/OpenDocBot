@@ -116,7 +116,7 @@ export default defineConfig({
           },
           { text: "Features", link: "/docs/features" },
           { text: "Skills", link: "/docs/skills" },
-          { text: "MCP servers", link: "/docs/mcp" },
+          { text: "MCP", link: "/docs/mcp" },
           { text: "Troubleshooting", link: "/docs/troubleshooting" },
           { text: "License", link: "/docs/license" },
         ],

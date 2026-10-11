@@ -54,7 +54,7 @@ description: Common OpenDocBot problems and fixes. HTTPS, provider connection is
 - **Connected but no tools**: the server exposes no tools, or the tools need a
   scope your token does not have. Check the token's permissions.
 
-See [MCP servers](/docs/mcp).
+See [MCP](/docs/mcp).
 
 ## When to use the old /chat/completions endpoint
 
