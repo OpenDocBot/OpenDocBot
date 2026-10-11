@@ -6,6 +6,11 @@ import { clearSuggestions, getSuggestion } from "../../chat/suggestionRegistry";
 import type { LLMProvider, ModelInfo, LLMMessage, ToolCallRequest, ToolDefinition, ChatOptions } from "../../providers/types";
 import type { Skill } from "../../chat/skills/types";
 
+vi.mock("../../mcp/manager", () => ({
+  callMcpTool: vi.fn(async () => JSON.stringify({ content: "ok" })),
+}));
+import { callMcpTool } from "../../mcp/manager";
+
 interface StreamStep {
   content?: string | null;
   reasoning?: string;
@@ -675,6 +680,47 @@ describe("runAgentLoop — skills catalog", () => {
     expect(userMsg.content).toContain('<skill name="concise-answers">');
     expect(userMsg.content).toContain("ANSWER_IN_HAIKU.");
     expect(userMsg.content).toContain("summarize this");
+  });
+});
+
+describe("runAgentLoop — MCP tools", () => {
+  it("offers MCP tools and routes their calls to the MCP manager", async () => {
+    vi.mocked(callMcpTool).mockClear();
+    const offered: string[] = [];
+    let call = 0;
+    const provider: LLMProvider = {
+      id: "mock", label: "Mock", requiresKey: false, defaultModel: "mock",
+      async listModels(): Promise<ModelInfo[]> { return []; },
+      async chat() { throw new Error("not used"); },
+      async chatStream(
+        _messages: LLMMessage[],
+        _onToken: (t: string) => void,
+        onToolCall: (tc: ToolCallRequest) => void,
+        tools: ToolDefinition[],
+      ): Promise<void> {
+        offered.push(...tools.map((t) => t.name));
+        if (call++ === 0) {
+          onToolCall({
+            id: "c1",
+            type: "function",
+            function: { name: "mcp__github__echo", arguments: '{"msg":"hi"}' },
+          });
+        }
+      },
+    };
+    const mcpTool: ToolDefinition = {
+      name: "mcp__github__echo",
+      description: "[MCP] Echo",
+      parameters: { type: "object", properties: {} },
+      host: "both",
+    };
+
+    await runAgentLoop(
+      provider, "hi", opts, {}, [], undefined, undefined, undefined, undefined, undefined, undefined, undefined, [mcpTool],
+    );
+
+    expect(offered).toContain("mcp__github__echo");
+    expect(vi.mocked(callMcpTool)).toHaveBeenCalledWith("mcp__github__echo", { msg: "hi" });
   });
 });
 

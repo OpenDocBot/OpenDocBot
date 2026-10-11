@@ -30,6 +30,8 @@ All content is plain markdown in `docs/`:
 | `docs/selfhosting.md` | Docker / Node / static hosting, proxy, manifest |
 | `docs/enterprise/` | SSO (OIDC) and managed configuration for self-hosted instances |
 | `docs/features.md` | HITL, caching, reasoning, questions, etc. |
+| `docs/skills.md` | Reusable procedures, scoped per Office app |
+| `docs/mcp.md` | MCP servers: external tools, auth, per-conversation enable |
 | `docs/troubleshooting.md` | Common problems and fixes |
 
 Sidebar and nav live in `.vitepress/config.mts`; the terminal/hacky visual theme is in `.vitepress/theme/custom.css`.

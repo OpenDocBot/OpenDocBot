@@ -152,6 +152,26 @@ describe("chatStore — modelHistory", () => {
   });
 });
 
+describe("chatStore — enabled MCP servers", () => {
+  beforeEach(() => {
+    useChatStore.setState({ enabledMcpServerIds: [] });
+  });
+
+  it("toggleMcpServer enables and disables a server", () => {
+    useChatStore.getState().toggleMcpServer("s1");
+    expect(useChatStore.getState().enabledMcpServerIds).toEqual(["s1"]);
+    useChatStore.getState().toggleMcpServer("s1");
+    expect(useChatStore.getState().enabledMcpServerIds).toEqual([]);
+  });
+
+  it("clearMessages disables every MCP server (new conversation)", () => {
+    useChatStore.getState().toggleMcpServer("s1");
+    useChatStore.getState().toggleMcpServer("s2");
+    useChatStore.getState().clearMessages();
+    expect(useChatStore.getState().enabledMcpServerIds).toEqual([]);
+  });
+});
+
 describe("chatStore — empty result guard sequence", () => {
   // Mirrors the useChat empty-result guard: when no content and no tool ran,
   // a placeholder is created with a visible note and thinking is cleared.

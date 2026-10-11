@@ -1,4 +1,5 @@
 import type { ToolDefinition } from "../providers/types";
+import { MCP_TOOL_PREFIX } from "../mcp/toolBridge";
 
 /** Tools that modify the document — these require HITL approval when enabled. */
 export const WRITE_TOOLS = new Set([
@@ -27,6 +28,15 @@ export const WRITE_TOOLS = new Set([
   // Both
   "execute_office_js",
 ]);
+
+/**
+ * Whether a tool call requires Human-in-the-Loop approval. Document-modifying
+ * tools always do; MCP tools are treated as approval-worthy too (their side
+ * effects are not declared reliably), so they are gated whenever HITL is on.
+ */
+export function toolNeedsApproval(name: string): boolean {
+  return WRITE_TOOLS.has(name) || name.startsWith(MCP_TOOL_PREFIX);
+}
 
 /**
  * Filter a host tool list for the active mode.

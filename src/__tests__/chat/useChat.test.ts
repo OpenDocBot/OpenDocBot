@@ -19,9 +19,16 @@ vi.mock("../../chat/agentLoop", async (importOriginal) => {
   };
 });
 
+// Mock the MCP manager so no network is attempted.
+vi.mock("../../mcp/manager", () => ({
+  getToolsForServers: vi.fn(async () => []),
+}));
+
 import { runAgentLoop } from "../../chat/agentLoop";
+import { getToolsForServers } from "../../mcp/manager";
 
 const mockedRunAgentLoop = vi.mocked(runAgentLoop);
+const mockedGetToolsForServers = vi.mocked(getToolsForServers);
 
 let capturedCallbacks: AgentLoopCallbacks = {};
 
@@ -57,10 +64,13 @@ beforeEach(() => {
     currentToolName: null,
     activeQuestions: null,
     pendingApproval: null,
+    enabledMcpServerIds: [],
   });
   useSkillsStore.setState({ skills: [] });
   capturedCallbacks = {};
   mockedRunAgentLoop.mockReset();
+  mockedGetToolsForServers.mockReset();
+  mockedGetToolsForServers.mockResolvedValue([]);
 });
 
 describe("useChat — empty-result guard", () => {
@@ -243,6 +253,88 @@ describe("useChat — skills", () => {
 
     expect(out.text).toBe("Do alpha.");
     expect(out.invoked).toBeUndefined();
+  });
+});
+
+describe("useChat — MCP tools", () => {
+  it("passes the enabled servers' tools to runAgentLoop", async () => {
+    useChatStore.setState({ enabledMcpServerIds: ["s1"] });
+    const tool = {
+      name: "mcp__github__echo",
+      description: "[MCP] Echo",
+      parameters: { type: "object", properties: {} },
+      host: "both" as const,
+    };
+    mockedGetToolsForServers.mockResolvedValue([tool]);
+    let capturedMcp: unknown;
+    mockedRunAgentLoop.mockImplementation(
+      async (_p, _t, _o, _c, _h, _d, _ci, _mi, _at, _sm, _sk, _inv, mcp) => {
+        capturedMcp = mcp;
+        return { content: "ok", iterations: 1, finishReason: "stop" };
+      },
+    );
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    expect(mockedGetToolsForServers).toHaveBeenCalledWith(["s1"]);
+    expect(capturedMcp).toEqual([tool]);
+  });
+
+  it("does not fetch MCP tools when no server is enabled", async () => {
+    mockedRunAgentLoop.mockResolvedValue({ content: "ok", iterations: 1, finishReason: "stop" });
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+    expect(mockedGetToolsForServers).not.toHaveBeenCalled();
+  });
+
+  it("gates MCP tools behind approval when HITL is on", async () => {
+    useSettingsStore.setState({
+      config: { ...useSettingsStore.getState().config, humanInTheLoop: true },
+    });
+    mockedRunAgentLoop.mockImplementation(async (_p, _t, _o, callbacks) => {
+      void callbacks?.onToolApproval?.(
+        { id: "c1", type: "function", function: { name: "mcp__github__echo", arguments: "{}" } },
+        {},
+      );
+      return { content: "ok", iterations: 1, finishReason: "stop" };
+    });
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    expect(useChatStore.getState().pendingApproval?.toolName).toBe("mcp__github__echo");
+    act(() => {
+      result.current.resolveApproval(false);
+    });
+  });
+
+  it("does not gate read tools behind approval", async () => {
+    useSettingsStore.setState({
+      config: { ...useSettingsStore.getState().config, humanInTheLoop: true },
+    });
+    let approved: boolean | undefined;
+    mockedRunAgentLoop.mockImplementation(async (_p, _t, _o, callbacks) => {
+      approved = await callbacks?.onToolApproval?.(
+        { id: "c1", type: "function", function: { name: "get_document_text", arguments: "{}" } },
+        {},
+      );
+      return { content: "ok", iterations: 1, finishReason: "stop" };
+    });
+
+    const { result } = renderHook(() => useChat());
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    expect(approved).toBe(true);
+    expect(useChatStore.getState().pendingApproval).toBeNull();
   });
 });
 

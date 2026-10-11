@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddMenu } from "../../components/chat/AddMenu";
 import { useSkillsStore } from "../../store/skillsStore";
+import { useMcpStore } from "../../store/mcpStore";
+import { useChatStore } from "../../store/chatStore";
 import type { Skill } from "../../chat/skills/types";
 
 const alpha: Skill = {
@@ -16,6 +18,8 @@ const alpha: Skill = {
 
 beforeEach(() => {
   useSkillsStore.setState({ skills: [] });
+  useMcpStore.setState({ servers: [] });
+  useChatStore.setState({ enabledMcpServerIds: [] });
 });
 
 function open(user: ReturnType<typeof userEvent.setup>) {
@@ -23,12 +27,26 @@ function open(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("AddMenu", () => {
-  it("shows Attach file and Skills in the root menu", async () => {
+  it("shows Attach file, Skills and MCP servers in the root menu", async () => {
     const user = userEvent.setup();
     render(<AddMenu onAttachFile={vi.fn()} />);
     await open(user);
     expect(screen.getByRole("menuitem", { name: /attach file/i })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /skills/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /mcp servers/i })).toBeInTheDocument();
+  });
+
+  it("drills into the MCP servers panel and back", async () => {
+    const user = userEvent.setup();
+    render(<AddMenu onAttachFile={vi.fn()} />);
+    await open(user);
+
+    await user.click(screen.getByRole("menuitem", { name: /mcp servers/i }));
+    expect(screen.getByText("No servers yet")).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: /attach file/i })).toBeNull();
+
+    await user.click(screen.getByRole("menuitem", { name: "Back" }));
+    expect(screen.getByRole("menuitem", { name: /attach file/i })).toBeInTheDocument();
   });
 
   it("calls onAttachFile and closes", async () => {

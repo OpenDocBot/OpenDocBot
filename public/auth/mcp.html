@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <title>OpenDocBot authorization</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  </head>
+  <body style="font-family: monospace; padding: 24px; background: #111; color: #eee">
+    <h3 id="title">Authorizing...</h3>
+    <p id="status">Completing authorization.</p>
+    <script>
+      function officeReady() {
+        return new Promise(function (resolve) {
+          if (typeof Office !== "undefined" && Office.onReady) {
+            Office.onReady(function () {
+              resolve();
+            });
+          } else {
+            resolve();
+          }
+        });
+      }
+
+      function inDialog() {
+        return (
+          typeof Office !== "undefined" &&
+          Office.context &&
+          Office.context.ui &&
+          typeof Office.context.ui.messageParent === "function"
+        );
+      }
+
+      (async function () {
+        var status = document.getElementById("status");
+        var params = new URLSearchParams(location.search);
+        var code = params.get("code");
+        var error = params.get("error");
+
+        // Callback step: the authorization server redirected back here.
+        if (code || error) {
+          await officeReady();
+          var payload = JSON.stringify({ redirect: location.href });
+          if (inDialog()) {
+            Office.context.ui.messageParent(payload);
+            status.textContent = "Done. You can close this window.";
+          } else if (window.opener) {
+            window.opener.postMessage({ redirect: location.href }, location.origin);
+            status.textContent = "Done. You can close this window.";
+          } else {
+            status.textContent = "Authorization complete. You can close this tab and return to the app.";
+          }
+          return;
+        }
+
+        // Start step: redirect to the authorization server (same-origin entry
+        // point required by the Office Dialog API).
+        var auth = params.get("auth");
+        if (auth && /^https:\/\//i.test(auth)) {
+          location.replace(auth);
+          return;
+        }
+
+        document.getElementById("title").textContent = "Nothing to do";
+        status.textContent = "This page is used by the OpenDocBot MCP authorization flow.";
+      })();
+    </script>
+  </body>
+</html>

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Paperclip, Sparkles } from "lucide-react";
+import { ChevronRight, Paperclip, Server, Sparkles } from "lucide-react";
 import { useSkillsStore } from "../../store/skillsStore";
+import { useChatStore } from "../../store/chatStore";
 import { availableSkills } from "../../chat/skills/availability";
 import { getHost } from "../../office";
 import { SkillsMenu } from "./SkillsMenu";
+import { McpMenu } from "./McpMenu";
 
 interface AddMenuProps {
   /** Disable the trigger while a turn is in flight. */
@@ -12,12 +14,13 @@ interface AddMenuProps {
   onAttachFile: () => void;
 }
 
-type MenuView = "root" | "skills";
+type MenuView = "root" | "skills" | "mcp";
 
 /**
- * The "+" add-menu next to the chat input. The root lists "Attach file" and
- * "Skills"; picking Skills drills down into the skills panel in place (with a
- * back button), keeping the root menu compact and within the taskpane bounds.
+ * The "+" add-menu next to the chat input. The root lists "Attach file",
+ * "Skills" and "MCP servers"; the last two drill down into their own panels in
+ * place (with a back button), keeping the root menu compact and within the
+ * taskpane bounds.
  */
 export function AddMenu({ disabled, onAttachFile }: AddMenuProps) {
   const [open, setOpen] = useState(false);
@@ -25,6 +28,7 @@ export function AddMenu({ disabled, onAttachFile }: AddMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const skills = useSkillsStore((s) => s.skills);
   const availableCount = availableSkills(skills, getHost()).length;
+  const enabledMcpCount = useChatStore((s) => s.enabledMcpServerIds.length);
 
   useEffect(() => {
     if (!open) return;
@@ -93,7 +97,7 @@ export function AddMenu({ disabled, onAttachFile }: AddMenuProps) {
         <div
           role="menu"
           className={`absolute bottom-full left-0 z-40 mb-2 border border-border bg-card font-mono text-xs shadow-lg ${
-            view === "skills" ? "w-64" : "w-56"
+            view === "root" ? "w-56" : "w-64"
           }`}
         >
           {view === "root" ? (
@@ -123,9 +127,24 @@ export function AddMenu({ disabled, onAttachFile }: AddMenuProps) {
                 )}
                 <ChevronRight className="ml-auto w-3.5 h-3.5 text-muted-foreground" />
               </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => setView("mcp")}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                <Server className="w-3.5 h-3.5" />
+                MCP servers
+                {enabledMcpCount > 0 && (
+                  <span className="text-muted-foreground">({enabledMcpCount})</span>
+                )}
+                <ChevronRight className="ml-auto w-3.5 h-3.5 text-muted-foreground" />
+              </button>
             </>
-          ) : (
+          ) : view === "skills" ? (
             <SkillsMenu onCloseMenu={close} onBack={() => setView("root")} />
+          ) : (
+            <McpMenu onCloseMenu={close} onBack={() => setView("root")} />
           )}
         </div>
       )}

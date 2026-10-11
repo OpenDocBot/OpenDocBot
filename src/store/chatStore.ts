@@ -23,6 +23,12 @@ interface ChatStore {
   activeToolLabel: string | null;
   activeQuestions: Record<string, unknown>[] | null;
   pendingApproval: PendingApproval | null;
+  /**
+   * MCP servers enabled for the current conversation. Ephemeral: never
+   * persisted and reset by `clearMessages` (a new conversation starts with none).
+   */
+  enabledMcpServerIds: string[];
+  toggleMcpServer: (id: string) => void;
   addUserMessage: (text: string, attachments?: Attachment[]) => ChatMessage;
   addAttachment: (attachment: Attachment) => void;
   updateAttachment: (id: string, patch: Partial<Attachment>) => void;
@@ -54,6 +60,14 @@ export const useChatStore = create<ChatStore>((set) => ({
   activeToolLabel: null,
   activeQuestions: null,
   pendingApproval: null,
+  enabledMcpServerIds: [],
+
+  toggleMcpServer: (id) =>
+    set((s) => ({
+      enabledMcpServerIds: s.enabledMcpServerIds.includes(id)
+        ? s.enabledMcpServerIds.filter((x) => x !== id)
+        : [...s.enabledMcpServerIds, id],
+    })),
 
   addUserMessage: (text, attachments) => {
     const msg = createUserMessage(text, attachments);
@@ -157,6 +171,7 @@ export const useChatStore = create<ChatStore>((set) => ({
       activeToolLabel: null,
       activeQuestions: null,
       pendingApproval: null,
+      enabledMcpServerIds: [],
     });
   },
 }));

@@ -32,6 +32,25 @@ description: Common OpenDocBot problems and fixes. HTTPS, provider connection is
   pulled. The endpoint must match where `ollama serve` is listening
   (`localhost` for a local install, or the server address for a shared Ollama).
 
+## An MCP server won't connect
+
+- **CORS or network error**: the add-in runs in your browser, so the MCP server
+  must allow browser-origin requests. If it does not, the connection fails. Try
+  another server, or check the server's CORS settings.
+- **401 / "requires authorization"**: the key or token is missing or wrong. For
+  **API key / bearer**, check the header and value. For **OAuth**, press
+  **Connect** (or **Reconnect**) to sign in again.
+- **"This server does not support dynamic registration; provide a Client ID"**:
+  the server does not offer OAuth dynamic registration. Create an app at the
+  provider, register the callback URL
+  (`https://opendocbot.com/auth/mcp.html`), and paste its **Client ID** and, if
+  it has one, its **Client Secret**.
+- **404**: wrong server URL. Use the MCP endpoint, which often ends in `/mcp`.
+- **Connected but no tools**: the server exposes no tools, or the tools need a
+  scope your token does not have. Check the token's permissions.
+
+See [MCP servers](/docs/mcp).
+
 ## When to use the old /chat/completions endpoint
 
 Some OpenAI-compatible endpoints (and older Ollama versions) don't implement the

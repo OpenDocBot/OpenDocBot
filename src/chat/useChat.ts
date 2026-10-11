@@ -18,7 +18,9 @@ import {
   setRejectedThisTurn,
   resetSession,
 } from "./session";
-import { WRITE_TOOLS } from "./writeTools";
+import { toolNeedsApproval } from "./writeTools";
+import { getToolsForServers } from "../mcp/manager";
+import type { ToolDefinition } from "../providers/types";
 
 export function useChat() {
   const settings = useEffectiveConfig();
@@ -79,6 +81,17 @@ export function useChat() {
         ? invocation.rest || invocation.skill.instructions
         : text;
       const invokedSkill = invocation && invocation.rest ? invocation.skill : undefined;
+
+      // Tools from the MCP servers enabled for this conversation.
+      const enabledMcpIds = useChatStore.getState().enabledMcpServerIds;
+      let mcpTools: ToolDefinition[] = [];
+      if (enabledMcpIds.length > 0) {
+        try {
+          mcpTools = await getToolsForServers(enabledMcpIds);
+        } catch (err) {
+          debugLog("warn", `MCP tools unavailable: ${(err as Error).message}`);
+        }
+      }
 
       // Custom headers are a Custom-preset feature: only send them when the
       // active preset is Custom (so a preset switch never leaks them).
@@ -180,7 +193,7 @@ export function useChat() {
           },
           onToolApproval: settings.humanInTheLoop
             ? (tc, args) => {
-                if (!WRITE_TOOLS.has(tc.function.name)) {
+                if (!toolNeedsApproval(tc.function.name)) {
                   return Promise.resolve(true);
                 }
                 if (getRejectedThisTurn()) {
@@ -219,7 +232,7 @@ export function useChat() {
               }
             }
           },
-        }, history, docState, settings.customInstructions || "", settings.maxIterations, attachments, settings.suggestionMode, activeSkills, invokedSkill);
+        }, history, docState, settings.customInstructions || "", settings.maxIterations, attachments, settings.suggestionMode, activeSkills, invokedSkill, mcpTools);
 
         debugLog("info", `Agent loop finished (${Math.round(performance.now() - t0)}ms, ${result.iterations} iter, finish=${result.finishReason})`);
 
