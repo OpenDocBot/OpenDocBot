@@ -13,6 +13,7 @@
 ## Documentation & Links
 - Website: https://opendocbot.com
 - Documentation: https://opendocbot.com/docs
+- Install (Microsoft Marketplace): https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview
 
 ## Legal
 - Privacy Policy: https://opendocbot.com/privacy

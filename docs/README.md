@@ -23,7 +23,7 @@ All content is plain markdown in `docs/`:
 | File | Purpose |
 |---|---|
 | `index.md` | Landing page (home layout) |
-| `docs/quickstart.md` | Setup: hosted instance, sideload, self-host/dev |
+| `docs/quickstart.md` | Setup: install from Marketplace, connect a provider, self-host |
 | `docs/compatibility.md` | Office hosts, versions, provider feature matrix, CORS |
 | `docs/configuration.md` | Settings, presets, advanced options, proxy |
 | `docs/providers/` | Providers overview plus one setup guide per provider (`openai`, `anthropic`, `gemini`, `deepseek`, `ollama`, `openrouter`, `custom`, `opencode`) |

@@ -9,11 +9,14 @@ hero:
   tagline: Client-side, provider-agnostic, and fully auditable. No lock-in. No hidden telemetry.
   actions:
     - theme: brand
-      text: View on GitHub
-      link: https://github.com/OpenDocBot/OpenDocBot
+      text: Install for Microsoft 365
+      link: https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview
     - theme: alt
       text: Read the Docs
       link: /docs/quickstart
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/OpenDocBot/OpenDocBot
 
 features:
   - title: Bring Any AI Model
@@ -33,15 +36,11 @@ OpenDocBot is a 100% client-side, provider-agnostic AI agent for Microsoft Offic
 :::
 
 ::: details How do I install and use OpenDocBot?
-The easiest way to get started is by following our [Quickstart Guide](/docs/quickstart).
+Install it from the [Microsoft Marketplace](https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview), open Word, Excel or PowerPoint, and connect your own AI provider. The [Quickstart Guide](/docs/quickstart) walks through the whole process.
 :::
 
 ::: details Do I need a paid subscription or API key to use OpenDocBot?
 OpenDocBot follows a Bring Your Own Key (BYOK) model. You need an API key or endpoint from any supported provider (such as OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter) or a local runner like Ollama. Your data goes directly to the configured provider and never reaches our servers. See the [Providers documentation](/docs/providers/) for full guides on how to configure each supported provider.
-:::
-
-::: details Is OpenDocBot ready to use?
-OpenDocBot is currently in Early Access. The product is usable today, but it currently requires sideloading into Microsoft 365 because Marketplace distribution is not available yet. We're actively looking for power users to try it early and help shape the product.
 :::
 
 ::: details Can I use local models without an internet connection?

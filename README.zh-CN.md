@@ -3,9 +3,6 @@
 > [!NOTE]
 > 本中文译本仅供参考，如有歧义，请以[英文版](README.md)为准。
 
-> [!NOTE]
-> **OpenDocBot 处于抢先体验阶段**：给仓库点个 **Star** ⭐ 并 **Watch** 👀，以跟进更新。
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="src/assets/logo.svg">
@@ -15,6 +12,16 @@
 </p>
 
 <p align="center"><strong>真正值得信赖的 Office AI 智能体<br/>客户端运行、不绑定特定提供商、完全可审计。无供应商锁定，无隐藏遥测。</strong></p>
+
+<p align="center">
+  <a href="https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://get.microsoft.com/images/en-us%20dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://get.microsoft.com/images/en-us%20light.svg">
+      <img src="https://get.microsoft.com/images/en-us%20light.svg" alt="Get it from Microsoft" height="40">
+    </picture>
+  </a>
+</p>
 
 <br />
 
@@ -62,14 +69,9 @@
 
 ## 快速开始
 
-> [!IMPORTANT]
-> **OpenDocBot 目前处于抢先体验阶段。** 它已经可以使用，但 Microsoft Store 分发尚未开放，因此目前需要通过 Office 旁加载安装。
->
-> 我们正在寻找希望提前试用 OpenDocBot 并帮助塑造产品的 **Microsoft 365 高级用户**。请做好会有一些不完善之处的心理准备。我们尤其欢迎反馈、缺陷报告和功能建议。
+从 [Microsoft Marketplace](https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview) 安装 OpenDocBot：打开 Word、Excel 或 PowerPoint，进入 **开始 > 加载项**，搜索 **OpenDocBot** 并像安装其他加载项一样安装它。然后连接你自己的 AI 提供商。
 
-上手最快的方式是使用 [opendocbot.com/app](https://opendocbot.com/app) 上的 **托管实例**。我们只在任务窗格首次加载时提供一次应用；此后应用完全在本地运行。任何文档数据都不会到达我们的服务器。
-
-在 Microsoft Store 分发开放之前，仍需通过旁加载安装。我们提供了自动配置旁加载的脚本，具体到你所用操作系统和 Office 版本的说明见[旁加载指南](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office)。
+加载项由 [opendocbot.com/app](https://opendocbot.com/app) 在任务窗格首次加载时提供一次；此后完全在本地运行，并直接与你的提供商通信。任何文档数据都不会到达我们的服务器。
 
 📖 完整快速开始指南：
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)

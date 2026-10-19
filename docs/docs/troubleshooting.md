@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting
-description: Common OpenDocBot problems and fixes. HTTPS, provider connection issues, CORS, the proxy, and sideloading.
+description: Common OpenDocBot problems and fixes. HTTPS, provider connection issues, CORS, and the proxy.
 ---
 
 # Troubleshooting
@@ -11,9 +11,13 @@ description: Common OpenDocBot problems and fixes. HTTPS, provider connection is
   requires `SharedRuntime 1.1`; host-specific API sets (`WordApi 1.3`,
   `ExcelApi 1.1`, `PowerPointApi 1.4`) are checked at runtime.
   Perpetual Office 2016/2019/2021 won't satisfy these.
-- Make sure the dev server is running on **HTTPS** (`https://localhost:3000`) and
-  the certificate files exist. Office blocks HTTP and untrusted certs.
-- Re-upload the manifest if you edited [`manifest.xml`](https://github.com/OpenDocBot/OpenDocBot/blob/main/manifest.xml).
+- **Installed from the Marketplace**: make sure you're signed in to Office, then
+  open **Home > Add-ins** and enable OpenDocBot if it shows up but is turned off.
+  If your organization manages add-ins, an administrator may need to allow it.
+- **Self-hosted or development**: make sure the server is running on **HTTPS**
+  (`https://localhost:3000`) with a trusted certificate, since Office blocks HTTP
+  and untrusted certs. Re-upload the manifest if you edited
+  [`manifest.xml`](https://github.com/OpenDocBot/OpenDocBot/blob/main/manifest.xml).
 
 ## Connection test fails
 

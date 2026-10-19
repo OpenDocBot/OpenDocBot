@@ -1,6 +1,6 @@
 ---
 title: Self-hosting
-description: Run OpenDocBot on your own infrastructure. Docker, Node, or any static host, with HTTPS, the proxy, and production manifests.
+description: Run OpenDocBot on your own infrastructure. Docker, Node, or any static host, with HTTPS, the proxy, and distributing the add-in to your users.
 ---
 
 # Self-hosting
@@ -102,7 +102,7 @@ default, so the add-in is served at `https://localhost:3000`. If port 3000 is
 already in use on the host, expose a different host port with
 `OPENDOCBOT_HOST_PORT`.
 
-If you're running the application server on the same machine as the add-in, use the default [`manifest.xml`](https://github.com/OpenDocBot/OpenDocBot/blob/main/manifest.xml) provided in the repo (it defaults to `localhost`). Otherwise, generate a production `manifest.xml` file (see [here](/docs/selfhosting#production-manifest)).
+If you're running the application server on the same machine as the add-in, use the default [`manifest.xml`](https://github.com/OpenDocBot/OpenDocBot/blob/main/manifest.xml) provided in the repo (it defaults to `localhost`). Otherwise, generate a production `manifest.xml` file (see [Generate a production manifest](#generate-a-production-manifest)).
 
 ## Option 2: Node directly
 
@@ -165,19 +165,46 @@ Then upload the `dist/` folder to your static host and serve it over HTTPS.
 The proxy checkbox is hidden in this build. OpenCode won't work here; the
 CORS-friendly providers (OpenAI, DeepSeek, Gemini, Anthropic, OpenRouter) will.
 
-## Production manifest
+## Distribute the add-in
 
-- The repo-root [`manifest.xml`](https://github.com/OpenDocBot/OpenDocBot/blob/main/manifest.xml) points at `https://localhost:3000` (the HTTPS dev
-  server). It can be used for local sideloading.
-- For a hosted instance, generate a production manifest:
+Your instance serves the app over HTTPS. Users now install the add-in pointing
+at your host. First generate the manifest, then choose how to distribute it.
+
+### Generate a production manifest
+
+The repo-root [`manifest.xml`](https://github.com/OpenDocBot/OpenDocBot/blob/main/manifest.xml)
+points at `https://localhost:3000` (the HTTPS dev server) and is only useful for
+local sideloading. For a real host, generate a manifest with your URLs:
 
 ```bash
 OPENDOCBOT_URL=https://addin.example.com node scripts/build-manifest.mjs
 ```
 
-This writes [`dist/manifest.xml`](https://github.com/OpenDocBot/OpenDocBot/blob/main/manifest.xml) with `SourceLocation` and icon URLs pointing at
-your host. Share that manifest with your users (sideload it, or distribute via
-your own channel).
+This writes `dist/manifest.xml` with `SourceLocation` and icon URLs pointing at
+your host.
+
+### Deploy centrally (recommended for organizations)
+
+Upload the manifest to the Microsoft 365 admin center and assign it to your users
+or groups:
+[Manage deployment of add-ins](https://learn.microsoft.com/en-us/microsoft-365/admin/manage/manage-deployment-of-add-ins?view=o365-worldwide).
+
+### Sideload (testing and small deployments)
+
+- **Office on the web**: upload your `manifest.xml` via **Home > Add-ins > More
+  Add-ins > My Add-ins > Upload My Add-in**. This is not persistent; the add-in
+  can disappear on refresh.
+- **Office desktop**: install the manifest as a trusted add-in. On Windows, use a
+  [network shared folder catalog](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins);
+  on macOS, copy it into each app's `wef` folder
+  ([sideload on Mac](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/sideload-an-office-add-in-on-mac)).
+
+::: tip Convenience scripts for the hosted instance
+If you just want the official hosted add-in, `https://opendocbot.com/sideload.ps1`
+(Windows, as administrator) and `https://opendocbot.com/sideload.sh` (macOS)
+automate the sideload for you. They fetch the hosted manifest, not your
+instance.
+:::
 
 
 ### Security note

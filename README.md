@@ -1,8 +1,5 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-> [!NOTE]
-> **OpenDocBot is in Early Access** - Give the repo a **Star** ⭐ and **Watch** 👀 to follow updates.
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="src/assets/logo.svg">
@@ -12,6 +9,16 @@
 </p>
 
 <p align="center"><strong>The Office AI agent you can actually trust<br/>Client-side, provider-agnostic, and fully auditable. No lock-in. No hidden telemetry.</strong></p>
+
+<p align="center">
+  <a href="https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://get.microsoft.com/images/en-us%20dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://get.microsoft.com/images/en-us%20light.svg">
+      <img src="https://get.microsoft.com/images/en-us%20light.svg" alt="Get it from Microsoft" height="40">
+    </picture>
+  </a>
+</p>
 
 <br />
 
@@ -59,16 +66,9 @@ Works on **Microsoft 365** (Word, Excel, PowerPoint) on Desktop & Web.
 
 ## Quickstart
 
-> [!IMPORTANT]
-> **OpenDocBot is currently in Early Access.** It is already usable, but Microsoft Store distribution is not available yet, so Office sideloading is currently required.
->
-> We're looking for **Microsoft 365 power users** who want to try OpenDocBot early and help shape the product. Expect some rough edges. Feedback, bug reports, and feature requests are especially welcome.
+Install OpenDocBot from the [Microsoft Marketplace](https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview): open Word, Excel or PowerPoint, go to **Home > Add-ins**, search for **OpenDocBot** and install it. Then connect your own AI provider.
 
-The fastest way to get started is using the **hosted instance** at
-[opendocbot.com/app](https://opendocbot.com/app). We only serve the application once. The application
-runs entirely locally after the initial taskpane load. No document data reaches our servers.
-
-Until Microsoft Store distribution is available, sideloading is required. Scripts for automated sideloading configuration are available, see the [Sideloading Guide](https://opendocbot.com/docs/quickstart#_1-sideload-the-add-in-in-office) for specific instructions for your OS and Office version.
+The add-in is served from [opendocbot.com/app](https://opendocbot.com/app) once, when the taskpane first loads; after that it runs entirely locally and talks to your provider directly. No document data reaches our servers.
 
 📖 Full Quick Start guide:
 [opendocbot.com/docs/quickstart](https://opendocbot.com/docs/quickstart)

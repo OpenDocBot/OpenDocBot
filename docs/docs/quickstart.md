@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Try the hosted OpenDocBot instance, sideload it in Word, Excel or PowerPoint, and connect your own AI provider.
+description: Install OpenDocBot from the Microsoft Marketplace, connect your own AI provider, and use it in Word, Excel or PowerPoint.
 ---
 
 # Quickstart
@@ -15,99 +15,27 @@ Bring your own keys and models, gate every action behind **human-in-the-loop
 approval**, or **self-host** it: your data never has to leave your
 infrastructure.
 
-## Try the hosted instance
+## 1. Install from the Microsoft Marketplace
 
-A public instance is hosted at
-[opendocbot.com/app](https://opendocbot.com/app). We only serve the add-in
-**once**, when your Office taskpane first loads; afterwards everything runs
-**entirely on your machine** and talks to your AI provider directly. **No
-document data ever reaches our servers.**
+1. Open **Word**, **Excel** or **PowerPoint**.
+2. Go to **Home > Add-ins**.
+3. Search for **OpenDocBot** and install it like any other add-in.
+4. Pin it to the ribbon for quick access.
+
+You can also install it from its [Microsoft Marketplace listing](https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview).
 
 ### Requirements
 
-- **Microsoft Office 365**: Word, Excel or PowerPoint (desktop or web)
-- An LLM provider that allows browser access (see below)
+- **Microsoft 365**: Word, Excel or PowerPoint (desktop or web). Perpetual Office 2016/2019/2021 is not supported.
+- An LLM provider that allows browser access (see below).
 
-### 1. Sideload the add-in in Office
-
-> ⚠️  OpenDocBot is currently in **Early Access**. Microsoft Marketplace distribution is coming, but sideloading is currently required.
-> This is the same OpenDocBot experience you'll get through Marketplace. We're onboarding power users now to help test the product, find edge cases, and shape what's next.
-
-<Tabs>
-  <Tab label="Office Local">
-
-#### Office 365 Local
-
-In case of having the Office 365 apps installed locally, the add-in can be sideloaded persistently. 
-
-<Tabs>
-  <Tab label="Windows">
-
-Run the following command in **PowerShell as administrator**:
-
-```powershell
-irm https://opendocbot.com/sideload.ps1 | iex
-```
-
-This command runs the https://opendocbot.com/sideload.ps1 script on your machine, which automatically configures persistent add-in sideloading
-via [the network share method](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins). 
-
-::: warning Admin Priviledges
-This scripts requires admin priviledges due to the required creation of a local network share (New-SmbShare cmdlet). The script can be fully
-audited at [https://opendocbot.com/sideload.ps1](https://opendocbot.com/sideload.ps1)
+::: tip How it runs
+The add-in is served from a public instance at [opendocbot.com/app](https://opendocbot.com/app), but only **once**, when your Office taskpane first loads. After that, everything runs **entirely on your machine** and talks to your AI provider directly. **No document data ever reaches our servers.**
 :::
 
-<LiteYouTube id="jrE7wh2EFDg" title="OpenDocBot Sideloading Office Local" />
+For a central deployment or a self-hosted instance, see [Self-hosting](/docs/selfhosting).
 
-  </Tab>
-  <Tab label="macOS">
-
-Run the following command in **Terminal**:
-
-```bash
-curl -fsSL https://opendocbot.com/sideload.sh | bash
-```
-
-This command runs the https://opendocbot.com/sideload.sh script on your machine, which automates the 
-[sideloading process for macOS](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/sideload-an-office-add-in-on-mac): 
-it downloads the manifest into the add-in folder (`wef`) of Word, Excel and PowerPoint.
-
-Restart Word, Excel and PowerPoint, then check **Home > Add-ins**. 
-
-Note that clearing the Office cache removes the add-in.
-
-  </Tab>
-</Tabs>
-
-  </Tab>
-  <Tab label="Office Web">
-
-#### Office 365 Web Version (any OS)
-
-Download the manifest file from the link below and upload it in the app (Home > Add-ins > More
-Add-ins > My Add-ins > Manage My Add-ins > Upload My Add-in). Unfortunately this method does not load the addin
-persistently, the add-in may vanish on page refresh. 
-
-[Download manifest.xml](https://opendocbot.com/manifest.xml)
-
-<LiteYouTube id="xbNe3VhVdd4" title="OpenDocBot Sideloading Office Web" />
-
-  </Tab>
-  <Tab label="Teams and IT-managed">
-
-#### Teams and IT-managed devices
-
-Deploy the [manifest.xml](https://opendocbot.com/manifest.xml) file centrally via the Microsoft 365 admin center:
-[Manage deployment of add-ins](https://learn.microsoft.com/en-us/microsoft-365/admin/manage/manage-deployment-of-add-ins?view=o365-worldwide).
-
-Note that, despite using the hosted instance, none of your document data reaches our servers. 
-Despite that, the the application serving can also be [self-hosted](/docs/selfhosting) for fully airgapped deployments. 
-
-OpenDocBot is Source-Available and 100% free for personal use and small teams (up to 30 users)
-  </Tab>
-</Tabs>
-
-### 2. Connect a provider
+## 2. Connect a provider
 
 1. Open the add-in **Settings** (gear icon)
 2. Pick a **Preset**, paste your **API key**
@@ -115,7 +43,7 @@ OpenDocBot is Source-Available and 100% free for personal use and small teams (u
 
 <LiteYouTube id="hkTQNekzxUE" title="How to connect OpenDocBot to an AI Provider" />
 
-### 3. Talk to your document
+## 3. Talk to your document
 
 Type a request and press **Enter**; for example, in Word: *"Make the selected
 heading green and bold."* Or in PowerPoint: *"Turn this deck into a retro wine
@@ -127,8 +55,9 @@ label style."*
 
 If you want full control, or need the **proxy** for providers without browser
 CORS (like OpenCode), you can run OpenDocBot on your own infrastructure. The
-full guide (Docker, Node, static hosting, HTTPS/TLS certificates, the proxy and
-production manifests) is on the [Self-hosting](/docs/selfhosting) page. That page
+full guide (Docker, Node, static hosting, HTTPS/TLS certificates, the proxy,
+production manifests, and deploying it to your organization) is on the
+[Self-hosting](/docs/selfhosting) page. That page
 also covers the team features you get when you self-host:
 [SSO](/docs/enterprise/sso) and
 [managed configuration](/docs/enterprise/managed-configuration).
