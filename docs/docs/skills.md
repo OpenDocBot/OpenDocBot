@@ -55,7 +55,7 @@ keep a large library with a small context footprint.
 A skill's instructions are plain text, so you can include **Office.js code
 snippets** for the model to use as reference, for example a batch of formatting
 calls or a known-good pattern to adapt. The model can run them through
-`execute_office_js` . This is the closest equivalent to the standard's 
+`execute_office_js`. This is the closest equivalent to the standard's
 bundled scripts, which OpenDocBot does not execute.
 :::
 
@@ -92,11 +92,15 @@ it available.
 
 ## Differences from the full standard
 
-OpenDocBot runs in the Office task pane, without a filesystem or a code sandbox.
-Skills here are therefore **instructions only**: the optional `scripts/`,
-`references/`, and `assets/` of the full specification are not executed or
-loaded. Work that the standard would put in a script is done through the
-document tools instead (for example `execute_office_js`).
+OpenDocBot runs in the Office task pane, without a filesystem. It does have a
+restricted in-page code sandbox, used only when the model runs
+`execute_office_js` or `edit_slide_xml`; the sandbox hides browser globals,
+blocks common network and storage primitives and host internals, and can only
+act on the current document through the APIs it is given. Skills here are still
+**instructions only**: the optional `scripts/`, `references/`, and `assets/` of
+the full specification are not executed or loaded. Work that the standard would
+put in a script is done through the document tools instead (for example the
+sandboxed `execute_office_js`).
 
 Skills are stored in your browser only, alongside the rest of your settings; no
 skill content is sent anywhere until it is activated in a message.

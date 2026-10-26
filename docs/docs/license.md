@@ -65,5 +65,7 @@ restrictions only kick in at the enterprise tier.
   full license text.
 * [Contributor License Agreement](https://github.com/opendocbot/opendocbot/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT):
   what you agree to when contributing.
+* [Third-party notices](https://opendocbot.com/third-party-notices.txt):
+  licenses for bundled third-party software.
 
 Questions about licensing? Contact us at `hello@opendocbot.com`.

@@ -47,7 +47,7 @@ const BASE_URL = "https://opencode.ai/zen/go/v1";
 const TIMEOUT = 120000;
 
 const ALL_MODELS = [
-  "deepseek-v4-flash",
+  "deepseek-v4.1-flash",
 ];
 
 const HOSTS = ["word", "excel", "powerpoint"] as const;
@@ -369,7 +369,7 @@ for (const host of HOSTS) {
   const hostTools = getTestTools(host);
 
   for (const MODEL of ALL_MODELS) {
-    // Thinking-mode models on OpenCode Go (e.g. deepseek-v4-flash) require
+    // Thinking-mode models on OpenCode Go (e.g. deepseek-v4.1-flash) require
     // `reasoning_content` on every assistant message once `tools` is present,
     // so the loop test must echo it back like the agent loop does.
     const opencodeOpts = {
@@ -969,10 +969,10 @@ describe("Suggestion mode — providers accept the review tool set", { retry: 3 
       label: "OpenCode",
       shouldRun: opencodeShouldRun,
       provider: async () =>
-        new OpenAICompatibleProvider("opencode", "OpenCode", true, "deepseek-v4-flash"),
+        new OpenAICompatibleProvider("opencode", "OpenCode", true, "deepseek-v4.1-flash"),
       options: () => ({
         apiKey: OPENCODE_API_KEY,
-        model: "deepseek-v4-flash",
+        model: "deepseek-v4.1-flash",
         maxTokens: 4096,
         baseUrl: BASE_URL,
         useLegacyChatCompletions: true,

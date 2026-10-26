@@ -7,6 +7,9 @@ agents/
 # Build output
 dist/
 
+# Generated third-party notices (served at /third-party-notices.txt)
+public/third-party-notices.txt
+
 # Docs build output
 docs/.vitepress/dist/
 docs/.vitepress/cache/

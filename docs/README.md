@@ -29,7 +29,7 @@ All content is plain markdown in `docs/`:
 | `docs/providers/` | Providers overview plus one setup guide per provider (`openai`, `anthropic`, `gemini`, `deepseek`, `ollama`, `openrouter`, `custom`, `opencode`) |
 | `docs/selfhosting.md` | Docker / Node / static hosting, proxy, manifest |
 | `docs/enterprise/` | SSO (OIDC) and managed configuration for self-hosted instances |
-| `docs/features.md` | HITL, caching, reasoning, questions, etc. |
+| `docs/features.md` | HITL, code execution sandbox, caching, reasoning, questions, etc. |
 | `docs/skills.md` | Reusable procedures, scoped per Office app |
 | `docs/mcp.md` | MCP: external tools, auth, per-conversation enable |
 | `docs/troubleshooting.md` | Common problems and fixes |

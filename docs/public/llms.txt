@@ -9,6 +9,7 @@
 - Suggestion Mode: Read-only review; the agent adds native Word/Excel comments proposing changes instead of editing content.
 - Skills: Reusable procedures scoped per Office app, following the open Agent Skills format (SKILL.md import/export).
 - MCP: Connect external tools through the Model Context Protocol (Streamable HTTP). No auth, API key/bearer, or OAuth. Enabled per conversation, approval-gated by Human in the Loop.
+- Sandboxed code execution: `execute_office_js` and `edit_slide_xml` run model-generated code in a restricted in-page sandbox with browser globals, common network and storage primitives, and host internals blocked.
 
 ## Documentation & Links
 - Website: https://opendocbot.com

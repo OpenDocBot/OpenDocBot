@@ -119,6 +119,35 @@ The tool registry is filtered per host, so the model only sees relevant tools:
 
 Write tools are tracked separately (see Human in the Loop below).
 
+`execute_office_js` and `edit_slide_xml` run in the [code execution
+sandbox](#code-execution-sandbox) described below.
+
+## Code execution sandbox
+
+Some tasks have no dedicated tool: a complex layout rewrite, a batch of
+formatting calls, a one-off Office.js pattern. For those, the model can run
+JavaScript with `execute_office_js` (Word, Excel, PowerPoint) and
+`edit_slide_xml` (PowerPoint).
+
+Both run in an **in-page sandbox** (an SES `Compartment` plus a membrane over
+the objects passed in), not in the page's global scope:
+
+- **Blocked browser globals and primitives**: `window`, `document`, `fetch`,
+  `XMLHttpRequest`, `WebSocket`, `localStorage`, `sessionStorage`, `indexedDB`,
+  `process`, `require`, `eval`, `Function`, `Reflect`, `Proxy`, `postMessage`,
+  and dynamic `import` are hidden or rejected.
+- **Blocked host internals**: the membrane rejects `constructor`, `__proto__`,
+  `prototype`, `session`, `batch`, and `_`/`m_`-prefixed internals.
+- **What code can do**: call the Office.js APIs passed into the sandbox (`Word`,
+  `Excel`, `PowerPoint`, `context`, or `zip`, `slidePath`, `markDirty` for
+  `edit_slide_xml`) and change the current document. It cannot read your API
+  keys or use the blocked network primitives.
+- **Approval**: with Human in the Loop on, every `execute_office_js` and
+  `edit_slide_xml` call is approval-gated. Suggestion Mode removes both tools.
+
+If a script is blocked, the tool returns `Sandbox blocked the script: ...`; see
+[Troubleshooting](/docs/troubleshooting#sandbox-blocked-the-script).
+
 ## Human in the Loop
 
 When enabled (Settings → **Behavior** tab), every **document-modifying** tool
@@ -176,9 +205,9 @@ review and apply the changes yourself.
 While the model thinks, its chain-of-thought streams into a **clickable
 "reasoning" block** at the top of the reply:
 
-- **`▸ thinking`** while reasoning is in progress
-- **`▸ reasoning`** once content arrives; click to expand the full thinking
-- Expanded reasoning shows the model's actual deliberation before it acted
+- **`> thinking`** (pulsing) while waiting for the first token
+- **`> reasoning`** once content arrives; click to expand, then **`v reasoning`**
+- Expanded reasoning shows the model's actual deliberation before it acted.
 
 Reasoning is captured per provider: `reasoning_content` (chat-completions),
 `response.reasoning_text.delta` / `reasoning_summary_text.delta` (Responses),

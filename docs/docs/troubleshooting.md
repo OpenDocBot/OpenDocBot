@@ -144,6 +144,22 @@ const items = shapes.items;
 The add-in appends this hint to the error automatically when it detects a
 property-not-loaded failure.
 
+## Sandbox blocked the script
+
+In `execute_office_js` and `edit_slide_xml`, the code execution sandbox rejects
+browser globals, common network and storage primitives, dynamic code, and host
+internals by design. Typical messages:
+
+- `'fetch()' is not allowed inside execute_office_js / edit_slide_xml.`
+- `'localStorage' is not allowed ...`
+- `'.constructor' is not allowed ...`
+
+Rewrite the script without the blocked primitive, or use a dedicated tool
+instead (`read_range`, `edit_slide_text`, `insert_slide_element`, and so on).
+Retrying the same code unchanged will hit the thrash guard. If a workflow needs
+a blocked API, it is not supported by design; open a feature request with the
+use case.
+
 ## The conversation looks wrong or I want a clean slate
 
 - **Clear conversation**: trash icon in the header.

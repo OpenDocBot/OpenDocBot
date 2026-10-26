@@ -34,6 +34,7 @@
 - **提供商自由，零锁定**：可连接 OpenAI、Anthropic、Gemini、DeepSeek、Ollama、OpenRouter、OpenCode 或任何兼容 OpenAI 的 API。可在模型与提供商之间即时切换。
 - **100% 客户端运行，本地优先**：零遥测。你的文档数据直接从浏览器发送到你选择的提供商；搭配 **Ollama** 时可完全离线运行。
 - **人工确认（Human-in-the-Loop）安全机制**：在修改文档中的任何文本、公式或幻灯片布局之前，先审阅并批准模型的每一步操作。
+- **沙箱化代码执行**：对于没有专用工具覆盖的任务，模型可以通过 `execute_office_js`（PowerPoint 中还包括 `edit_slide_xml`）在受限的页面内沙箱中运行 Office.js 代码片段。沙箱会屏蔽浏览器全局对象、常见的网络与存储原语以及宿主内部对象；开启人工确认后，每次运行都需要你批准。
 - **建议模式**：只读审阅。智能体不改动你的内容，而是添加原生的 Word/Excel 批注来提出修改建议。
 - **自带密钥（BYOK）且可自托管**：面向个人和小团队（最多 30 名用户）完全免费。使用你自己的 API 密钥，避免席位加价，或部署到你自己的基础设施上。
 - **自建服务器，团队可用**：自托管后，可要求使用你所在组织的身份提供商（OIDC，例如 Microsoft Entra ID）登录，并为所有人统一设置 AI 提供商。SSO 与托管配置都包含在免费的自托管产品中。参见 [SSO](https://opendocbot.com/docs/enterprise/sso) 和[托管配置](https://opendocbot.com/docs/enterprise/managed-configuration)。

@@ -614,6 +614,15 @@ export function SettingsPanel() {
           >
             License
           </a>
+          <span className="mx-1.5 text-muted-foreground/50">·</span>
+          <a
+            href="/third-party-notices.txt"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline decoration-primary/50 hover:decoration-primary"
+          >
+            Notices
+          </a>
         </p>
       </div>
     </div>

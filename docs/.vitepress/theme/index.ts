@@ -40,6 +40,12 @@ export default {
           h("a", { href: withBase("/privacy") }, "Privacy Policy"),
           h("span", { class: "vp-legal-sep" }, "·"),
           h("a", { href: withBase("/terms") }, "Terms of Use"),
+          h("span", { class: "vp-legal-sep" }, "·"),
+          h(
+            "a",
+            { href: withBase("/third-party-notices.txt") },
+            "Third-party notices",
+          ),
         ]),
     });
   },
