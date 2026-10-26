@@ -7,6 +7,7 @@ import {
   parseSlideShapes,
   resolveSlideIndex,
 } from "./pptx";
+import { Sandbox } from "../../lib/sandbox";
 
 const editSlideXml: ToolDefinition = {
   name: "edit_slide_xml",
@@ -56,20 +57,17 @@ toolRegistry.register(editSlideXml, async (args) => {
         const { slideId } = await resolveSlideIndex(context, slideRef);
 
         const out = await withSlideZip(context, slideId, async (ctx) => {
-          // Provide the escapeXml global to the user's code, matching the
-          // documented tool contract.
-          const globals = {
-            escapeXml: (text: string) =>
-              text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&apos;"),
-          };
-          const wrapped = `return (async () => {\nconst { zip, markDirty, slidePath } = ctx;\nconst escapeXml = globals.escapeXml;\ntry {\n${code}\n} catch (e) { return { __caught: true, error: e.message || String(e) }; }\n})();`;
-          const fn = new Function("ctx", "globals", wrapped);
-          const out = await fn(ctx, globals);
+          // Keep the documented escapeXml helper available to the model's code.
+          const escapeXml =
+            `(text) => String(text)` +
+            `.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")` +
+            `.replace(/"/g, "&quot;").replace(/'/g, "&apos;")`;
+          const wrapped =
+            `const { zip, markDirty, slidePath } = ctx;\n` +
+            `const escapeXml = ${escapeXml};\n` +
+            `try {\n${code}\n} catch (e) { return { __caught: true, error: e.message || String(e) }; }`;
+          const sandbox = new Sandbox();
+          const out = await sandbox.run(wrapped, "ctx", ctx);
 
           if (out && typeof out === "object" && (out as { __caught?: boolean }).__caught) {
             const errMsg = (out as { error?: string }).error || "edit_slide_xml code failed";

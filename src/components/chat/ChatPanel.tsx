@@ -372,6 +372,10 @@ export function ChatPanel() {
             const hasContent = !!msg.content;
             const hasToolCalls = "toolCalls" in msg && msg.toolCalls && msg.toolCalls.length > 0;
             const hasAttachments = !!msg.attachments && msg.attachments.length > 0;
+            // One indicator covers both "waiting for the first token" and
+            // "reasoning is streaming", so the thinking state never jumps from
+            // the inline `_thinking` placeholder to a differently styled button.
+            const showReasoning = !!reasoning || (msg.isThinking && !hasContent && !hasToolCalls);
 
             return (
               <div
@@ -379,7 +383,7 @@ export function ChatPanel() {
                 key={msg.id}
               >
                 <div className="max-w-full w-full">
-                  {reasoning && (
+                  {showReasoning && (
                     <div className="mb-1">
                       <button
                         onClick={() => toggleReasoning(msg.id)}
@@ -389,26 +393,25 @@ export function ChatPanel() {
                             : "bg-transparent border-transparent text-muted-foreground hover:bg-accent hover:border-border"
                         } ${!hasContent && !hasToolCalls ? "animate-pulse" : ""}`}
                       >
-                        {!hasContent && !hasToolCalls
-                          ? "▸ thinking"
-                          : isReasoningExpanded
-                            ? "▾ reasoning"
-                            : "▸ reasoning"}
+                        <span className="text-primary mr-1 select-none">
+                          {!hasContent && !hasToolCalls ? ">" : isReasoningExpanded ? "v" : ">"}
+                        </span>
+                        {!hasContent && !hasToolCalls ? "thinking" : "reasoning"}
                       </button>
-                      {isReasoningExpanded && (
+                      {isReasoningExpanded && reasoning && (
                         <div className="mt-1 border border-border border-l-2 border-l-primary bg-muted/30 p-2 font-mono text-[11px] text-muted-foreground whitespace-pre-wrap max-h-60 overflow-y-auto">
                           {reasoning}
                         </div>
                       )}
                     </div>
                   )}
-                  {(hasContent || (!reasoning && msg.isThinking) || hasToolCalls || hasAttachments) && (
+                  {(hasContent || hasToolCalls || hasAttachments) && (
                     <div
                       className={`font-mono text-sm break-words ${
                         msg.role === "user"
                           ? "whitespace-pre-wrap border-l-2 border-l-primary pl-2.5 py-0.5 text-foreground"
                           : "text-foreground"
-                      } ${!hasContent && msg.isThinking && !reasoning ? "animate-pulse" : ""}`}
+                      }`}
                     >
                       {msg.role === "user" ? (
                         <>
@@ -436,10 +439,6 @@ export function ChatPanel() {
                         </>
                       ) : hasContent ? (
                         <Markdown content={msg.content!} />
-                      ) : msg.isThinking && !reasoning ? (
-                        <span className="text-muted-foreground">
-                          <span className="text-primary mr-1.5">_</span>thinking<span className="terminal-cursor" />
-                        </span>
                       ) : (
                         ""
                       )}

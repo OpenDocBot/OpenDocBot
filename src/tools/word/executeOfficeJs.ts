@@ -2,6 +2,7 @@ import type { ToolDefinition } from "../../providers/types";
 import { toolRegistry } from "../registry";
 import { isInsideOffice, getHost } from "../../office";
 import { debugLog } from "../../lib/debugLog";
+import { Sandbox } from "../../lib/sandbox";
 
 const executeOfficeJs: ToolDefinition = {
   name: "execute_office_js",
@@ -44,6 +45,24 @@ function wrapCode(code: string): string {
   return `return (async () => {\ntry {\n${code}\n} catch (e) { const dbg = (e.debugInfo && e.debugInfo.errors && e.debugInfo.errors[0] && e.debugInfo.errors[0].message) || (e.debugInfo && e.debugInfo.code); return { __caught: true, error: e.message || String(e), line: e.lineNumber, debug: dbg || undefined }; }\n})();`;
 }
 
+/**
+ * Host globals the model's code may reference. These are exposed through the
+ * sandbox membrane, so only documented members are reachable.
+ */
+function sandboxGlobals(): Record<string, unknown> {
+  const globals: Record<string, unknown> = {};
+  if (typeof Office !== "undefined") globals.Office = Office;
+  if (typeof Excel !== "undefined") globals.Excel = Excel;
+  if (typeof Word !== "undefined") globals.Word = Word;
+  if (typeof PowerPoint !== "undefined") globals.PowerPoint = PowerPoint;
+  return globals;
+}
+
+async function runInSandbox(code: string, context: unknown): Promise<unknown> {
+  const sandbox = new Sandbox({ globals: sandboxGlobals() });
+  return sandbox.run(wrapCode(code), "context", context);
+}
+
 /** Build the tool result. If the user's code threw (caught marker), return an error. */
 function buildResult(result: unknown): string {
   if (
@@ -84,8 +103,7 @@ toolRegistry.register(executeOfficeJs, async (args) => {
       }
       debugLog("tool", `execute_office_js: Excel.run start (${code.length} chars)`);
       const result = await Excel.run(async (context) => {
-        const fn = new Function("context", wrapCode(code));
-        return await fn(context);
+        return await runInSandbox(code, context);
       });
       return buildResult(result);
     }
@@ -96,8 +114,7 @@ toolRegistry.register(executeOfficeJs, async (args) => {
       }
       debugLog("tool", `execute_office_js: PowerPoint.run start (${code.length} chars)`);
       const result = await PowerPoint.run(async (context) => {
-        const fn = new Function("context", wrapCode(code));
-        return await fn(context);
+        return await runInSandbox(code, context);
       });
       return buildResult(result);
     }
@@ -107,8 +124,7 @@ toolRegistry.register(executeOfficeJs, async (args) => {
     }
     debugLog("tool", `execute_office_js: Word.run start (${code.length} chars)`);
     const result = await Word.run(async (context) => {
-      const fn = new Function("context", wrapCode(code));
-      return await fn(context);
+      return await runInSandbox(code, context);
     });
     return buildResult(result);
   } catch (err) {
