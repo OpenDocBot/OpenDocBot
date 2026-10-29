@@ -86,6 +86,10 @@ Serve OpenDocBot directly from your own infrastructure. Self-hosting also unlock
 
 Both ship with the free self-hosted product. See the [Self-hosting guide](https://opendocbot.com/docs/selfhosting) for setup.
 
+## For teams
+
+Deploying OpenDocBot for more than 30 users? See [Enterprise use](https://opendocbot.com/enterprise) for commercial licensing, support and whitelabeling. Or [book a 20-minute intro](https://cal.com/opendocbot/intro).
+
 ## Tech Stack
 
 | Layer | Technology |

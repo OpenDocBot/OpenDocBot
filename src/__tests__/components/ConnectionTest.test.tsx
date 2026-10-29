@@ -30,7 +30,16 @@ const testConfig: ProviderConfig = {
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  localStorage.clear();
 });
+
+const foundryConfig: ProviderConfig = {
+  ...testConfig,
+  presetId: "foundry",
+  providerId: "openaicompat",
+  baseUrl: "https://example.services.ai.azure.com/openai/v1",
+  model: "gpt-4o",
+};
 
 describe("ConnectionTest", () => {
   it("renders test button", () => {
@@ -51,6 +60,81 @@ describe("ConnectionTest", () => {
     await waitFor(() => {
       expect(screen.getByText(/connected/i)).toBeDefined();
     });
+    expect(screen.queryByText("Enterprise use")).toBeNull();
+  });
+
+  it("shows the enterprise hint after a successful Foundry test", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ choices: [{ message: { content: "Hi" } }] }),
+    } as Response);
+
+    render(<ConnectionTest config={foundryConfig} />);
+    await user.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Enterprise use")).toBeDefined();
+    });
+    const link = screen.getByRole("link", { name: "Enterprise use" }) as HTMLAnchorElement;
+    expect(link.href).toBe("https://opendocbot.com/enterprise");
+    expect(link.target).toBe("_blank");
+  });
+
+  it("does not show the enterprise hint when disabled", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ choices: [{ message: { content: "Hi" } }] }),
+    } as Response);
+
+    render(<ConnectionTest config={foundryConfig} showEnterpriseHint={false} />);
+    await user.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/connected/i)).toBeDefined();
+    });
+    expect(screen.queryByText("Enterprise use")).toBeNull();
+  });
+
+  it("shows the enterprise hint only once", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ choices: [{ message: { content: "Hi" } }] }),
+    } as Response);
+
+    const first = render(<ConnectionTest config={foundryConfig} />);
+    await user.click(screen.getByText("Test Connection"));
+    await waitFor(() => {
+      expect(screen.getByText("Enterprise use")).toBeDefined();
+    });
+    first.unmount();
+
+    render(<ConnectionTest config={foundryConfig} />);
+    await user.click(screen.getByText("Test Connection"));
+    await waitFor(() => {
+      expect(screen.getByText(/connected/i)).toBeDefined();
+    });
+    expect(screen.queryByText("Enterprise use")).toBeNull();
+    expect(localStorage.getItem("opendocbot-enterprise-hint-seen")).toBe("1");
+  });
+
+  it("dismisses the enterprise hint", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ choices: [{ message: { content: "Hi" } }] }),
+    } as Response);
+
+    render(<ConnectionTest config={foundryConfig} />);
+    await user.click(screen.getByText("Test Connection"));
+    await waitFor(() => {
+      expect(screen.getByText("Enterprise use")).toBeDefined();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Dismiss enterprise hint" }));
+    expect(screen.queryByText("Enterprise use")).toBeNull();
   });
 
   it("shows error state after test fails", async () => {

@@ -24,6 +24,17 @@ export function WelcomePanel({ onConnect }: WelcomePanelProps) {
       <p className="text-[11px] text-muted-foreground/70">
         Your API key is stored locally and sent directly to the provider.
       </p>
+      <p className="text-[11px] text-muted-foreground/70">
+        For teams:{" "}
+        <a
+          href="https://opendocbot.com/enterprise"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="whitespace-nowrap text-primary underline decoration-primary/50 hover:decoration-primary"
+        >
+          Enterprise use
+        </a>
+      </p>
     </div>
   );
 }

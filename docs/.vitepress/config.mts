@@ -68,6 +68,7 @@ export default defineConfig({
     nav: [
       { text: "Docs", link: "/docs/quickstart" },
       { text: "Providers", link: "/docs/providers/" },
+      { text: "Enterprise", link: "/enterprise" },
       { text: "GitHub", link: "https://github.com/opendocbot/opendocbot" },
     ],
 
@@ -97,7 +98,7 @@ export default defineConfig({
           },
           { text: "Self-hosting", link: "/docs/selfhosting" },
           {
-            text: "Enterprise Features",
+            text: "Team Features",
             collapsed: false,
             items: [
               {

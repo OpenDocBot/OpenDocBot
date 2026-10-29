@@ -118,6 +118,7 @@ function useDraftConfig() {
 
 export function SettingsPanel() {
   const { draft, update, apply, reset, forcedKeys, managed } = useDraftConfig();
+  const managedInstance = useManagedConfigStore((s) => s.managedInstance);
   const [activeTab, setActiveTab] = useState<"connection" | "behavior">("connection");
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -472,7 +473,7 @@ export function SettingsPanel() {
 
       <Separator />
 
-      <ConnectionTest config={draft} />
+      <ConnectionTest config={draft} showEnterpriseHint={!managed && !managedInstance} />
 
       <div className="flex items-center justify-end gap-2">
         <Button
@@ -607,7 +608,7 @@ export function SettingsPanel() {
           </a>
           <span className="mx-1.5 text-muted-foreground/50">·</span>
           <a
-            href="https://github.com/OpenDocBot/OpenDocBot/blob/main/LICENSE"
+            href="https://opendocbot.com/docs/license"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary underline decoration-primary/50 hover:decoration-primary"
@@ -616,12 +617,12 @@ export function SettingsPanel() {
           </a>
           <span className="mx-1.5 text-muted-foreground/50">·</span>
           <a
-            href="/third-party-notices.txt"
+            href="https://opendocbot.com/enterprise"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary underline decoration-primary/50 hover:decoration-primary"
           >
-            Notices
+            Enterprise Use
           </a>
         </p>
       </div>

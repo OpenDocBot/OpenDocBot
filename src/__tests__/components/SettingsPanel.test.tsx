@@ -385,7 +385,7 @@ describe("SettingsPanel", () => {
     expect(useSettingsStore.getState().config.maxIterations).toBe(250);
   });
 
-  it("shows Source Code and License links in the footer", () => {
+  it("shows Source Code, License and Enterprise links in the footer", () => {
     render(<SettingsPanel />);
 
     const source = screen.getByRole("link", { name: "Source Code" }) as HTMLAnchorElement;
@@ -393,8 +393,12 @@ describe("SettingsPanel", () => {
     expect(source.target).toBe("_blank");
 
     const license = screen.getByRole("link", { name: "License" }) as HTMLAnchorElement;
-    expect(license.href).toBe("https://github.com/OpenDocBot/OpenDocBot/blob/main/LICENSE");
+    expect(license.href).toBe("https://opendocbot.com/docs/license");
     expect(license.target).toBe("_blank");
+
+    const enterprise = screen.getByRole("link", { name: "Enterprise Use" }) as HTMLAnchorElement;
+    expect(enterprise.href).toBe("https://opendocbot.com/enterprise");
+    expect(enterprise.target).toBe("_blank");
   });
 
   it("shows the footer links on the Behavior tab too", async () => {
@@ -406,7 +410,10 @@ describe("SettingsPanel", () => {
     expect(source.href).toBe("https://github.com/OpenDocBot/OpenDocBot");
 
     const license = screen.getByRole("link", { name: "License" }) as HTMLAnchorElement;
-    expect(license.href).toBe("https://github.com/OpenDocBot/OpenDocBot/blob/main/LICENSE");
+    expect(license.href).toBe("https://opendocbot.com/docs/license");
+
+    const enterprise = screen.getByRole("link", { name: "Enterprise Use" }) as HTMLAnchorElement;
+    expect(enterprise.href).toBe("https://opendocbot.com/enterprise");
   });
 
   it("shows the Inference region selector only for the OpenRouter preset", async () => {

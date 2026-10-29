@@ -11,12 +11,12 @@ hero:
     - theme: brand
       text: Install for Microsoft 365
       link: https://marketplace.microsoft.com/en-us/product/WA200012650?tab=Overview
+    - theme: brand
+      text: Book a 20-min intro
+      link: https://cal.com/opendocbot/intro
     - theme: alt
       text: Read the Docs
       link: /docs/quickstart
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/OpenDocBot/OpenDocBot
 
 features:
   - title: Bring Any AI Model

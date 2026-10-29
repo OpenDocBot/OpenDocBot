@@ -36,6 +36,8 @@ The commercial license grants two things:
 
 Everything else, including self-hosting, the SSO and managed configuration features, and running up to 30 users, stays free.
 
+Commercial licenses start at **€5,000/year** for teams of up to 100 users. See [Enterprise use](/enterprise) for the full bands, the founding customer offer and a 20-minute intro.
+
 ## Why this model
 
 OpenDocBot is designed to be as open as possible without giving away financial sustainability. 
@@ -43,13 +45,17 @@ The free tier up to 30 users covers individuals, small teams,
 and evaluation. Organizations large enough to pay are asked to pay, which keeps
 the project maintained without telemetry, lock-in, or hidden fees. 
 
-Exceptions to these restrictions 
-may be granted at our sole discretion for educational institutions, academic research, 
-non-profit organizations, and recognized open-source projects. 
-Reach out to `hello@opendocbot.com` to apply for a community grant.
-
 Everything that makes OpenDocBot trustworthy is in the open and verifiable:
-zero telemetry, 100% client-side processing, and your data never reching our servers.
+zero telemetry, 100% client-side processing, and your data never reaching our servers.
+
+## Community grants
+
+Non-profit organizations, educational institutions, academic research groups and
+recognized open-source projects can request a community grant. Grants are
+reviewed on a case-by-case basis, require a prior request, and are approved at
+our discretion.
+
+Reach out to `hello@opendocbot.com` to apply.
 
 ## What to call it
 

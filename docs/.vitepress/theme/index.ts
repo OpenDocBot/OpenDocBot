@@ -41,6 +41,8 @@ export default {
           h("span", { class: "vp-legal-sep" }, "·"),
           h("a", { href: withBase("/terms") }, "Terms of Use"),
           h("span", { class: "vp-legal-sep" }, "·"),
+          h("a", { href: withBase("/enterprise") }, "Enterprise"),
+          h("span", { class: "vp-legal-sep" }, "·"),
           h(
             "a",
             { href: withBase("/third-party-notices.txt") },

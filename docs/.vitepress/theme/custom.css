@@ -204,6 +204,98 @@ div[class*="language-"]::before {
   box-shadow: 0 0 18px rgba(61, 220, 132, 0.35);
 }
 
+/* --- enterprise CTA ------------------------------------------------------ */
+.enterprise-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0.75rem;
+}
+.vp-doc .enterprise-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 50px;
+  padding: 0 1.4rem;
+  border: 1px solid rgba(61, 220, 132, 0.85);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3ddc84 0%, #2ebc6e 100%);
+  color: #04120a !important;
+  font-family: var(--vp-font-family-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  box-shadow:
+    0 0 0 1px rgba(61, 220, 132, 0.16),
+    0 8px 24px rgba(61, 220, 132, 0.18);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.vp-doc .enterprise-cta-button:visited,
+.vp-doc .enterprise-cta-button:hover,
+.vp-doc .enterprise-cta-button:focus,
+.vp-doc .enterprise-cta-button:active {
+  color: #04120a !important;
+  text-decoration: none;
+}
+.vp-doc .enterprise-cta-button:hover {
+  background: linear-gradient(135deg, #4cf094 0%, #34c97a 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(61, 220, 132, 0.28),
+    0 12px 32px rgba(61, 220, 132, 0.3);
+}
+.vp-doc .enterprise-cta-button:focus-visible {
+  outline: 2px solid #3ddc84;
+  outline-offset: 3px;
+}
+.enterprise-cta-button span {
+  white-space: nowrap;
+}
+.enterprise-cta-icon {
+  flex: none;
+  opacity: 0.9;
+}
+.enterprise-cta-arrow {
+  flex: none;
+  transition: transform 0.16s ease;
+}
+.vp-doc .enterprise-cta-button:hover .enterprise-cta-arrow {
+  transform: translateX(3px);
+}
+.vp-doc .enterprise-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 0 1.15rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2) !important;
+  font-family: var(--vp-font-family-mono);
+  font-size: 14px;
+  text-decoration: none;
+  transition:
+    border-color 0.16s ease,
+    color 0.16s ease,
+    background 0.16s ease;
+}
+.vp-doc .enterprise-cta-secondary:hover {
+  border-color: rgba(61, 220, 132, 0.45);
+  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-text-1) !important;
+  text-decoration: none;
+}
+.vp-doc .enterprise-cta-secondary:focus-visible {
+  outline: 2px solid #3ddc84;
+  outline-offset: 3px;
+}
+
 /* --- feature grid: terminal cards ---------------------------------------- */
 .VPFeature {
   border: 1px solid var(--vp-c-border);
