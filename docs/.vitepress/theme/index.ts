@@ -15,6 +15,7 @@ export default {
     app.component("Tab", Tab);
     // Click-to-play YouTube facade: no request to Google until the user clicks.
     app.component("LiteYouTube", LiteYouTube);
+    app.component("HeroDemo", HeroDemo);
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {

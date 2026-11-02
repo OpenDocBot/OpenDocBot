@@ -1,2 +1,5 @@
 /docs /docs/quickstart 301
 /docs/ /docs/quickstart 301
+
+# Directory index pages are canonical with a trailing slash.
+/docs/providers /docs/providers/ 301

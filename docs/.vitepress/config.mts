@@ -4,12 +4,51 @@ import { defineConfig } from "vitepress";
 // sets VITEPRESS_BASE from the repo name; local preview uses the root path.
 const base = process.env.VITEPRESS_BASE || "/";
 
+const sitemapPriorities: Record<string, number> = {
+  "/": 1,
+  "/enterprise": 0.9,
+  "/docs/quickstart": 0.9,
+  "/docs/compatibility": 0.8,
+  "/docs/configuration": 0.8,
+  "/docs/providers/": 0.8,
+  "/docs/features": 0.7,
+  "/docs/selfhosting": 0.7,
+  "/docs/license": 0.3,
+  "/privacy": 0.3,
+  "/terms": 0.3,
+  "/support": 0.3,
+};
+
+function sitemapPath(url: string) {
+  return "/" + url.replace(/^\/+/, "");
+}
+
 export default defineConfig({
   title: "OpenDocBot",
   description: "Self-hostable AI assistant for Microsoft Office. Bring your own LLM.",
   lang: "en-US",
   base,
   cleanUrls: true,
+  srcExclude: ["README.md"],
+  sitemap: {
+    hostname: "https://opendocbot.com",
+    transformItems(items) {
+      return items
+        .filter((item) => {
+          const path = sitemapPath(item.url);
+          return path !== "/README" && path !== "/404";
+        })
+        .map((item) => {
+          const path = sitemapPath(item.url);
+          return {
+            ...item,
+            priority:
+              sitemapPriorities[path] ??
+              (path.startsWith("/docs/providers/") ? 0.7 : 0.6),
+          };
+        });
+    },
+  },
   // Dark mode only: no light/dark switcher.
   appearance: "force-dark",
   head: [
@@ -30,6 +69,7 @@ export default defineConfig({
     const url = `${host}${path}`;
     const image = `${host}/og-image.png`;
     const isHome = rel === "index.md" || rel === "";
+    const isBlogPost = rel.startsWith("blog/") && rel !== "blog/index.md";
     const title = isHome
       ? "The Office AI agent you can actually trust"
       : pageData.title;
@@ -37,7 +77,7 @@ export default defineConfig({
 
     return [
       ["link", { rel: "canonical", href: url }],
-      ["meta", { property: "og:type", content: "website" }],
+      ["meta", { property: "og:type", content: isBlogPost ? "article" : "website" }],
       ["meta", { property: "og:site_name", content: "OpenDocBot" }],
       ["meta", { property: "og:locale", content: "en_US" }],
       ["meta", { property: "og:url", content: url }],
@@ -67,7 +107,7 @@ export default defineConfig({
     siteTitle: false,
     nav: [
       { text: "Docs", link: "/docs/quickstart" },
-      { text: "Providers", link: "/docs/providers/" },
+      { text: "Blog", link: "/blog/" },
       { text: "Enterprise", link: "/enterprise" },
       { text: "GitHub", link: "https://github.com/opendocbot/opendocbot" },
     ],

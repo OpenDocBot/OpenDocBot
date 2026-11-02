@@ -21,6 +21,7 @@
 
 /manifest.xml
   Content-Disposition: attachment; filename="manifest.xml"
+  X-Robots-Tag: noindex
 
 # Marketing site and docs: not embeddable by third parties, and locked down to
 # the resources VitePress plus the YouTube embeds need. The add-in taskpane at

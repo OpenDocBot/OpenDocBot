@@ -548,3 +548,25 @@ div[class*="language-"]::before {
 .vp-tab-panel > :last-child {
   margin-bottom: 0;
 }
+
+/* --- blog figures ------------------------------------------------------- */
+.blog-figure {
+  margin: 2rem 0;
+}
+.blog-figure img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 12px;
+  background: var(--vp-c-bg-alt);
+}
+.blog-figure figcaption {
+  margin-top: 0.75rem;
+  color: var(--vp-c-text-3);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  text-align: center;
+}
+.blog-demo {
+  margin: 2rem auto;
+}

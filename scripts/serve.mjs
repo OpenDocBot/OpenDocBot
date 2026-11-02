@@ -217,6 +217,7 @@ function serveStatic(req, res) {
   }
   if (urlPath === "/manifest.xml") {
     headers["Content-Disposition"] = 'attachment; filename="manifest.xml"';
+    headers["X-Robots-Tag"] = "noindex";
   }
   // Serve the prepared index.html (with the managed-config marker) for both
   // the real file and the SPA fallback, so the marker is always present when

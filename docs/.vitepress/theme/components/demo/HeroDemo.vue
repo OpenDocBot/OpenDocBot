@@ -9,6 +9,17 @@ import SceneProvider from "./scenes/SceneProvider.vue";
 import SceneHitl from "./scenes/SceneHitl.vue";
 import { useStageScale } from "./useStageScale";
 
+const props = withDefaults(
+  defineProps<{
+    initial?: string;
+    showTabs?: boolean;
+  }>(),
+  {
+    initial: "excel",
+    showTabs: true,
+  },
+);
+
 interface Scenario {
   id: string;
   label: string;
@@ -26,7 +37,7 @@ const scenarios: Scenario[] = [
 
 // Client-only gate: the demo is pure browser animation, so skip SSR entirely.
 const mounted = ref(false);
-const active = ref("excel");
+const active = ref(props.initial);
 const current = computed(() => scenarios.find((s) => s.id === active.value) ?? scenarios[0]);
 
 const reduced = ref(
@@ -82,7 +93,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div v-if="mounted" class="hero-demo-root">
-    <div class="hero-demo-tabs">
+    <div v-if="showTabs" class="hero-demo-tabs">
       <button
         v-for="s in scenarios"
         :key="s.id"
