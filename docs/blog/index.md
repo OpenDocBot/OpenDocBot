@@ -13,7 +13,7 @@ Product updates, deployment notes and practical guides for agentic Office in Mic
 
 ---
 
-### [OpenDocBot with Ollama: A fully private Office agent](/blog/provider-ollama)
+### [OpenDocBot + Ollama: A fully private Office agent](/blog/provider-ollama)
 
 November 6, 2026
 
