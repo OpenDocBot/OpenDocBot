@@ -13,6 +13,12 @@ Product updates, deployment notes and practical guides for agentic Office in Mic
 
 ---
 
+### [Your Office Harness, on your own terms](/blog/selfhosting-opendocbot)
+
+November 11, 2026
+
+Why teams self-host OpenDocBot, and how one script sets everything up.
+
 ### [OpenDocBot + Ollama: A fully private Office agent](/blog/provider-ollama)
 
 November 6, 2026

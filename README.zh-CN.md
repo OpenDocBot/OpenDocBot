@@ -82,12 +82,9 @@
 
 ## 自托管
 
-直接从你自己的基础设施提供 OpenDocBot。自托管还能解锁团队功能：
+在你自己的基础设施上运行 OpenDocBot，包含 SSO 和托管配置。
 
-- **SSO**：在加载项加载之前，要求使用你所在组织的身份提供商（OIDC，例如 Microsoft Entra ID）登录。
-- **托管配置**：为实例上的所有人统一设置提供商、API 密钥和模型，其余设置仍可编辑。
-
-两者都随免费的自托管产品提供。设置方法见[自托管指南](https://opendocbot.com/docs/selfhosting)。
+需求、引导式 `./setup.sh` 安装脚本、Docker Compose、Node、静态托管、TLS 证书、SSO 和托管配置详见[自托管指南](https://opendocbot.com/docs/selfhosting)。
 
 ## 面向团队
 

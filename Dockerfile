@@ -17,4 +17,6 @@ ENV NODE_ENV=production
 COPY --from=build /app/dist ./dist
 COPY scripts ./scripts
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD node -e "const http=require('node:http');const https=require('node:https');const check=(mod,url)=>new Promise(resolve=>{const req=mod.get(url,{rejectUnauthorized:false},res=>{res.resume();resolve(res.statusCode===200)});req.on('error',()=>resolve(false));req.setTimeout(4000,()=>{req.destroy();resolve(false)})});(async()=>{if(await check(https,'https://127.0.0.1:3000/healthz'))process.exit(0);if(await check(http,'http://127.0.0.1:3000/healthz'))process.exit(0);process.exit(1)})()"
 CMD ["node", "scripts/serve.mjs"]

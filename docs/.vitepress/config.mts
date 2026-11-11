@@ -67,7 +67,14 @@ export default defineConfig({
 
     const host = "https://opendocbot.com";
     const url = `${host}${path}`;
-    const image = `${host}/og-image.png`;
+    const frontmatter = pageData.frontmatter ?? {};
+    const imagePath =
+      typeof frontmatter.ogImage === "string" ? frontmatter.ogImage : "/og-image.png";
+    const image = imagePath.startsWith("http") ? imagePath : `${host}${imagePath}`;
+    const imageAlt =
+      typeof frontmatter.ogImageAlt === "string"
+        ? frontmatter.ogImageAlt
+        : "OpenDocBot - the trustable Office AI agent";
     const isHome = rel === "index.md" || rel === "";
     const isBlogPost = rel.startsWith("blog/") && rel !== "blog/index.md";
     const title = isHome
@@ -75,7 +82,7 @@ export default defineConfig({
       : pageData.title;
     const description = pageData.description;
 
-    return [
+    const head: any[] = [
       ["link", { rel: "canonical", href: url }],
       ["meta", { property: "og:type", content: isBlogPost ? "article" : "website" }],
       ["meta", { property: "og:site_name", content: "OpenDocBot" }],
@@ -87,18 +94,48 @@ export default defineConfig({
       ["meta", { property: "og:image:type", content: "image/png" }],
       ["meta", { property: "og:image:width", content: "1200" }],
       ["meta", { property: "og:image:height", content: "630" }],
-      [
-        "meta",
-        {
-          property: "og:image:alt",
-          content: "OpenDocBot - the trustable Office AI agent",
-        },
-      ],
+      ["meta", { property: "og:image:alt", content: imageAlt }],
       ["meta", { name: "twitter:card", content: "summary_large_image" }],
       ["meta", { name: "twitter:title", content: title }],
       ["meta", { name: "twitter:description", content: description }],
       ["meta", { name: "twitter:image", content: image }],
     ];
+
+    if (isBlogPost) {
+      const published =
+        typeof frontmatter.date === "string" ? frontmatter.date : undefined;
+
+      if (published) {
+        head.push(["meta", { property: "article:published_time", content: published }]);
+        head.push(["meta", { property: "article:author", content: "OpenDocBot" }]);
+      }
+
+      const jsonLd: Record<string, unknown> = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: title,
+        description,
+        image,
+        url,
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        author: { "@type": "Organization", name: "OpenDocBot", url: host },
+        publisher: {
+          "@type": "Organization",
+          name: "OpenDocBot",
+          url: host,
+          logo: { "@type": "ImageObject", url: `${host}/logo.svg` },
+        },
+      };
+
+      if (published) {
+        jsonLd.datePublished = published;
+        jsonLd.dateModified = published;
+      }
+
+      head.push(["script", { type: "application/ld+json" }, JSON.stringify(jsonLd)]);
+    }
+
+    return head;
   },
 
   themeConfig: {

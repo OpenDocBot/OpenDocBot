@@ -79,12 +79,9 @@ See the full technical documentation at [opendocbot.com/docs](https://opendocbot
 
 ## Self-Hosting
 
-Serve OpenDocBot directly from your own infrastructure. Self-hosting also unlocks the team features:
+Serve OpenDocBot from your own infrastructure, with SSO and managed configuration included.
 
-- **SSO**: require sign-in with your organization's identity provider (OIDC, for example Microsoft Entra ID) before the add-in loads.
-- **Managed configuration**: set the provider, API key, and model once for everyone on the instance, while the rest stays editable.
-
-Both ship with the free self-hosted product. See the [Self-hosting guide](https://opendocbot.com/docs/selfhosting) for setup.
+See the [Self-hosting guide](https://opendocbot.com/docs/selfhosting) for requirements, the guided `./setup.sh` wizard, Docker Compose, Node, static hosting, TLS certificates, SSO and managed configuration.
 
 ## For teams
 

@@ -1,34 +1,72 @@
+# OpenDocBot self-hosted deployment: one container, the app terminates TLS.
+#
+#   ./setup.sh                  guided setup (recommended)
+#   docker compose up -d --build
+#
+# Why one container: a reverse proxy selects the certificate by SNI, and a
+# client that connects to an IP address does not send SNI, so the handshake
+# fails. Node with a single certificate answers any handshake, including one
+# without SNI, which is what makes "https://<ip>" work out of the box.
+#
+# Certificates are read from ./certs/addin.crt and ./certs/addin-key.pem on the
+# host. Inside the container they are mounted at /certs.
+
 services:
   opendocbot:
     build: .
     image: opendocbot
     container_name: opendocbot
+    restart: unless-stopped
+    stop_grace_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      # The certificate and key are bind-mounted and owned by the host user;
+      # without DAC_OVERRIDE a root process cannot read them.
+      - DAC_OVERRIDE
     ports:
-      - "${OPENDOCBOT_HOST_PORT:-3000}:3000"
+      - "${OPENDOCBOT_HTTPS_PORT:-443}:3000"
     env_file:
       - .env
     environment:
-      - PORT=${PORT:-3000}
-      - HOST=${HOST:-0.0.0.0}
-      - DIST_DIR=${DIST_DIR:-/app/dist}
-      - TLS_CERT=${TLS_CERT:-}
-      - TLS_KEY=${TLS_KEY:-}
-      - OPENDOCBOT_MANAGED_CONFIG=${OPENDOCBOT_MANAGED_CONFIG:-}
-      - OPENDOCBOT_MANAGED_CONFIG_FILE=${OPENDOCBOT_MANAGED_CONFIG_FILE:-}
-      - OPENDOCBOT_MANAGED_REQUIRE_SSO=${OPENDOCBOT_MANAGED_REQUIRE_SSO:-true}
-      - OPENDOCBOT_OIDC_ISSUER=${OPENDOCBOT_OIDC_ISSUER:-}
-      - OPENDOCBOT_OIDC_CLIENT_ID=${OPENDOCBOT_OIDC_CLIENT_ID:-}
-      - OPENDOCBOT_OIDC_CLIENT_SECRET=${OPENDOCBOT_OIDC_CLIENT_SECRET:-}
-      - OPENDOCBOT_OIDC_SCOPES=${OPENDOCBOT_OIDC_SCOPES:-}
-      - OPENDOCBOT_OIDC_ALLOWED_GROUPS=${OPENDOCBOT_OIDC_ALLOWED_GROUPS:-}
-      - OPENDOCBOT_OIDC_GROUPS_CLAIM=${OPENDOCBOT_OIDC_GROUPS_CLAIM:-}
-      - OPENDOCBOT_OIDC_REDIRECT_URI=${OPENDOCBOT_OIDC_REDIRECT_URI:-}
-      - OPENDOCBOT_SESSION_STORE=${OPENDOCBOT_SESSION_STORE:-/data/opendocbot-sessions.json}
-      - OPENDOCBOT_SESSION_SECRET=${OPENDOCBOT_SESSION_SECRET:-}
+      PORT: "3000"
+      HOST: "0.0.0.0"
+      DIST_DIR: /app/dist
+      TLS_CERT: /certs/addin.crt
+      TLS_KEY: /certs/addin-key.pem
+      OPENDOCBOT_SESSION_STORE: /data/opendocbot-sessions.json
+      OPENDOCBOT_SESSION_SECRET: ${OPENDOCBOT_SESSION_SECRET:-}
+      OPENDOCBOT_MANAGED_CONFIG: ${OPENDOCBOT_MANAGED_CONFIG:-}
+      OPENDOCBOT_MANAGED_CONFIG_FILE: ${OPENDOCBOT_MANAGED_CONFIG_FILE:-}
+      OPENDOCBOT_MANAGED_REQUIRE_SSO: ${OPENDOCBOT_MANAGED_REQUIRE_SSO:-true}
+      OPENDOCBOT_OIDC_ISSUER: ${OPENDOCBOT_OIDC_ISSUER:-}
+      OPENDOCBOT_OIDC_CLIENT_ID: ${OPENDOCBOT_OIDC_CLIENT_ID:-}
+      OPENDOCBOT_OIDC_CLIENT_SECRET: ${OPENDOCBOT_OIDC_CLIENT_SECRET:-}
+      OPENDOCBOT_OIDC_SCOPES: ${OPENDOCBOT_OIDC_SCOPES:-}
+      OPENDOCBOT_OIDC_ALLOWED_GROUPS: ${OPENDOCBOT_OIDC_ALLOWED_GROUPS:-}
+      OPENDOCBOT_OIDC_GROUPS_CLAIM: ${OPENDOCBOT_OIDC_GROUPS_CLAIM:-}
+      OPENDOCBOT_OIDC_REDIRECT_URI: ${OPENDOCBOT_OIDC_REDIRECT_URI:-}
     volumes:
-      # Persists sessions across restarts so users sign in once.
       - opendocbot-data:/data
-    restart: always
+      - ./certs:/certs:ro
+    healthcheck:
+      # The app exposes /healthz. TLS is on, so the probe speaks HTTPS and
+      # ignores the self-signed chain.
+      test: ["CMD-SHELL", "node -e \"const h=require('node:https');const r=h.get('https://127.0.0.1:3000/healthz',{rejectUnauthorized:false},res=>process.exit(res.statusCode===200?0:1));r.on('error',()=>process.exit(1));r.setTimeout(4000,()=>{r.destroy();process.exit(1)})\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "1.0"
 
 volumes:
   opendocbot-data:

@@ -24,8 +24,8 @@
  *   OPENDOCBOT_SESSION_SECRET        Key that encrypts stored refresh tokens
  *
  * Office requires the add-in to be served over HTTPS. When TLS_CERT/TLS_KEY are
- * set (or default files ~/.opendocbot-cert.pem and ~/.opendocbot-key.pem exist),
- * the server listens with HTTPS. Otherwise it falls back to plain HTTP.
+ * set (or the default files certs/addin.crt and certs/addin-key.pem exist), the
+ * server listens with HTTPS. Otherwise it falls back to plain HTTP.
  */
 
 import http from "node:http";
@@ -38,14 +38,13 @@ import { handleProxy } from "./proxy.mjs";
 import { handleAppConfig, loadManagedConfig, injectManagedBootstrap, managedRequiresSso, assertManagedRequiresSso } from "./managedConfig.mjs";
 import { createAuth, loadAuthConfig, resolveSessionSecret } from "./auth.mjs";
 
+const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
-const DIST_DIR = path.resolve(
-  process.env.DIST_DIR || path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "dist")
-);
+const DIST_DIR = path.resolve(process.env.DIST_DIR || path.join(ROOT_DIR, "dist"));
 
-const DEFAULT_CERT = path.join(os.homedir(), ".opendocbot-cert.pem");
-const DEFAULT_KEY = path.join(os.homedir(), ".opendocbot-key.pem");
+const DEFAULT_CERT = path.join(ROOT_DIR, "certs", "addin.crt");
+const DEFAULT_KEY = path.join(ROOT_DIR, "certs", "addin-key.pem");
 
 /**
  * Resolve a TLS secret (cert or key) from an env var. Accepts, in order:
@@ -199,6 +198,13 @@ function serveStatic(req, res) {
   }
 
   if (!fs.existsSync(filePath)) {
+    // A missing asset must not return the index: a 200 with HTML makes the
+    // browser fail on MIME type instead of reporting a 404.
+    if (urlPath.startsWith("/assets/")) {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Not found");
+      return;
+    }
     // SPA fallback: serve index.html for unknown paths.
     filePath = path.join(DIST_DIR, "index.html");
   }
@@ -246,6 +252,14 @@ function unauthorized(res) {
 }
 
 const handler = (req, res) => {
+  // Health endpoint for load balancers and monitoring. Unauthenticated and
+  // disk-free: if the process answers, it is alive. The SPA used to answer 200
+  // on every path, so a check against `/` proved nothing.
+  if ((req.url || "").split("?")[0] === "/healthz") {
+    res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+    res.end(JSON.stringify({ status: "ok", tls: useTLS, managed: Boolean(MANAGED_CONFIG), sso: Boolean(AUTH) }));
+    return;
+  }
   // On SSO instances the proxy is a server-side request forwarder and must not
   // be an open relay: require a session before forwarding (the client sends the
   // session in `X-Opendocbot-Session`).
@@ -268,3 +282,12 @@ const server = useTLS
 server.listen(PORT, HOST, () => {
   console.log(`[opendocbot] serving ${DIST_DIR} at ${useTLS ? "https" : "http"}://${HOST}:${PORT} (proxy enabled, tls=${useTLS}, managed=${Boolean(MANAGED_CONFIG)}, sso=${Boolean(AUTH)}, requireSso=${REQUIRE_SSO})`);
 });
+
+// Without this, `docker stop` waits 10s and then SIGKILLs, cutting in-flight
+// requests on every deployment.
+for (const signal of ["SIGTERM", "SIGINT"]) {
+  process.on(signal, () => {
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 5000).unref();
+  });
+}

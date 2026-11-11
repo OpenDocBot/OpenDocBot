@@ -1,6 +1,7 @@
 ---
 title: " OpenDocBot + Ollama: A fully private Office agent"
 description: "Connect OpenDocBot to a local Ollama model and get a private agent in Word, Excel and PowerPoint, without your documents leaving your PC."
+pageClass: blog-post
 date: "2026-11-06"
 sidebar: false
 outline: false

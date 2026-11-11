@@ -1,6 +1,7 @@
 ---
 title: Introducing OpenDocBot
 description: An open interface for agentic Office. Use the AI models and keys you already have, without another license and no vendor lock-in.
+pageClass: blog-post
 date: "2026-11-02"
 sidebar: false
 outline: false

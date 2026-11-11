@@ -22,13 +22,19 @@ docs-preview:
 	npm run docs:preview
 
 # Self-hosted server: build with the proxy enabled, then serve dist/ + /proxy/.
+# Load .env when present so the Node path behaves like the documented setup.
 serve:
 	VITE_PROXY_ENABLED=true npm run build
-	node scripts/serve.mjs
+	@if [ -f .env ]; then \
+		node --env-file=.env scripts/serve.mjs; \
+	else \
+		node scripts/serve.mjs; \
+	fi
 
 # Docker for self-hosted deployments (includes the /proxy/ route).
-# Compose builds the image, runs it on http://localhost:3000, and restarts it
-# automatically. Override the host port with OPENDOCBOT_HOST_PORT (default 3000).
+# Run ./setup.sh first to create certs/ and .env. Compose builds the image,
+# serves it over HTTPS on OPENDOCBOT_HTTPS_PORT (default 443), and restarts it
+# automatically.
 docker-up:
 	docker compose up -d --build
 

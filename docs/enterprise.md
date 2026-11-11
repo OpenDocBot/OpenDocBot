@@ -76,7 +76,7 @@ Yes. OpenDocBot is BYOK. You connect your own API key, cloud endpoint, gateway o
 :::
 
 ::: details Can we self-host?
-Yes. OpenDocBot can be self-hosted anytime. Self-hosting unlocks [SSO](/docs/enterprise/sso) and [managed configuration](/docs/enterprise/managed-configuration). See the [self-hosting guide](/docs/selfhosting) for further guidance.
+Yes. OpenDocBot can be self-hosted anytime. Self-hosting unlocks [SSO](/docs/enterprise/sso) and [managed configuration](/docs/enterprise/managed-configuration). See the [self-hosting guide](/docs/selfhosting) for further guidance, or [this walkthrough of the setup flow](/blog/selfhosting-opendocbot).
 :::
 
 ::: details Can we use Microsoft Entra ID?
