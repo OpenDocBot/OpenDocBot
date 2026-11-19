@@ -4,6 +4,7 @@ import { getProvider } from "../../providers/registry";
 import { getPresetInfo } from "../../lib/effectiveConfig";
 import { Button } from "@/components/ui/button";
 import { Loader2, X } from "lucide-react";
+import { ProviderDocsLink } from "./ProviderDocsLink";
 
 type TestStatus = "idle" | "testing" | "success" | "error";
 
@@ -122,8 +123,11 @@ export function ConnectionTest({ config, showEnterpriseHint = true }: Connection
         )}
       </div>
       {errorMsg && (
-        <div className="border border-destructive/30 bg-black/40 p-2.5 max-h-40 overflow-y-auto">
-          <pre className="text-xs text-destructive font-mono whitespace-pre-wrap break-all m-0">{errorMsg}</pre>
+        <div className="space-y-1.5">
+          <div className="border border-destructive/30 bg-black/40 p-2.5 max-h-40 overflow-y-auto">
+            <pre className="text-xs text-destructive font-mono whitespace-pre-wrap break-all m-0">{errorMsg}</pre>
+          </div>
+          <ProviderDocsLink presetId={presetId} label="Check the setup guide" />
         </div>
       )}
       {hintVisible && (

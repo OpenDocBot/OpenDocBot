@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { DEFAULT_BEDROCK_REGION } from "../../lib/bedrockModels";
 import { isFoundryHost } from "../../lib/foundryEndpoint";
+import { ProviderDocsLink } from "./ProviderDocsLink";
 
 export interface Preset {
   id: string;
@@ -78,7 +79,10 @@ export function PresetSelector({ baseUrl, model, presetId, onChange, disabled }:
 
   return (
     <div className="space-y-1.5">
-      <Label>Preset</Label>
+      <div className="flex items-center justify-between gap-2">
+        <Label>Preset</Label>
+        <ProviderDocsLink presetId={currentPresetId} />
+      </div>
       <Select
         value={currentPresetId}
         onValueChange={onChange}

@@ -39,6 +39,20 @@ describe("SettingsPanel", () => {
     expect(screen.getByText("Test Connection")).toBeDefined();
   });
 
+  it("links to the selected provider setup guide", async () => {
+    const user = userEvent.setup();
+    render(<SettingsPanel />);
+
+    const link = screen.getByRole("link", { name: /setup guide/i }) as HTMLAnchorElement;
+    expect(link.href).toBe("https://opendocbot.com/docs/providers/openai");
+    expect(link.target).toBe("_blank");
+
+    const preset = screen.getByRole("combobox") as HTMLSelectElement;
+    await user.selectOptions(preset, "ollama");
+
+    expect(link.href).toBe("https://opendocbot.com/docs/providers/ollama");
+  });
+
   it("renders Apply and Clean buttons", () => {
     render(<SettingsPanel />);
     expect(screen.getByText("Apply")).toBeDefined();

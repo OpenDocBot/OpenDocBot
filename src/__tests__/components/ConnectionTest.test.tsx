@@ -152,6 +152,10 @@ describe("ConnectionTest", () => {
     await waitFor(() => {
       expect(screen.getByText("Failed")).toBeDefined();
     });
+
+    const link = screen.getByRole("link", { name: /check the setup guide/i }) as HTMLAnchorElement;
+    expect(link.href).toBe("https://opendocbot.com/docs/providers/openai");
+    expect(link.target).toBe("_blank");
   });
 
   it("skips the request with a friendly error when no model is selected", async () => {
