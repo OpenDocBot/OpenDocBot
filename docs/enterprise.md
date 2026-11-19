@@ -1,6 +1,6 @@
 ---
 title: OpenDocBot for teams
-description: Commercial licenses, support, whitelabeling and deployment help for teams that use OpenDocBot.
+description: Commercial licenses, support, custom branding and deployment help for teams that use OpenDocBot.
 ---
 
 # OpenDocBot for teams
@@ -25,7 +25,7 @@ OpenDocBot has the same features on the free and commercial tiers. The commercia
 - Organizations with more than 30 people using OpenDocBot. If your team stays at 30 or fewer, you can use the free tier, including all features (self-hosting, SSO and managed configuration).
 - Organizations that need a commercial agreement, invoice, purchase order or vendor onboarding.
 - Teams that want a named support contact and help with deployment.
-- Partners and service providers that deploy OpenDocBot for clients or want to whitelabel it.
+- Partners and service providers that deploy OpenDocBot for clients or want to use their own branding.
 
 ## What the commercial license covers
 
@@ -34,7 +34,7 @@ The product does not change. A commercial license covers the right to use it bey
 - **More than 30 users:** the free tier covers up to 30 users. The commercial license covers the rest.
 - **Commercial terms:** an annual agreement, invoice, purchase order and vendor onboarding.
 - **Support:** Team includes email support. Business adds priority email support and an onboarding call. Enterprise adds deployment support and custom terms.
-- **Whitelabel:** Enterprise includes the right to replace OpenDocBot branding with your own.
+- **Custom branding:** Enterprise includes the right to replace OpenDocBot branding with your own.
 
 ::: tip The product stays the same
 Self-hosting, SSO, managed configuration, BYOK, local models, human-in-the-loop, skills and MCP are the same on every tier. They do not require a commercial license. See the [license](/docs/license) for the exact terms.
@@ -44,14 +44,80 @@ Self-hosting, SSO, managed configuration, BYOK, local models, human-in-the-loop,
 
 Simple annual bands for teams that need a commercial license.
 
-| Plan | Price | Users | Includes |
-|---|---|---|---|
-| **Free** | €0 | Up to 30 | Core product, self-host, SSO, managed configuration |
-| **Team** | €5,000/year | Up to 100 | Commercial license, email support |
-| **Business** | €10,000/year | Up to 250 | Commercial license, priority email support, onboarding call |
-| **Enterprise** | From €20,000/year | 250+ or custom | Everything in Business, plus whitelabel, deployment support and custom terms |
+<div class="pricing-compare" role="region" aria-label="Commercial license comparison" tabindex="0">
+  <table class="pricing-table" aria-label="Commercial license comparison">
+    <thead>
+      <tr>
+        <th scope="col"><span class="pricing-kicker">Commercial plans</span></th>
+        <th scope="col">
+          <span class="pricing-plan">Team</span>
+          <span class="pricing-price">€5,000<span class="pricing-period">/year</span></span>
+        </th>
+        <th scope="col">
+          <span class="pricing-plan">Business</span>
+          <span class="pricing-price">€10,000<span class="pricing-period">/year</span></span>
+        </th>
+        <th scope="col">
+          <span class="pricing-plan">Enterprise</span>
+          <span class="pricing-price">From €20,000<span class="pricing-period">/year</span></span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Commercial license</th>
+        <td><span class="pricing-yes">✓</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Users</th>
+        <td>Up to 100</td>
+        <td>Up to 250</td>
+        <td>Unlimited</td>
+      </tr>
+      <tr>
+        <th scope="row">Email support</th>
+        <td><span class="pricing-yes">✓</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Priority support</th>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Guided onboarding</th>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Deployment assistance</th>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Custom branding</th>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Custom commercial terms</th>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-no">—</span></td>
+        <td><span class="pricing-yes">✓</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-Prices are billed annually and exclude VAT. AI usage is billed directly by your provider.
+<p class="pricing-note">All prices are billed annually and exclude VAT. AI usage is billed directly by your provider.</p>
+<p class="pricing-note">Using OpenDocBot with 30 people or fewer? The free tier includes the full product, self-hosting, SSO and managed configuration. See the <a href="/docs/license">license</a> for the exact terms.</p>
 
 **Founding customer offer:** 30% off the first year for the first 3 teams, in exchange for a case study. The case study is published only with your approval.
 
@@ -91,8 +157,8 @@ Yes. OpenDocBot is a Microsoft 365 add-in for Word, Excel and PowerPoint on desk
 Email support is best-effort, with an average response time of 2 business days. There is no formal SLA. Enterprise agreements can include deployment support.
 :::
 
-::: details Can we whitelabel it?
-Yes. Whitelabeling is part of the Enterprise plan. It includes the right to replace the OpenDocBot branding with your own name and logo.
+::: details Can we use our own branding?
+Yes. Custom branding is part of the Enterprise plan. It includes the right to replace the OpenDocBot branding with your own name and logo.
 :::
 
 ::: details Do you offer a DPA?

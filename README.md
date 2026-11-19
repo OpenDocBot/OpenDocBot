@@ -85,7 +85,7 @@ See the [Self-hosting guide](https://opendocbot.com/docs/selfhosting) for requir
 
 ## For teams
 
-Deploying OpenDocBot for more than 30 users? See [Enterprise use](https://opendocbot.com/enterprise) for commercial licensing, support and whitelabeling. Or [book a 20-minute intro](https://cal.com/opendocbot/intro).
+Deploying OpenDocBot for more than 30 users? See [Enterprise use](https://opendocbot.com/enterprise) for commercial licensing, support and custom branding. Or [book a 20-minute intro](https://cal.com/opendocbot/intro).
 
 ## Tech Stack
 

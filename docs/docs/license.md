@@ -31,7 +31,7 @@ The commercial license grants two things:
 * **Deployments beyond 30 users.** Once more than 30 people in an organization
   use the add-in, the free tier no longer applies and a commercial license is
   required. This is the line that funds the project's development.
-* **Whitelabeling.** The right to replace the OpenDocBot branding with your own
+* **Custom branding.** The right to replace the OpenDocBot branding with your own
   and distribute the add-in under your own name and logo.
 
 Everything else, including self-hosting, the SSO and managed configuration features, and running up to 30 users, stays free.

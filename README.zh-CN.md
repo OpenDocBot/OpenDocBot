@@ -88,7 +88,7 @@
 
 ## 面向团队
 
-超过 30 位用户？查看[企业版](https://opendocbot.com/enterprise)，了解商业许可、支持和白标。或[预约 20 分钟介绍](https://cal.com/opendocbot/intro)。
+超过 30 位用户？查看[企业版](https://opendocbot.com/enterprise)，了解商业许可、支持和品牌定制。或[预约 20 分钟介绍](https://cal.com/opendocbot/intro)。
 
 ## 技术栈
 
